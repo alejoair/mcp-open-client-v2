@@ -23,6 +23,10 @@ class ServerConfig(BaseModel):
     """Configuration for an MCP server."""
 
     name: str = Field(..., description="Unique name for the server")
+    slug: Optional[str] = Field(
+        default=None,
+        description="Human-readable identifier (auto-generated from name if not provided)",
+    )
     transport: str = Field(
         default="stdio", description="Transport type (currently only 'stdio' supported)"
     )
@@ -39,7 +43,8 @@ class ServerConfig(BaseModel):
 class ServerInfo(BaseModel):
     """Information about a server instance."""
 
-    id: str = Field(..., description="Unique server identifier")
+    id: str = Field(..., description="Unique server identifier (UUID)")
+    slug: str = Field(..., description="Human-readable identifier")
     config: ServerConfig = Field(..., description="Server configuration")
     status: ServerStatus = Field(
         default=ServerStatus.CONFIGURED, description="Current server status"
