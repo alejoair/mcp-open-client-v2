@@ -62,6 +62,9 @@ mcp-api = "mcp_open_client.api.cli:main"
 where = ["."]
 include = ["mcp_open_client*"]
 
+[tool.setuptools.package-data]
+mcp_open_client = ["config/defaults/*.json"]
+
 [tool.black]
 line-length = 88
 target-version = ['py38']

@@ -35,6 +35,13 @@ uvicorn mcp_open_client.api.main:app --host 127.0.0.1 --port 8001
 uvicorn mcp_open_client.api.main:app --reload --port 8001
 ```
 
+### Configuration Files
+Configuration files are automatically created in `~/.mcp-open-client/` on first use:
+- `mcp_servers.json` - MCP server configurations
+- `ai_providers.json` - AI provider configurations
+
+**Important**: Existing configuration files are never overwritten during upgrades. The system only creates default configs if they don't exist.
+
 ### Code Quality Tools
 ```bash
 # Format code (automatically runs on commit via pre-commit hooks)

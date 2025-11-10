@@ -1,5 +1,96 @@
 {
-  "servers": [],
+  "servers": [
+    {
+      "id": "41cdd2bc-918f-4bc8-8ba6-c151aaed5bd2",
+      "slug": "my-filesystem-server",
+      "config": {
+        "name": "My Filesystem Server",
+        "slug": "my-filesystem-server",
+        "transport": "stdio",
+        "command": "npm.cmd",
+        "args": [
+          "-x",
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "."
+        ],
+        "env": null,
+        "cwd": null
+      },
+      "status": "configured",
+      "created_at": "2025-11-10T15:10:55.080677",
+      "started_at": null,
+      "stopped_at": null,
+      "error_message": null,
+      "process_id": null
+    },
+    {
+      "id": "9a9a42aa-b28f-43d1-9124-ff0e275b4fd1",
+      "slug": "memory-server",
+      "config": {
+        "name": "Memory Server",
+        "slug": "memory-server",
+        "transport": "stdio",
+        "command": "npm.cmd",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-memory"
+        ],
+        "env": null,
+        "cwd": null
+      },
+      "status": "configured",
+      "created_at": "2025-11-10T15:17:20.987329",
+      "started_at": null,
+      "stopped_at": null,
+      "error_message": null,
+      "process_id": null
+    },
+    {
+      "id": "1a018455-abf6-4934-9132-8df17dea0fd5",
+      "slug": "everything-server",
+      "config": {
+        "name": "Everything Server",
+        "slug": "everything-server",
+        "transport": "stdio",
+        "command": "npm.cmd",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-everything"
+        ],
+        "env": null,
+        "cwd": null
+      },
+      "status": "configured",
+      "created_at": "2025-11-10T15:17:23.113104",
+      "started_at": null,
+      "stopped_at": null,
+      "error_message": null,
+      "process_id": null
+    },
+    {
+      "id": "783cd54a-4376-47e1-b614-eac1be66b936",
+      "slug": "code-editor-server",
+      "config": {
+        "name": "Code Editor Server",
+        "slug": "code-editor-server",
+        "transport": "stdio",
+        "command": "npm.cmd",
+        "args": [
+          "-y",
+          "mcp-code-editor"
+        ],
+        "env": null,
+        "cwd": null
+      },
+      "status": "configured",
+      "created_at": "2025-11-10T15:18:24.383347",
+      "started_at": null,
+      "stopped_at": null,
+      "error_message": null,
+      "process_id": null
+    }
+  ],
   "version": "1.0",
-  "updated_at": "2025-11-10T03:09:30.740618"
+  "updated_at": "2025-11-10T15:18:24.383347"
 }

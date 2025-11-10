@@ -23,6 +23,7 @@ from ..api.models.provider import (
     ProviderListResponse,
     ProviderUpdateResponse,
 )
+from ..config import ensure_config_directory, get_config_path
 from ..exceptions import MCPError
 from .provider_validator import AIProviderValidator, ModelTestResult, ValidationResult
 
@@ -35,12 +36,15 @@ class AIProviderManager:
         Initialize AI provider manager.
 
         Args:
-            config_file: Path to JSON configuration file
+            config_file: Path to JSON configuration file (relative to user config dir)
         """
         self._providers: Dict[str, ProviderInfo] = {}
-        self._config_file = Path(config_file)
         self._default_provider: Optional[str] = None
         self._validator = AIProviderValidator()
+
+        # Ensure config directory exists and get config file path
+        ensure_config_directory()
+        self._config_file = get_config_path(config_file)
         self._load_providers()
 
     def _load_providers(self) -> None:

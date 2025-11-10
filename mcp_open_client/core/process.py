@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ..api.models.server import ServerConfig, ServerInfo, ServerStatus
+from ..config import ensure_config_directory, get_config_path
 from ..exceptions import MCPError
 
 
@@ -47,12 +48,15 @@ class ProcessManager:
         Initialize process manager.
 
         Args:
-            config_file: Path to JSON configuration file
+            config_file: Path to JSON configuration file (relative to user config dir)
         """
         self._processes: Dict[str, asyncio.subprocess.Process] = {}
         self._servers: Dict[str, ServerInfo] = {}
         self._slug_to_id: Dict[str, str] = {}  # Slug to UUID mapping
-        self._config_file = Path(config_file)
+
+        # Ensure config directory exists and get config file path
+        ensure_config_directory()
+        self._config_file = get_config_path(config_file)
         self._load_servers()
 
     def _load_servers(self) -> None:
@@ -268,12 +272,12 @@ class ProcessManager:
                 return server
         return None
 
-    async def start_server(self, server_id: str) -> ServerInfo:
+    async def start_server(self, server_id_or_slug: str) -> ServerInfo:
         """
         Start an MCP server process.
 
         Args:
-            server_id: Server identifier
+            server_id_or_slug: Server identifier (UUID) or slug
 
         Returns:
             Updated server information
@@ -281,9 +285,9 @@ class ProcessManager:
         Raises:
             MCPError: If server not found or already running
         """
-        server = self._servers.get(server_id)
+        server = self.get_server(server_id_or_slug)
         if not server:
-            raise MCPError(f"Server with ID '{server_id}' not found")
+            raise MCPError(f"Server with ID or slug '{server_id_or_slug}' not found")
 
         if server.status == ServerStatus.RUNNING:
             raise MCPError(f"Server '{server.config.name}' is already running")
@@ -315,7 +319,7 @@ class ProcessManager:
             )
 
             # Store process and update server info
-            self._processes[server_id] = process
+            self._processes[server.id] = process
             server.status = ServerStatus.RUNNING
             server.process_id = process.pid
             server.started_at = datetime.utcnow().isoformat()
@@ -335,7 +339,7 @@ class ProcessManager:
                 server.error_message = f"Process exited immediately with code {process.returncode}: {stderr_output}"
                 server.process_id = None
                 server.started_at = None
-                del self._processes[server_id]
+                del self._processes[server.id]
 
                 raise MCPError(
                     f"Failed to start server '{server.config.name}': Process exited with code {process.returncode}"
@@ -346,16 +350,16 @@ class ProcessManager:
         except Exception as e:
             server.status = ServerStatus.ERROR
             server.error_message = str(e)
-            if server_id in self._processes:
-                del self._processes[server_id]
+            if server.id in self._processes:
+                del self._processes[server.id]
             raise MCPError(f"Failed to start server '{server.config.name}': {e}")
 
-    async def stop_server(self, server_id: str) -> ServerInfo:
+    async def stop_server(self, server_id_or_slug: str) -> ServerInfo:
         """
         Stop an MCP server process.
 
         Args:
-            server_id: Server identifier
+            server_id_or_slug: Server identifier (UUID) or slug
 
         Returns:
             Updated server information
@@ -363,14 +367,14 @@ class ProcessManager:
         Raises:
             MCPError: If server not found or not running
         """
-        server = self._servers.get(server_id)
+        server = self.get_server(server_id_or_slug)
         if not server:
-            raise MCPError(f"Server with ID '{server_id}' not found")
+            raise MCPError(f"Server with ID or slug '{server_id_or_slug}' not found")
 
         if server.status not in [ServerStatus.RUNNING, ServerStatus.STARTING]:
             raise MCPError(f"Server '{server.config.name}' is not running")
 
-        process = self._processes.get(server_id)
+        process = self._processes.get(server.id)
         if process:
             server.status = ServerStatus.STOPPING
 
@@ -393,7 +397,7 @@ class ProcessManager:
                 raise MCPError(f"Error stopping server '{server.config.name}': {e}")
 
             finally:
-                del self._processes[server_id]
+                del self._processes[server.id]
                 server.status = ServerStatus.STOPPED
                 server.process_id = None
                 server.stopped_at = datetime.utcnow().isoformat()
