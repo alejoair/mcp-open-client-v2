@@ -4,16 +4,17 @@ FastAPI main application for MCP Open Client.
 
 import logging
 from contextlib import asynccontextmanager
-from typing import Dict, Any
+from typing import Any, Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .endpoints.servers import router, get_server_manager
-from .endpoints.providers import router as providers_router
-from .endpoints.chat import router as chat_router
 from ..exceptions import MCPError
+from .endpoints.chat import router as chat_router
+from .endpoints.providers import router as providers_router
+from .endpoints.registry import router as registry_router
+from .endpoints.servers import get_server_manager, router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,15 +25,15 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager.
-    
+
     Handles startup and shutdown events, including cleanup of MCP servers.
     """
     # Startup
     logger.info("MCP Open Client API starting up...")
-    
+
     # The application is ready to receive requests
     yield
-    
+
     # Shutdown - clean up all running MCP servers
     logger.info("MCP Open Client API shutting down...")
     server_manager = get_server_manager()
@@ -41,7 +42,7 @@ async def lifespan(app: FastAPI):
         logger.info("All MCP servers have been shut down")
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
-    
+
     logger.info("MCP Open Client API shutdown complete")
 
 
@@ -68,6 +69,7 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(providers_router)
 app.include_router(chat_router)
+app.include_router(registry_router)
 
 
 @app.exception_handler(MCPError)
@@ -75,11 +77,7 @@ async def mcp_error_handler(request, exc: MCPError):
     """Handle MCP-specific errors."""
     return JSONResponse(
         status_code=400,
-        content={
-            "success": False,
-            "error": str(exc),
-            "type": "MCPError"
-        }
+        content={"success": False, "error": str(exc), "type": "MCPError"},
     )
 
 
@@ -92,8 +90,8 @@ async def general_exception_handler(request, exc: Exception):
         content={
             "success": False,
             "error": "Internal server error",
-            "type": "InternalServerError"
-        }
+            "type": "InternalServerError",
+        },
     )
 
 
@@ -129,8 +127,13 @@ async def root():
             "openai_chat": "/v1/chat/completions",
             "stream_chat": "/v1/chat/stream",
             "list_models": "/v1/models",
-            "list_tools": "/v1/tools"
-        }
+            "list_tools": "/v1/tools",
+            "registry_search": "GET /registry/search",
+            "registry_list": "GET /registry/servers",
+            "registry_get_server": "GET /registry/servers/{name}",
+            "registry_categories": "GET /registry/categories",
+            "registry_health": "GET /registry/health",
+        },
     }
 
 
@@ -139,53 +142,54 @@ async def health_check():
     """Health check endpoint."""
     server_manager = get_server_manager()
     servers = server_manager.get_all_servers()
-    
+
     running_count = sum(1 for s in servers if s.status.value == "running")
     configured_count = sum(1 for s in servers if s.status.value == "configured")
     error_count = sum(1 for s in servers if s.status.value == "error")
-    
+
     # Get provider statistics
     from .endpoints.providers import provider_manager
+
     providers_response = provider_manager.get_all_providers()
     providers = providers_response.providers
-    
+
     enabled_count = sum(1 for p in providers if p.enabled)
     disabled_count = sum(1 for p in providers if not p.enabled)
-    
+
     return {
         "status": "healthy",
         "mcp_servers": {
             "total": len(servers),
             "running": running_count,
             "configured": configured_count,
-            "error": error_count
+            "error": error_count,
         },
         "ai_providers": {
             "total": len(providers),
             "enabled": enabled_count,
             "disabled": disabled_count,
-            "default": providers_response.default_provider
-        }
+            "default": providers_response.default_provider,
+        },
     }
 
 
 def start_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
     """
     Start the FastAPI server.
-    
+
     Args:
         host: Host to bind to
         port: Port to bind to
         reload: Enable auto-reload for development
     """
     import uvicorn
-    
+
     uvicorn.run(
         "mcp_open_client.api.main:app",
         host=host,
         port=port,
         reload=reload,
-        log_level="info"
+        log_level="info",
     )
 
 
