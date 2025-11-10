@@ -39,6 +39,7 @@ uvicorn mcp_open_client.api.main:app --reload --port 8001
 Configuration files are automatically created in `~/.mcp-open-client/` on first use:
 - `mcp_servers.json` - MCP server configurations
 - `ai_providers.json` - AI provider configurations
+- `conversations/` - Directory for conversation storage (JSON files)
 
 **Important**: Existing configuration files are never overwritten during upgrades. The system only creates default configs if they don't exist.
 
@@ -110,6 +111,13 @@ mcp-open-client providers set-default <provider-id>
 - Provider CRUD operations and model configuration (small/main)
 - Default provider management
 - Validation/testing of providers
+
+**ConversationManager** (`core/conversation_manager.py`)
+- Conversation persistence and CRUD operations
+- Message, context, and enabled tools management
+- Open editors tracking for IDE integration
+- Search functionality by title, description, and keywords
+- JSON file storage in `~/.mcp-open-client/conversations/`
 
 **ChatService** (`core/chat_service.py`)
 - OpenAI-compatible chat interface at `/v1/chat/completions`
@@ -204,6 +212,43 @@ The system auto-detects and uses appropriate FastMCP transports:
 
 **Chat:**
 - `POST /v1/chat/completions` - OpenAI-compatible chat (with automatic tool integration)
+
+**Conversations:**
+- `POST /conversations` - Create conversation
+- `GET /conversations` - List all conversations
+- `GET /conversations/{id}` - Get conversation by ID
+- `PUT /conversations/{id}` - Update conversation
+- `DELETE /conversations/{id}` - Delete conversation
+- `GET /conversations/search?q={query}` - Search conversations
+
+**Messages:**
+- `POST /conversations/{id}/messages` - Add message
+- `GET /conversations/{id}/messages` - Get all messages
+- `DELETE /conversations/{id}/messages/{msg_id}` - Delete message
+
+**Context:**
+- `POST /conversations/{id}/context` - Add context item
+- `GET /conversations/{id}/context` - Get all context
+- `PUT /conversations/{id}/context/{ctx_id}` - Update context
+- `DELETE /conversations/{id}/context/{ctx_id}` - Delete context
+
+**Tools (Conversation-specific):**
+- `GET /conversations/{id}/tools` - List enabled tools
+- `POST /conversations/{id}/tools` - Enable tool (validates server & tool exist)
+- `DELETE /conversations/{id}/tools` - Disable tool
+- `GET /conversations/{id}/tools/available` - List available tools from running servers
+
+**Open Editors:**
+- `GET /conversations/{id}/editors` - List open editors
+- `POST /conversations/{id}/editors` - Add open editor
+- `DELETE /conversations/{id}/editors` - Remove open editor
+
+**Registry (MCP Server Discovery):**
+- `GET /registry/search?q={query}` - Search MCP servers in registry
+- `GET /registry/servers` - List all registry servers
+- `GET /registry/servers/{name}` - Get specific server details
+- `GET /registry/categories` - Get servers grouped by namespace
+- `GET /registry/health` - Check registry health
 
 ## Common Development Patterns
 
