@@ -34,6 +34,16 @@
 <body>
     <div id="root"></div>
 
+    <!-- Import services -->
+    <script src="services/api.js"></script>
+    <script src="services/providersService.js"></script>
+
+    <!-- Import contexts -->
+    <script type="text/babel" src="contexts/ProvidersContext.js"></script>
+
+    <!-- Import hooks -->
+    <script type="text/babel" src="hooks/useProviders.js"></script>
+
     <!-- Import components with Babel -->
     <script type="text/babel" src="components/configuration.js"></script>
     <script type="text/babel" src="components/left_sidebar.js"></script>
@@ -43,10 +53,12 @@
     <script type="text/babel" src="components/main_layout.js"></script>
 
     <script type="text/babel">
-        const API_URL = 'http://127.0.0.1:8001';
-
         function App() {
-            return <MainLayout />;
+            return (
+                <ProvidersProvider>
+                    <MainLayout />
+                </ProvidersProvider>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));

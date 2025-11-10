@@ -1,53 +1,242 @@
-const { Form, Select, InputNumber, Button } = antd;
+const { Form, Select, InputNumber, Button, message, Input, Space, Switch, Typography } = antd;
+const { Text } = Typography;
 
 function Configuration() {
+    const { providers, defaultProvider, loading, updateModelConfig, updateProviderPartial, testProvider, setDefaultProvider } = useProviders();
+    const [form] = Form.useForm();
+    const [saving, setSaving] = React.useState(false);
+    const [testing, setTesting] = React.useState(false);
+    const [availableModels, setAvailableModels] = React.useState([]);
+    const [modelsFetched, setModelsFetched] = React.useState(false);
+    const [initialized, setInitialized] = React.useState(false);
+    const [selectedProviderId, setSelectedProviderId] = React.useState(null);
+
+    // Set initial values when default provider loads (only once)
+    React.useEffect(() => {
+        if (!initialized && defaultProvider && providers.length > 0) {
+            const provider = providers.find(p => p.id === defaultProvider);
+            if (provider) {
+                form.setFieldsValue({
+                    provider_id: provider.id,
+                    api_key: provider.config?.api_key || '',
+                    main_model: provider.config?.models?.main?.model_name || '',
+                    main_max_tokens: provider.config?.models?.main?.max_tokens || 4000,
+                    small_model: provider.config?.models?.small?.model_name || '',
+                    small_max_tokens: provider.config?.models?.small?.max_tokens || 2000,
+                });
+
+                // Set selected provider ID
+                setSelectedProviderId(provider.id);
+
+                // If models are already configured, mark as fetched
+                if (provider.config?.models?.main || provider.config?.models?.small) {
+                    setModelsFetched(true);
+                }
+
+                setInitialized(true);
+            }
+        }
+    }, [defaultProvider, providers, form, initialized]);
+
+    const handleTest = async () => {
+        const providerId = form.getFieldValue('provider_id');
+        const apiKey = form.getFieldValue('api_key');
+
+        if (!providerId) {
+            message.error('Please select a provider');
+            return;
+        }
+
+        if (!apiKey) {
+            message.error('Please enter an API key');
+            return;
+        }
+
+        setTesting(true);
+        try {
+            // First update the API key
+            await updateProviderPartial(providerId, { api_key: apiKey });
+
+            // Then test the provider
+            const result = await testProvider(providerId);
+
+            if (result.success && result.available_models) {
+                setAvailableModels(result.available_models);
+                setModelsFetched(true);
+                message.success(`Provider tested successfully! Found ${result.available_models.length} models`);
+            } else {
+                message.error(result.error_message || 'Failed to fetch models from provider');
+                setModelsFetched(false);
+            }
+        } catch (error) {
+            message.error('Failed to test provider: ' + error.message);
+            setModelsFetched(false);
+        } finally {
+            setTesting(false);
+        }
+    };
+
+    const handleSetDefault = async (providerId, checked) => {
+        if (checked) {
+            try {
+                await setDefaultProvider(providerId);
+                message.success('Default provider updated successfully');
+            } catch (error) {
+                message.error('Failed to set default provider: ' + error.message);
+            }
+        }
+    };
+
+    const handleSave = async (values) => {
+        if (!modelsFetched) {
+            message.error('Please test the provider first to fetch available models');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            // Update main model
+            await updateModelConfig(values.provider_id, 'main', {
+                model_name: values.main_model,
+                max_tokens: values.main_max_tokens,
+            });
+
+            // Update small model
+            await updateModelConfig(values.provider_id, 'small', {
+                model_name: values.small_model,
+                max_tokens: values.small_max_tokens,
+            });
+
+            message.success('Configuration saved successfully');
+        } catch (error) {
+            message.error('Failed to save configuration: ' + error.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <div style={{ padding: '16px' }}>
-            <Form layout="vertical">
-                <Form.Item label="Provider">
-                    <Select placeholder="Select provider">
-                        <Select.Option value="openai">OpenAI</Select.Option>
-                        <Select.Option value="anthropic">Anthropic</Select.Option>
+            <Form form={form} layout="vertical" onFinish={handleSave}>
+                <Form.Item
+                    label="Provider"
+                    name="provider_id"
+                    rules={[{ required: true, message: 'Please select a provider' }]}
+                >
+                    <Select
+                        placeholder="Select provider"
+                        loading={loading}
+                        onChange={(value) => setSelectedProviderId(value)}
+                    >
+                        {providers.map(p => (
+                            <Select.Option key={p.id} value={p.id}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>{p.config?.name || p.id}</span>
+                                    {defaultProvider === p.id && (
+                                        <Text type="success" style={{ fontSize: '12px' }}>Active</Text>
+                                    )}
+                                </div>
+                            </Select.Option>
+                        ))}
                     </Select>
                 </Form.Item>
 
-                <Form.Item label="Main Model">
-                    <Select placeholder="Select main model">
-                        <Select.Option value="gpt-4">GPT-4</Select.Option>
-                        <Select.Option value="gpt-3.5">GPT-3.5</Select.Option>
-                    </Select>
+                <Form.Item>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text>Set as active provider</Text>
+                        <Switch
+                            checked={selectedProviderId === defaultProvider}
+                            onChange={(checked) => handleSetDefault(selectedProviderId, checked)}
+                            disabled={!selectedProviderId}
+                        />
+                    </div>
                 </Form.Item>
 
-                <Form.Item label="Main Model Max Tokens">
-                    <InputNumber
-                        min={1}
-                        max={100000}
-                        style={{ width: '100%' }}
-                        placeholder="Enter max tokens"
-                    />
-                </Form.Item>
-
-                <Form.Item label="Small Model">
-                    <Select placeholder="Select small model">
-                        <Select.Option value="gpt-3.5">GPT-3.5</Select.Option>
-                        <Select.Option value="gpt-4">GPT-4</Select.Option>
-                    </Select>
-                </Form.Item>
-
-                <Form.Item label="Small Model Max Tokens">
-                    <InputNumber
-                        min={1}
-                        max={100000}
-                        style={{ width: '100%' }}
-                        placeholder="Enter max tokens"
+                <Form.Item
+                    label="API Key"
+                    name="api_key"
+                    rules={[{ required: true, message: 'Please enter API key' }]}
+                >
+                    <Input.Password
+                        placeholder="Enter API key"
+                        autoComplete="off"
                     />
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" block>
-                        Save
+                    <Button
+                        type="default"
+                        onClick={handleTest}
+                        block
+                        loading={testing}
+                    >
+                        Test & Fetch Models
                     </Button>
                 </Form.Item>
+
+                {modelsFetched && (
+                    <>
+                        <Form.Item
+                            label="Main Model"
+                            name="main_model"
+                            rules={[{ required: true, message: 'Please select main model' }]}
+                        >
+                            <Select placeholder="Select main model">
+                                {availableModels.map(model => (
+                                    <Select.Option key={model} value={model}>
+                                        {model}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Main Model Max Tokens"
+                            name="main_max_tokens"
+                            rules={[{ required: true, message: 'Please enter max tokens' }]}
+                        >
+                            <InputNumber
+                                min={1}
+                                max={100000}
+                                style={{ width: '100%' }}
+                                placeholder="Enter max tokens"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Small Model"
+                            name="small_model"
+                            rules={[{ required: true, message: 'Please select small model' }]}
+                        >
+                            <Select placeholder="Select small model">
+                                {availableModels.map(model => (
+                                    <Select.Option key={model} value={model}>
+                                        {model}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Small Model Max Tokens"
+                            name="small_max_tokens"
+                            rules={[{ required: true, message: 'Please enter max tokens' }]}
+                        >
+                            <InputNumber
+                                min={1}
+                                max={100000}
+                                style={{ width: '100%' }}
+                                placeholder="Enter max tokens"
+                            />
+                        </Form.Item>
+
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit" block loading={saving}>
+                                Save
+                            </Button>
+                        </Form.Item>
+                    </>
+                )}
             </Form>
         </div>
     );
