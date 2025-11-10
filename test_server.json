@@ -1,0 +1,7 @@
+{
+  "server": {
+    "name": "code-editor",
+    "transport": "stdio",
+    "command": "mcp-code-editor"
+  }
+}

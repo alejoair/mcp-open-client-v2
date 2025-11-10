@@ -1,0 +1,31 @@
+{
+  "providers": [
+    {
+      "id": "7f0a33c6-a391-4c2a-9814-f099974a91fe",
+      "config": {
+        "name": "OpenAI",
+        "base_url": "https://api.openai.com/v1/",
+        "api_key": "sk-test-key-12345",
+        "models": {
+          "small": {
+            "max_tokens": 4096,
+            "description": "Fast model",
+            "model_name": "gpt-3.5-turbo"
+          },
+          "main": {
+            "max_tokens": 8192,
+            "description": "Powerful model",
+            "model_name": "gpt-4"
+          }
+        },
+        "enabled": true
+      },
+      "created_at": "2025-11-10T03:22:32.732192",
+      "updated_at": null,
+      "enabled": true
+    }
+  ],
+  "version": "1.0",
+  "default_provider": "7f0a33c6-a391-4c2a-9814-f099974a91fe",
+  "updated_at": "2025-11-10T03:22:32.732192"
+}

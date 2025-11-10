@@ -1,0 +1,187 @@
+"""
+FastAPI main application for MCP Open Client.
+"""
+
+import logging
+from contextlib import asynccontextmanager
+from typing import Dict, Any
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from .endpoints.servers import router, get_server_manager
+from .endpoints.providers import router as providers_router
+from ..exceptions import MCPError
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Application lifespan manager.
+    
+    Handles startup and shutdown events, including cleanup of MCP servers.
+    """
+    # Startup
+    logger.info("MCP Open Client API starting up...")
+    
+    # The application is ready to receive requests
+    yield
+    
+    # Shutdown - clean up all running MCP servers
+    logger.info("MCP Open Client API shutting down...")
+    server_manager = get_server_manager()
+    try:
+        await server_manager.shutdown_all()
+        logger.info("All MCP servers have been shut down")
+    except Exception as e:
+        logger.error(f"Error during shutdown: {e}")
+    
+    logger.info("MCP Open Client API shutdown complete")
+
+
+# Create FastAPI application
+app = FastAPI(
+    title="MCP Open Client API",
+    description="API for managing Model Context Protocol (MCP) servers with STDIO transport",
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, configure specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(router)
+app.include_router(providers_router)
+
+
+@app.exception_handler(MCPError)
+async def mcp_error_handler(request, exc: MCPError):
+    """Handle MCP-specific errors."""
+    return JSONResponse(
+        status_code=400,
+        content={
+            "success": False,
+            "error": str(exc),
+            "type": "MCPError"
+        }
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc: Exception):
+    """Handle general exceptions."""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": "Internal server error",
+            "type": "InternalServerError"
+        }
+    )
+
+
+@app.get("/")
+async def root():
+    """Root endpoint with API information."""
+    return {
+        "name": "MCP Open Client API",
+        "version": "0.1.0",
+        "description": "API for managing Model Context Protocol (MCP) servers with STDIO transport",
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "endpoints": {
+            "mcp_servers": "/servers",
+            "create_server": "POST /servers",
+            "list_servers": "GET /servers",
+            "start_server": "POST /servers/{id}/start",
+            "stop_server": "POST /servers/{id}/stop",
+            "get_tools": "GET /servers/{id}/tools",
+            "remove_server": "DELETE /servers/{id}",
+            "ai_providers": "/providers",
+            "create_provider": "POST /providers",
+            "list_providers": "GET /providers",
+            "get_provider": "GET /providers/{id}",
+            "update_provider": "PUT /providers/{id}",
+            "delete_provider": "DELETE /providers/{id}",
+            "list_models": "GET /providers/{id}/models",
+            "add_model": "POST /providers/{id}/models",
+            "update_model": "PUT /providers/{id}/models/{model_name}",
+            "delete_model": "DELETE /providers/{id}/models/{model_name}",
+            "test_provider": "POST /providers/{id}/test",
+            "test_model": "POST /providers/{id}/models/{model_name}/test"
+        }
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    server_manager = get_server_manager()
+    servers = server_manager.get_all_servers()
+    
+    running_count = sum(1 for s in servers if s.status.value == "running")
+    configured_count = sum(1 for s in servers if s.status.value == "configured")
+    error_count = sum(1 for s in servers if s.status.value == "error")
+    
+    # Get provider statistics
+    from .endpoints.providers import provider_manager
+    providers_response = provider_manager.get_all_providers()
+    providers = providers_response.providers
+    
+    enabled_count = sum(1 for p in providers if p.enabled)
+    disabled_count = sum(1 for p in providers if not p.enabled)
+    
+    return {
+        "status": "healthy",
+        "mcp_servers": {
+            "total": len(servers),
+            "running": running_count,
+            "configured": configured_count,
+            "error": error_count
+        },
+        "ai_providers": {
+            "total": len(providers),
+            "enabled": enabled_count,
+            "disabled": disabled_count,
+            "default": providers_response.default_provider
+        }
+    }
+
+
+def start_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
+    """
+    Start the FastAPI server.
+    
+    Args:
+        host: Host to bind to
+        port: Port to bind to
+        reload: Enable auto-reload for development
+    """
+    import uvicorn
+    
+    uvicorn.run(
+        "mcp_open_client.api.main:app",
+        host=host,
+        port=port,
+        reload=reload,
+        log_level="info"
+    )
+
+
+if __name__ == "__main__":
+    start_server(reload=True)
