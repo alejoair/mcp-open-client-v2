@@ -26,7 +26,7 @@ pre-commit run --all-files
 ### Running the Application
 ```bash
 # Start API server (main entry point)
-mcp-client api serve --port 8001 --host 127.0.0.1
+mcp-open-api serve --port 8001 --host 127.0.0.1
 
 # Or directly with uvicorn
 uvicorn mcp_open_client.api.main:app --host 127.0.0.1 --port 8001
@@ -71,18 +71,18 @@ Pre-commit hooks automatically run before each commit to format and lint code:
 ### Common Operations
 ```bash
 # MCP Server management
-mcp-client api add --name <name> --command <cmd> --args <arg1> --args <arg2>
-mcp-client api list [--format json|table]
-mcp-client api start <server-id>
-mcp-client api stop <server-id>
-mcp-client api tools <server-id>
+mcp-open-client servers add --name <name> --command <cmd> --args <arg1> --args <arg2>
+mcp-open-client servers list [--format json|table]
+mcp-open-client servers start <server-id>
+mcp-open-client servers stop <server-id>
+mcp-open-client servers tools <server-id>
 
 # AI Provider management
-mcp-client api providers add --name <name> --type openai --base-url <url> --api-key <key>
-mcp-client api providers list
-mcp-client api providers models set <provider-id> small --name "gpt-3.5-turbo"
-mcp-client api providers test <provider-id>
-mcp-client api providers set-default <provider-id>
+mcp-open-client providers add --name <name> --type openai --base-url <url> --api-key <key>
+mcp-open-client providers list
+mcp-open-client providers models set <provider-id> small --name "gpt-3.5-turbo"
+mcp-open-client providers test <provider-id>
+mcp-open-client providers set-default <provider-id>
 ```
 
 ## Architecture Overview

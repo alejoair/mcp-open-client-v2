@@ -36,8 +36,8 @@ Contains AI provider configurations including:
 ### Automatic Initialization
 
 Configuration is automatically initialized when you:
-1. Start the API server (`mcp-api`)
-2. Use the CLI tool (`mcp-client`)
+1. Start the API server (`mcp-open-api`)
+2. Use the CLI tool (`mcp-open-client`)
 3. Import and use the `ProcessManager` or `AIProviderManager`
 
 ### Manual Initialization

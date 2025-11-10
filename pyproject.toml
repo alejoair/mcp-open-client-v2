@@ -55,8 +55,8 @@ Documentation = "https://mcp-open-client.readthedocs.io"
 "Bug Tracker" = "https://github.com/yourusername/mcp-open-client/issues"
 
 [project.scripts]
-mcp-client = "mcp_open_client.cli:cli"
-mcp-api = "mcp_open_client.api.cli:main"
+mcp-open-client = "mcp_open_client.cli:cli"
+mcp-open-api = "mcp_open_client.api.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
