@@ -172,7 +172,7 @@ async def list_provider_models(provider_id: str = Path(..., description="Provide
 async def set_provider_model(
     provider_id: str = Path(..., description="Provider ID"),
     model_type: str = Path(..., description="Model type: 'small' or 'main'"),
-    request: ModelSetRequest = None
+    request: ModelConfig = None
 ):
     """
     Set a small or main model for a provider.
@@ -181,7 +181,7 @@ async def set_provider_model(
         if model_type not in ['small', 'main']:
             raise HTTPException(status_code=400, detail=f"Model type must be 'small' or 'main'")
         
-        return await provider_manager.set_model(provider_id, model_type, request.model_config)
+        return await provider_manager.set_model(provider_id, model_type, request)
     except MCPError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException:
@@ -218,7 +218,45 @@ async def get_provider_model(
         return {
             "success": True,
             "model_type": model_type,
-            "model_config": model_config.dict(),
+            "model_config": model_config.model_dump(),
+            "provider_id": provider_id,
+            "message": f"{model_type.capitalize()} model found"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
+@router.get("/{provider_id}/models/{model_type}")
+async def get_provider_model(
+    provider_id: str = Path(..., description="Provider ID"),
+    model_type: str = Path(..., description="Model type: 'small' or 'main'")
+):
+    """
+    Get a specific model configuration (small or main).
+    """
+    try:
+        if model_type not in ['small', 'main']:
+            raise HTTPException(status_code=400, detail=f"Model type must be 'small' or 'main'")
+        
+        provider = provider_manager.get_provider(provider_id)
+        if not provider:
+            raise HTTPException(status_code=404, detail=f"Provider with ID '{provider_id}' not found")
+        
+        model_config = None
+        if model_type == 'small':
+            model_config = provider.config.models.small
+        else:  # model_type == 'main'
+            model_config = provider.config.models.main
+        
+        if not model_config:
+            raise HTTPException(status_code=404, detail=f"No {model_type} model configured for provider")
+        
+        return {
+            "success": True,
+            "model_type": model_type,
+            "model_config": model_config.model_dump(),
             "provider_id": provider_id,
             "message": f"{model_type.capitalize()} model found"
         }

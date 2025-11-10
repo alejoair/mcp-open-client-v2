@@ -4,7 +4,7 @@ Pydantic models for MCP server configuration and management.
 
 from enum import Enum
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ServerStatus(str, Enum):
@@ -26,9 +26,7 @@ class ServerConfig(BaseModel):
     env: Optional[Dict[str, str]] = Field(default=None, description="Environment variables")
     cwd: Optional[str] = Field(default=None, description="Working directory")
     
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ServerInfo(BaseModel):
@@ -42,18 +40,14 @@ class ServerInfo(BaseModel):
     error_message: Optional[str] = Field(None, description="Last error message if any")
     process_id: Optional[int] = Field(None, description="Process ID if running")
     
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ServerCreateRequest(BaseModel):
     """Request to create a new server."""
     server: ServerConfig = Field(..., description="Server configuration")
     
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ServerCreateResponse(BaseModel):
@@ -90,9 +84,7 @@ class ToolInfo(BaseModel):
     description: Optional[str] = Field(None, description="Tool description")
     input_schema: Optional[Dict[str, Any]] = Field(None, description="JSON schema for tool input")
     
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ServerToolsResponse(BaseModel):
@@ -110,6 +102,4 @@ class ErrorResponse(BaseModel):
     error: str = Field(..., description="Error message")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
     
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")

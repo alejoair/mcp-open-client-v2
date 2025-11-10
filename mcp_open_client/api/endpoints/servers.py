@@ -236,7 +236,7 @@ async def get_server(server_id: str):
         
         return {
             "success": True,
-            "server": server.dict()
+            "server": server.model_dump()
         }
         
     except HTTPException:

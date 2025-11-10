@@ -570,5 +570,609 @@ def serve(ctx, port, host):
         sys.exit(1)
 
 
+# AI Provider Management Commands
+@api.group()
+@click.pass_context
+def providers(ctx):
+    """
+    Manage AI providers through the REST API.
+    
+    These commands interact with the MCP Open Client API to configure and manage AI providers.
+    """
+    pass
+
+
+@providers.command()
+@click.option(
+    "--name", "-n",
+    required=True,
+    help="Name of the AI provider (e.g., OpenAI, Anthropic, Cerebras)",
+)
+@click.option(
+    "--type", "-t",
+    required=True,
+    type=click.Choice(["openai", "anthropic", "cerebras", "openrouter", "custom"]),
+    help="Type of the AI provider",
+)
+@click.option(
+    "--base-url", "-u",
+    required=True,
+    help="Base URL for the provider API",
+)
+@click.option(
+    "--api-key", "-k",
+    help="API key for the provider (can be set later)",
+)
+@click.pass_context
+def add(ctx, name, type, base_url, api_key):
+    """
+    Add a new AI provider configuration.
+    
+    Example:
+        mcp-open-client api providers add --name "OpenAI" --type openai \\
+            --base-url "https://api.openai.com/v1" --api-key "sk-..."
+    """
+    api_url = ctx.parent.obj["api_url"]
+    verbose = ctx.parent.parent.obj["verbose"]
+    
+    try:
+        import json
+        import requests
+        
+        # Build provider configuration
+        provider_config = {
+            "name": name,
+            "provider_type": type,
+            "base_url": base_url,
+            "api_key": api_key,
+            "enabled": True,
+            "models": {"small": None, "main": None}
+        }
+        
+        request_data = {"provider": provider_config}
+        
+        if verbose:
+            console.print(f"Adding provider to API at {api_url}/providers/")
+            console.print(f"Request data: {json.dumps(request_data, indent=2)}")
+        
+        response = requests.post(
+            f"{api_url}/providers/",
+            json=request_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 201:
+            data = response.json()
+            console.print(f"[green]+[/green] Provider '{name}' added successfully")
+            console.print(f"Provider ID: {data['provider']['id']}")
+            console.print(f"Type: {data['provider']['provider_type']}")
+        else:
+            console.print(f"[red]X Failed to add provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]X Error adding provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.option(
+    "--format", "-f",
+    type=click.Choice(["table", "json"]),
+    default="table",
+    help="Output format",
+)
+@click.pass_context
+def list(ctx, format):
+    """
+    List all configured AI providers.
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import json
+        import requests
+        from rich.table import Table
+        
+        response = requests.get(f"{api_url}/providers/")
+        
+        if response.status_code != 200:
+            console.print(f"[red]X Failed to list providers:[/red] {response.text}")
+            sys.exit(1)
+        
+        data = response.json()
+        providers = data["providers"]
+        
+        if format == "json":
+            console.print(json.dumps(data, indent=2))
+        else:
+            if not providers:
+                console.print("[yellow]No providers configured[/yellow]")
+                return
+            
+            table = Table(title="AI Providers")
+            table.add_column("ID", style="cyan", no_wrap=True)
+            table.add_column("Name", style="magenta")
+            table.add_column("Type", style="green")
+            table.add_column("Base URL", style="blue")
+            table.add_column("Enabled", style="yellow")
+            table.add_column("Default", style="red")
+            
+            for provider in providers:
+                enabled_status = "[green]+[/green]" if provider["enabled"] else "[red]-[/red]"
+                default_status = "[green]+[/green]" if data.get("default_provider") == provider["id"] else "[red]-[/red]"
+                
+                table.add_row(
+                    provider["id"][:8] + "...",
+                    provider["config"]["name"],
+                    provider["config"].get("provider_type", "unknown"),
+                    provider["config"]["base_url"][:40] + "..." if len(provider["config"]["base_url"]) > 40 else provider["config"]["base_url"],
+                    enabled_status,
+                    default_status,
+                )
+            
+            console.print(table)
+            console.print(f"\nTotal: {data['count']} providers")
+            
+    except Exception as e:
+        console.print(f"[red]X Error listing providers:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.pass_context
+def show(ctx, provider_id):
+    """
+    Show detailed information about a specific AI provider.
+    
+    PROVIDER_ID: ID of the provider to show
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import json
+        import requests
+        
+        response = requests.get(f"{api_url}/providers/{provider_id}")
+        
+        if response.status_code != 200:
+            console.print(f"[red]X Failed to get provider:[/red] {response.text}")
+            sys.exit(1)
+        
+        data = response.json()
+        provider = data["provider"]
+        config = provider["config"]
+        
+        console.print(f"[bold]Provider Details:[/bold]")
+        console.print(f"ID: {provider['id']}")
+        console.print(f"Name: {config['name']}")
+        console.print(f"Type: {config.get('provider_type', 'unknown')}")
+        console.print(f"Base URL: {config['base_url']}")
+        console.print(f"Enabled: {'[green]+[/green]' if provider['enabled'] else '[red]-[/red]'}")
+        
+        models = config.get("models", {})
+        if models.get("small"):
+            console.print(f"\n[bold]Small Model:[/bold]")
+            console.print(f"Name: {models['small'].get('model_name', 'N/A')}")
+            console.print(f"Max Tokens: {models['small'].get('max_tokens', 'N/A')}")
+        
+        if models.get("main"):
+            console.print(f"\n[bold]Main Model:[/bold]")
+            console.print(f"Name: {models['main'].get('model_name', 'N/A')}")
+            console.print(f"Max Tokens: {models['main'].get('max_tokens', 'N/A')}")
+            
+    except Exception as e:
+        console.print(f"[red]X Error getting provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.option(
+    "--name", "-n",
+    help="New name for the provider",
+)
+@click.option(
+    "--base-url", "-u",
+    help="New base URL for the provider",
+)
+@click.option(
+    "--api-key", "-k",
+    help="New API key for the provider",
+)
+@click.pass_context
+def update(ctx, provider_id, name, base_url, api_key):
+    """
+    Update an AI provider configuration.
+    
+    PROVIDER_ID: ID of the provider to update
+    """
+    api_url = ctx.parent.obj["api_url"]
+    verbose = ctx.parent.parent.obj["verbose"]
+    
+    try:
+        import json
+        import requests
+        
+        # Build update data with only provided fields
+        update_data = {}
+        if name:
+            update_data["name"] = name
+        if base_url:
+            update_data["base_url"] = base_url
+        if api_key:
+            update_data["api_key"] = api_key
+        
+        if not update_data:
+            console.print("[yellow]No updates provided[/yellow]")
+            return
+        
+        if verbose:
+            console.print(f"Updating provider {provider_id}...")
+            console.print(f"Update data: {json.dumps(update_data, indent=2)}")
+        
+        response = requests.patch(
+            f"{api_url}/providers/{provider_id}",
+            json=update_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            console.print(f"[green]+[/green] Provider updated successfully")
+            console.print(f"Name: {data['provider']['name']}")
+        else:
+            console.print(f"[red]✗ Failed to update provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error updating provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.pass_context
+def delete(ctx, provider_id):
+    """
+    Delete an AI provider configuration.
+    
+    PROVIDER_ID: ID of the provider to delete
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        # Confirm before deletion
+        if not click.confirm(f"Are you sure you want to delete provider '{provider_id}'?"):
+            console.print("[yellow]Operation cancelled[/yellow]")
+            return
+        
+        response = requests.delete(f"{api_url}/providers/{provider_id}")
+        
+        if response.status_code == 200:
+            console.print(f"[green]+[/green] Provider '{provider_id}' deleted successfully")
+        else:
+            console.print(f"[red]✗ Failed to delete provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error deleting provider:[/red] {e}")
+        sys.exit(1)
+
+
+# Model management commands
+@providers.group()
+def models():
+    """
+    Manage AI models for providers.
+    """
+    pass
+
+
+@models.command()
+@click.argument("provider_id")
+@click.argument("model_type", type=click.Choice(["small", "main"]))
+@click.option(
+    "--name", "-n",
+    required=True,
+    help="Model name (e.g., gpt-3.5-turbo, claude-3-haiku)",
+)
+@click.option(
+    "--max-tokens", "-m",
+    type=int,
+    help="Maximum tokens for this model",
+)
+@click.pass_context
+def set(ctx, provider_id, model_type, name, max_tokens):
+    """
+    Set a small or main model for a provider.
+    
+    PROVIDER_ID: ID of the provider
+    MODEL_TYPE: Type of model (small or main)
+    
+    Example:
+        mcp-open-client api providers models set <provider_id> small --name "gpt-3.5-turbo" --max-tokens 4096
+    """
+    api_url = ctx.parent.parent.obj["api_url"]
+    
+    try:
+        import json
+        import requests
+        
+        model_config = {
+            "name": name,
+            "max_tokens": max_tokens
+        }
+        
+        response = requests.post(
+            f"{api_url}/providers/{provider_id}/models/{model_type}",
+            json=model_config,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 201:
+            data = response.json()
+            console.print(f"[green]+[/green] {model_type.capitalize()} model set successfully")
+            console.print(f"Model: {data['model_config']['name']}")
+        else:
+            console.print(f"[red]✗ Failed to set model:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error setting model:[/red] {e}")
+        sys.exit(1)
+
+
+@models.command()
+@click.argument("provider_id")
+@click.pass_context
+def list(ctx, provider_id):
+    """
+    List models configured for a provider.
+    
+    PROVIDER_ID: ID of the provider
+    """
+    api_url = ctx.parent.parent.obj["api_url"]
+    
+    try:
+        import json
+        import requests
+        from rich.table import Table
+        
+        response = requests.get(f"{api_url}/providers/{provider_id}/models")
+        
+        if response.status_code != 200:
+            console.print(f"[red]✗ Failed to get models:[/red] {response.text}")
+            sys.exit(1)
+        
+        data = response.json()
+        models = data.get("models", {})
+        
+        if not models.get("small") and not models.get("main"):
+            console.print("[yellow]No models configured for this provider[/yellow]")
+            return
+        
+        table = Table(title=f"Models for Provider {provider_id[:8]}...")
+        table.add_column("Type", style="cyan")
+        table.add_column("Name", style="magenta")
+        table.add_column("Max Tokens", style="green")
+        
+        if models.get("small"):
+            table.add_row(
+                "small",
+                models["small"]["model_name"],
+                str(models["small"].get("max_tokens", "N/A"))
+            )
+        
+        if models.get("main"):
+            table.add_row(
+                "main",
+                models["main"]["model_name"],
+                str(models["main"].get("max_tokens", "N/A"))
+            )
+        
+        console.print(table)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error listing models:[/red] {e}")
+        sys.exit(1)
+
+
+@models.command()
+@click.argument("provider_id")
+@click.argument("model_type", type=click.Choice(["small", "main"]))
+@click.pass_context
+def remove(ctx, provider_id, model_type):
+    """
+    Remove a model configuration from a provider.
+    
+    PROVIDER_ID: ID of the provider
+    MODEL_TYPE: Type of model to remove (small or main)
+    """
+    api_url = ctx.parent.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        if not click.confirm(f"Are you sure you want to remove the {model_type} model from provider '{provider_id}'?"):
+            console.print("[yellow]Operation cancelled[/yellow]")
+            return
+        
+        response = requests.delete(f"{api_url}/providers/{provider_id}/models/{model_type}")
+        
+        if response.status_code == 200:
+            console.print(f"[green]+[/green] {model_type.capitalize()} model removed successfully")
+        else:
+            console.print(f"[red]✗ Failed to remove model:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error removing model:[/red] {e}")
+        sys.exit(1)
+
+
+# Provider control commands
+@providers.command()
+@click.argument("provider_id")
+@click.pass_context
+def enable(ctx, provider_id):
+    """
+    Enable an AI provider.
+    
+    PROVIDER_ID: ID of the provider to enable
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        response = requests.post(f"{api_url}/providers/{provider_id}/enable")
+        
+        if response.status_code == 200:
+            console.print(f"[green]+[/green] Provider '{provider_id}' enabled successfully")
+        else:
+            console.print(f"[red]✗ Failed to enable provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error enabling provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.pass_context
+def disable(ctx, provider_id):
+    """
+    Disable an AI provider.
+    
+    PROVIDER_ID: ID of the provider to disable
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        response = requests.post(f"{api_url}/providers/{provider_id}/disable")
+        
+        if response.status_code == 200:
+            console.print(f"[green]+[/green] Provider '{provider_id}' disabled successfully")
+        else:
+            console.print(f"[red]✗ Failed to disable provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error disabling provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.pass_context
+def set_default(ctx, provider_id):
+    """
+    Set an AI provider as the default.
+    
+    PROVIDER_ID: ID of the provider to set as default
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        response = requests.post(f"{api_url}/providers/{provider_id}/set-default")
+        
+        if response.status_code == 200:
+            console.print(f"[green]+[/green] Provider '{provider_id}' set as default successfully")
+        else:
+            console.print(f"[red]✗ Failed to set default provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error setting default provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.pass_context
+def default(ctx):
+    """
+    Show the current default AI provider.
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        response = requests.get(f"{api_url}/providers/default/current")
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("default_provider"):
+                provider = data["default_provider"]
+                console.print(f"[bold]Default Provider:[/bold]")
+                console.print(f"ID: {provider['id']}")
+                console.print(f"Name: {provider['name']}")
+                console.print(f"Enabled: {'[green]+[/green]' if provider['enabled'] else '[red]-[/red]'}")
+            else:
+                console.print("[yellow]No default provider set[/yellow]")
+        else:
+            console.print(f"[red]X Failed to get default provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]X Error getting default provider:[/red] {e}")
+        sys.exit(1)
+
+
+@providers.command()
+@click.argument("provider_id")
+@click.option(
+    "--model-name", "-m",
+    help="Specific model to test (optional)",
+)
+@click.pass_context
+def test(ctx, provider_id, model_name):
+    """
+    Test an AI provider connection.
+    
+    PROVIDER_ID: ID of the provider to test
+    """
+    api_url = ctx.parent.obj["api_url"]
+    
+    try:
+        import requests
+        
+        test_data = {"model_name": model_name} if model_name else {}
+        
+        response = requests.post(
+            f"{api_url}/providers/{provider_id}/test",
+            json=test_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data["success"]:
+                console.print(f"[green]+[/green] Provider test successful")
+                console.print(f"Response time: {data.get('response_time_ms', 'N/A')}ms")
+                if data.get("available_models"):
+                    console.print(f"Available models: {', '.join(data['available_models'][:5])}")
+                    if len(data['available_models']) > 5:
+                        console.print(f"and {len(data['available_models']) - 5} more...")
+            else:
+                console.print(f"[red]✗ Provider test failed:[/red] {data.get('error_message', 'Unknown error')}")
+        else:
+            console.print(f"[red]✗ Failed to test provider:[/red] {response.text}")
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]✗ Error testing provider:[/red] {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     cli()

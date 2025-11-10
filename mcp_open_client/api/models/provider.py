@@ -4,7 +4,7 @@ Pydantic models for AI provider management.
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class ModelConfig(BaseModel):
@@ -14,8 +14,7 @@ class ModelConfig(BaseModel):
     max_tokens: Optional[int] = Field(None, description="Maximum tokens for the model")
     description: Optional[str] = Field(None, description="Model description")
     
-    class Config:
-        extra = "allow"  # Allow additional fields for future extensions
+    model_config = ConfigDict(extra="allow")  # Allow additional fields for future extensions
 
 
 class ProviderModels(BaseModel):
@@ -24,8 +23,7 @@ class ProviderModels(BaseModel):
     small: Optional[ModelConfig] = Field(None, description="Small/fast model configuration")
     main: Optional[ModelConfig] = Field(None, description="Main/powerful model configuration")
     
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 class ProviderConfig(BaseModel):
@@ -37,15 +35,15 @@ class ProviderConfig(BaseModel):
     models: ProviderModels = Field(default_factory=ProviderModels, description="Small and main model configurations")
     enabled: bool = Field(True, description="Whether the provider is enabled")
     
-    @validator('base_url')
+    @field_validator('base_url')
+    @classmethod
     def validate_base_url(cls, v):
         """Ensure base_url ends with trailing slash for consistency."""
         if not v.endswith('/'):
             v += '/'
         return v
     
-    class Config:
-        extra = "allow"  # Allow additional provider-specific fields
+    model_config = ConfigDict(extra="allow")  # Allow additional provider-specific fields
 
 
 class ProviderInfo(BaseModel):
@@ -81,7 +79,8 @@ class ProviderUpdateRequest(BaseModel):
     models: Optional[ProviderModels] = Field(None, description="Updated model configurations")
     enabled: Optional[bool] = Field(None, description="Updated enabled status")
     
-    @validator('base_url')
+    @field_validator('base_url')
+    @classmethod
     def validate_base_url(cls, v):
         if v is not None and not v.endswith('/'):
             v += '/'
