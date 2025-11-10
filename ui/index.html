@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Open Client</title>
+
+    <!-- React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Ant Design CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/antd@5.28.0/dist/reset.css">
+
+    <!-- Dayjs (required by Ant Design) -->
+    <script src="https://unpkg.com/dayjs@1.11.7/dayjs.min.js"></script>
+
+    <!-- Ant Design JS -->
+    <script src="https://unpkg.com/antd@5.28.0/dist/antd.min.js"></script>
+
+    <!-- Tailwind for Canvas custom styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Ace Editor for code editing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/mode-python.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/theme-monokai.js"></script>
+
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Import components with Babel -->
+    <script type="text/babel" src="components/configuration.js"></script>
+    <script type="text/babel" src="components/left_sidebar.js"></script>
+    <script type="text/babel" src="components/right_sidebar.js"></script>
+    <script type="text/babel" src="components/header.js"></script>
+    <script type="text/babel" src="components/main_content.js"></script>
+    <script type="text/babel" src="components/main_layout.js"></script>
+
+    <script type="text/babel">
+        const API_URL = 'http://127.0.0.1:8001';
+
+        function App() {
+            return <MainLayout />;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

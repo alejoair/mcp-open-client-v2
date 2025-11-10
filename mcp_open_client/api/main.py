@@ -4,11 +4,13 @@ FastAPI main application for MCP Open Client.
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from ..exceptions import MCPError
 from .endpoints.chat import router as chat_router
@@ -72,6 +74,11 @@ app.include_router(providers_router)
 app.include_router(chat_router)
 app.include_router(registry_router)
 app.include_router(conversations_router)
+
+# Mount static files for UI
+ui_path = Path(__file__).parent.parent.parent / "ui"
+if ui_path.exists():
+    app.mount("/ui", StaticFiles(directory=str(ui_path), html=True), name="ui")
 
 
 @app.exception_handler(MCPError)
