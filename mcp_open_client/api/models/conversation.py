@@ -1,0 +1,213 @@
+"""
+Pydantic models for conversation management.
+"""
+
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class EnabledTool(BaseModel):
+    """Tool enabled for a conversation."""
+
+    server_id: str = Field(..., description="Server UUID or slug")
+    tool_name: str = Field(..., description="Name of the tool")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ContextItem(BaseModel):
+    """Context item for a conversation."""
+
+    descriptive_name: str = Field(..., description="Descriptive name for this context")
+    related_keywords: List[str] = Field(
+        default_factory=list, description="Keywords related to this context"
+    )
+    related_files: List[str] = Field(
+        default_factory=list, description="Files related to this context"
+    )
+    content: str = Field(..., description="Context content")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class Message(BaseModel):
+    """Message in a conversation."""
+
+    id: str = Field(..., description="Message ID")
+    role: str = Field(..., description="Message role (user, assistant, system)")
+    content: str = Field(..., description="Message content")
+    timestamp: str = Field(..., description="Message timestamp")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class Conversation(BaseModel):
+    """Complete conversation model."""
+
+    id: str = Field(..., description="Conversation ID")
+    title: str = Field(..., description="Conversation title")
+    description: str = Field(..., description="Conversation description")
+    created_at: str = Field(..., description="Creation timestamp")
+    updated_at: str = Field(..., description="Last update timestamp")
+    system_prompt: str = Field(
+        default="You are a helpful AI assistant.", description="System prompt"
+    )
+    enabled_tools: List[EnabledTool] = Field(
+        default_factory=list, description="Tools enabled for this conversation"
+    )
+    context: Dict[str, ContextItem] = Field(
+        default_factory=dict, description="Context items indexed by ID"
+    )
+    messages: List[Message] = Field(
+        default_factory=list, description="Conversation messages"
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# Request/Response models
+
+
+class ConversationCreateRequest(BaseModel):
+    """Request to create a new conversation."""
+
+    title: str = Field(..., description="Conversation title")
+    description: str = Field(default="", description="Conversation description")
+    system_prompt: str = Field(
+        default="You are a helpful AI assistant.", description="System prompt"
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ConversationUpdateRequest(BaseModel):
+    """Request to update a conversation."""
+
+    title: Optional[str] = Field(None, description="New title")
+    description: Optional[str] = Field(None, description="New description")
+    system_prompt: Optional[str] = Field(None, description="New system prompt")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ConversationResponse(BaseModel):
+    """Response with conversation data."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    conversation: Conversation = Field(..., description="Conversation data")
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ConversationListResponse(BaseModel):
+    """Response listing conversations."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    conversations: List[Conversation] = Field(..., description="List of conversations")
+    count: int = Field(..., description="Number of conversations")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class MessageCreateRequest(BaseModel):
+    """Request to add a message to conversation."""
+
+    role: str = Field(..., description="Message role (user, assistant, system)")
+    content: str = Field(..., description="Message content")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class MessageResponse(BaseModel):
+    """Response after adding a message."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    message: Message = Field(..., description="Created message")
+    result_message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ContextCreateRequest(BaseModel):
+    """Request to add context to conversation."""
+
+    descriptive_name: str = Field(..., description="Descriptive name for this context")
+    related_keywords: List[str] = Field(
+        default_factory=list, description="Keywords related to this context"
+    )
+    related_files: List[str] = Field(
+        default_factory=list, description="Files related to this context"
+    )
+    content: str = Field(..., description="Context content")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ContextUpdateRequest(BaseModel):
+    """Request to update context."""
+
+    descriptive_name: Optional[str] = Field(None, description="New descriptive name")
+    related_keywords: Optional[List[str]] = Field(None, description="New keywords")
+    related_files: Optional[List[str]] = Field(None, description="New related files")
+    content: Optional[str] = Field(None, description="New content")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ContextResponse(BaseModel):
+    """Response with context data."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    context_id: str = Field(..., description="Context item ID")
+    context: ContextItem = Field(..., description="Context data")
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class EnabledToolCreateRequest(BaseModel):
+    """Request to enable a tool for conversation."""
+
+    server_id: str = Field(..., description="Server UUID or slug")
+    tool_name: str = Field(..., description="Name of the tool to enable")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class EnabledToolResponse(BaseModel):
+    """Response after enabling/disabling a tool."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    enabled_tools: List[EnabledTool] = Field(
+        ..., description="Updated list of enabled tools"
+    )
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class AvailableToolsResponse(BaseModel):
+    """Response with available tools from running servers."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    available_tools: List[Dict[str, Any]] = Field(
+        ..., description="List of available tools with server info"
+    )
+    count: int = Field(..., description="Number of available tools")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ConversationSearchResponse(BaseModel):
+    """Response from conversation search."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    conversations: List[Conversation] = Field(
+        ..., description="Conversations matching search"
+    )
+    count: int = Field(..., description="Number of results")
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")

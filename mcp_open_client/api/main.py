@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from ..exceptions import MCPError
 from .endpoints.chat import router as chat_router
+from .endpoints.conversations import router as conversations_router
 from .endpoints.providers import router as providers_router
 from .endpoints.registry import router as registry_router
 from .endpoints.servers import get_server_manager, router
@@ -70,6 +71,7 @@ app.include_router(router)
 app.include_router(providers_router)
 app.include_router(chat_router)
 app.include_router(registry_router)
+app.include_router(conversations_router)
 
 
 @app.exception_handler(MCPError)
@@ -133,6 +135,20 @@ async def root():
             "registry_get_server": "GET /registry/servers/{name}",
             "registry_categories": "GET /registry/categories",
             "registry_health": "GET /registry/health",
+            "conversations": "/conversations",
+            "create_conversation": "POST /conversations",
+            "list_conversations": "GET /conversations",
+            "get_conversation": "GET /conversations/{id}",
+            "update_conversation": "PUT /conversations/{id}",
+            "delete_conversation": "DELETE /conversations/{id}",
+            "add_message": "POST /conversations/{id}/messages",
+            "get_messages": "GET /conversations/{id}/messages",
+            "add_context": "POST /conversations/{id}/context",
+            "get_context": "GET /conversations/{id}/context",
+            "enable_tool": "POST /conversations/{id}/tools",
+            "get_enabled_tools": "GET /conversations/{id}/tools",
+            "get_available_tools": "GET /conversations/{id}/tools/available",
+            "search_conversations": "GET /conversations/search",
         },
     }
 
