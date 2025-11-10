@@ -30,14 +30,19 @@ def ensure_config_directory() -> Path:
 
     This function:
     1. Creates ~/.mcp-open-client/ if it doesn't exist
-    2. Copies default configuration files ONLY if they don't exist
-    3. Preserves existing user configurations
+    2. Creates conversations subdirectory for conversation files
+    3. Copies default configuration files ONLY if they don't exist
+    4. Preserves existing user configurations
 
     Returns:
         Path to the configuration directory
     """
     # Create config directory if it doesn't exist
     DEFAULT_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Create conversations subdirectory
+    conversations_dir = DEFAULT_CONFIG_DIR / "conversations"
+    conversations_dir.mkdir(exist_ok=True)
 
     # Get the package's default config files directory
     package_dir = Path(__file__).parent

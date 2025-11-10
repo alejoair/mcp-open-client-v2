@@ -14,6 +14,7 @@ from ..api.models.conversation import (
     Conversation,
     EnabledTool,
     Message,
+    OpenEditor,
 )
 from ..config import get_config_path
 
@@ -24,7 +25,7 @@ class ConversationManager:
     def __init__(self):
         """Initialize the conversation manager."""
         # Get conversations directory from config
-        config_dir = Path(get_config_path("")).parent
+        config_dir = get_config_path("")  # This returns ~/.mcp-open-client
         self.conversations_dir = config_dir / "conversations"
         self.conversations_dir.mkdir(exist_ok=True)
 
@@ -72,6 +73,7 @@ class ConversationManager:
             updated_at=now,
             system_prompt=system_prompt,
             enabled_tools=[],
+            open_editors=[],
             context={},
             messages=[],
         )
@@ -304,6 +306,63 @@ class ConversationManager:
         if not conversation:
             return None
         return conversation.enabled_tools
+
+    # Open editor operations
+
+    def add_open_editor(
+        self,
+        conversation_id: str,
+        file_path: str,
+        language: Optional[str] = None,
+        line_number: Optional[int] = None,
+    ) -> Optional[List[OpenEditor]]:
+        """Add an open editor to a conversation."""
+        conversation = self._load_conversation(conversation_id)
+        if not conversation:
+            return None
+
+        # Check if editor already added
+        for editor in conversation.open_editors:
+            if editor.file_path == file_path:
+                return conversation.open_editors  # Already added
+
+        open_editor = OpenEditor(
+            file_path=file_path,
+            language=language,
+            line_number=line_number,
+        )
+        conversation.open_editors.append(open_editor)
+        conversation.updated_at = datetime.utcnow().isoformat() + "Z"
+
+        self._save_conversation(conversation)
+        return conversation.open_editors
+
+    def remove_open_editor(
+        self, conversation_id: str, file_path: str
+    ) -> Optional[List[OpenEditor]]:
+        """Remove an open editor from a conversation."""
+        conversation = self._load_conversation(conversation_id)
+        if not conversation:
+            return None
+
+        original_count = len(conversation.open_editors)
+        conversation.open_editors = [
+            e for e in conversation.open_editors if e.file_path != file_path
+        ]
+
+        if len(conversation.open_editors) == original_count:
+            return conversation.open_editors  # Editor not found
+
+        conversation.updated_at = datetime.utcnow().isoformat() + "Z"
+        self._save_conversation(conversation)
+        return conversation.open_editors
+
+    def get_open_editors(self, conversation_id: str) -> Optional[List[OpenEditor]]:
+        """Get all open editors for a conversation."""
+        conversation = self._load_conversation(conversation_id)
+        if not conversation:
+            return None
+        return conversation.open_editors
 
     # Search operations
 

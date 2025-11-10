@@ -7,6 +7,18 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class OpenEditor(BaseModel):
+    """Open editor for a conversation."""
+
+    file_path: str = Field(..., description="Path to the open file")
+    language: Optional[str] = Field(
+        None, description="Programming language of the file"
+    )
+    line_number: Optional[int] = Field(None, description="Current line number")
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class EnabledTool(BaseModel):
     """Tool enabled for a conversation."""
 
@@ -55,6 +67,9 @@ class Conversation(BaseModel):
     )
     enabled_tools: List[EnabledTool] = Field(
         default_factory=list, description="Tools enabled for this conversation"
+    )
+    open_editors: List[OpenEditor] = Field(
+        default_factory=list, description="Open editors in this conversation"
     )
     context: Dict[str, ContextItem] = Field(
         default_factory=dict, description="Context items indexed by ID"
@@ -208,6 +223,30 @@ class ConversationSearchResponse(BaseModel):
         ..., description="Conversations matching search"
     )
     count: int = Field(..., description="Number of results")
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class OpenEditorCreateRequest(BaseModel):
+    """Request to add an open editor to conversation."""
+
+    file_path: str = Field(..., description="Path to the open file")
+    language: Optional[str] = Field(
+        None, description="Programming language of the file"
+    )
+    line_number: Optional[int] = Field(None, description="Current line number")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class OpenEditorResponse(BaseModel):
+    """Response after adding/removing an open editor."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    open_editors: List[OpenEditor] = Field(
+        ..., description="Updated list of open editors"
+    )
     message: str = Field(..., description="Operation result message")
 
     model_config = ConfigDict(extra="forbid")
