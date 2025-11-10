@@ -13,8 +13,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Install in editable mode
 pip install -e .
 
-# Install with dev dependencies
+# Install with dev dependencies (includes pre-commit)
 pip install -e ".[dev]"
+
+# Install pre-commit hooks (recommended)
+pre-commit install
+
+# Run pre-commit on all files
+pre-commit run --all-files
 ```
 
 ### Running the Application
@@ -31,7 +37,7 @@ uvicorn mcp_open_client.api.main:app --reload --port 8001
 
 ### Code Quality Tools
 ```bash
-# Format code (run before committing)
+# Format code (automatically runs on commit via pre-commit hooks)
 black mcp_open_client/
 isort mcp_open_client/
 
@@ -47,6 +53,13 @@ pytest
 # Run single test
 pytest tests/test_client.py::test_name
 ```
+
+### Pre-commit Hooks
+Pre-commit hooks automatically run before each commit to format and lint code:
+- **black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Linting (warnings only)
+- **File checks**: trailing whitespace, EOF, YAML/JSON/TOML validation
 
 ### Common Operations
 ```bash
