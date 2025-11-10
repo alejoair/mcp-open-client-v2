@@ -27,6 +27,10 @@ class MCPServerManager:
 
     def _create_fastmcp_client(self, config):
         """Create appropriate FastMCP client based on command configuration."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         from fastmcp.client import (
             NodeStdioTransport,
             NpxStdioTransport,
@@ -34,9 +38,13 @@ class MCPServerManager:
         )
 
         command = config.command.lower()
+        logger.info(f"Creating FastMCP client for command: {config.command}")
+        logger.info(f"Command lower: {command}")
+        logger.info(f"Args: {config.args}")
 
         # Handle npm/npx packages
-        if command == "npx" or command == "npm.cmd":
+        if command == "npx" or command == "npm.cmd" or "npx.cmd" in command:
+            logger.info("Detected npx/npm command, using NpxStdioTransport")
             # Extract package name from args
             if config.args and len(config.args) >= 2:
                 if config.args[0] in ["-y", "-x"]:
@@ -46,13 +54,17 @@ class MCPServerManager:
                     package_name = config.args[0]
                     remaining_args = config.args[1:] if len(config.args) > 1 else []
 
+                logger.info(f"Package: {package_name}, Args: {remaining_args}")
                 transport = NpxStdioTransport(
                     package=package_name, args=remaining_args, env_vars=config.env
                 )
                 return Client(transport)
+            else:
+                logger.error("Not enough arguments for npx command")
 
         # Handle node commands
         elif command == "node" or command.endswith("node.exe"):
+            logger.info("Detected node command, using NodeStdioTransport")
             if config.args:
                 script_path = config.args[0]
                 remaining_args = config.args[1:] if len(config.args) > 1 else []
@@ -67,6 +79,7 @@ class MCPServerManager:
             or command == "python3"
             or command.endswith("python.exe")
         ):
+            logger.info("Detected python command, using PythonStdioTransport")
             if config.args:
                 module_path = config.args[0]
                 remaining_args = config.args[1:] if len(config.args) > 1 else []
@@ -76,6 +89,7 @@ class MCPServerManager:
                 return Client(transport)
 
         # Fallback to generic stdio transport (command string)
+        logger.info("Using fallback generic stdio transport")
         return Client(f"{config.command} {' '.join(config.args)}")
 
     async def add_server(
@@ -146,6 +160,11 @@ class MCPServerManager:
         Returns:
             Updated server information
         """
+        import logging
+        import traceback
+
+        logger = logging.getLogger(__name__)
+
         if Client is None:
             raise MCPError(
                 "FastMCP is not installed. Install with: pip install fastmcp"
@@ -155,14 +174,26 @@ class MCPServerManager:
         server = await self._process_manager.start_server(server_id)
 
         try:
+            logger.info(
+                f"Process started successfully for server: {server.config.name}"
+            )
+
             # Create FastMCP client for the running process
             # For STDIO processes, we need to create the client using the command
             process = self._process_manager.get_process(server.id)
             if not process:
                 raise MCPError(f"Process not found for server ID '{server.id}'")
 
+            logger.info(f"Creating FastMCP client for server: {server.config.name}")
+            logger.info(f"Config command: {server.config.command}")
+            logger.info(f"Config args: {server.config.args}")
+
             # Create FastMCP client using appropriate transport
             client = self._create_fastmcp_client(server.config)
+
+            logger.info(
+                f"FastMCP client created successfully for server: {server.config.name}"
+            )
 
             # Store the client using the actual UUID
             self._clients[server.id] = client
@@ -170,9 +201,22 @@ class MCPServerManager:
             return server
 
         except Exception as e:
+            # Log full traceback for debugging
+            error_details = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
+            logger.error(
+                f"Failed to start server '{server.config.name}': {error_details}"
+            )
+
             # If client creation fails, stop the process using UUID
-            await self._process_manager.stop_server(server.id)
-            raise MCPError(f"Failed to create FastMCP client: {e}")
+            try:
+                await self._process_manager.stop_server(server.id)
+            except Exception as stop_error:
+                logger.error(f"Error stopping server during cleanup: {stop_error}")
+
+            # Re-raise with full error details
+            raise MCPError(
+                f"Failed to create FastMCP client for '{server.config.name}': {error_details}"
+            )
 
     async def stop_server(self, server_id: str) -> ServerInfo:
         """
@@ -354,7 +398,7 @@ class MCPServerManager:
         """
         return self._clients.get(server_id)
 
-    async def check_server_health(self, server_id: str) -> bool:
+    def check_server_health(self, server_id: str) -> bool:
         """
         Check if a server process is still healthy.
 
@@ -364,4 +408,4 @@ class MCPServerManager:
         Returns:
             True if server is healthy, False otherwise
         """
-        return await self._process_manager.check_server_health(server_id)
+        return self._process_manager.check_server_health(server_id)

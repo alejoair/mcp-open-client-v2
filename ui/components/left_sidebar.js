@@ -8,6 +8,11 @@ function LeftSidebar({ collapsed, onCollapse }) {
             key: '1',
             label: 'Configuration',
             children: <Configuration />
+        },
+        {
+            key: '2',
+            label: 'MCP Servers',
+            children: <MCPServers />
         }
     ];
 

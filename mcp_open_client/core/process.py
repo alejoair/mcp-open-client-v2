@@ -4,9 +4,12 @@ Process management for MCP servers using STDIO transport.
 
 import asyncio
 import json
+import logging
 import os
 import re
 import signal
+import subprocess
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +18,9 @@ from typing import Any, Dict, List, Optional
 from ..api.models.server import ServerConfig, ServerInfo, ServerStatus
 from ..config import ensure_config_directory, get_config_path
 from ..exceptions import MCPError
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 def _slugify(text: str) -> str:
@@ -50,7 +56,7 @@ class ProcessManager:
         Args:
             config_file: Path to JSON configuration file (relative to user config dir)
         """
-        self._processes: Dict[str, asyncio.subprocess.Process] = {}
+        self._processes: Dict[str, subprocess.Popen] = {}
         self._servers: Dict[str, ServerInfo] = {}
         self._slug_to_id: Dict[str, str] = {}  # Slug to UUID mapping
 
@@ -285,9 +291,16 @@ class ProcessManager:
         Raises:
             MCPError: If server not found or already running
         """
+        import traceback
+
+        logger.info(f"Starting server: {server_id_or_slug}")
+
         server = self.get_server(server_id_or_slug)
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id_or_slug}' not found")
+
+        logger.info(f"Found server: {server.config.name}")
+        logger.info(f"Server status: {server.status}")
 
         if server.status == ServerStatus.RUNNING:
             raise MCPError(f"Server '{server.config.name}' is already running")
@@ -307,16 +320,21 @@ class ProcessManager:
 
             # Prepare command
             cmd = [server.config.command] + server.config.args
+            logger.info(f"Command to execute: {' '.join(cmd)}")
 
-            # Start the process
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+            # Start the process - use subprocess.Popen for better Windows compatibility
+            import subprocess
+
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 env=env,
                 cwd=server.config.cwd,
             )
+
+            logger.info(f"Process started with PID: {process.pid}")
 
             # Store process and update server info
             self._processes[server.id] = process
@@ -324,16 +342,19 @@ class ProcessManager:
             server.process_id = process.pid
             server.started_at = datetime.utcnow().isoformat()
 
-            # Give the process a moment to start and check if it's still alive
-            await asyncio.sleep(0.1)
-            if process.returncode is not None:
+            # Check if process is still running immediately
+            if process.poll() is not None:
                 # Process exited immediately
                 stderr_output = ""
                 try:
-                    stderr_output = await process.stderr.read()
-                    stderr_output = stderr_output.decode("utf-8")
+                    stderr_output = process.stderr.read().decode("utf-8")
                 except Exception:
                     pass
+
+                logger.error(
+                    f"Process exited immediately with code {process.returncode}"
+                )
+                logger.error(f"Stderr: {stderr_output}")
 
                 server.status = ServerStatus.ERROR
                 server.error_message = f"Process exited immediately with code {process.returncode}: {stderr_output}"
@@ -345,14 +366,22 @@ class ProcessManager:
                     f"Failed to start server '{server.config.name}': Process exited with code {process.returncode}"
                 )
 
+            logger.info(f"Server '{server.config.name}' started successfully")
             return server
 
         except Exception as e:
+            error_details = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
+            logger.error(
+                f"Error starting server '{server.config.name}': {error_details}"
+            )
+
             server.status = ServerStatus.ERROR
             server.error_message = str(e)
             if server.id in self._processes:
                 del self._processes[server.id]
-            raise MCPError(f"Failed to start server '{server.config.name}': {e}")
+            raise MCPError(
+                f"Failed to start server '{server.config.name}': {error_details}"
+            )
 
     async def stop_server(self, server_id_or_slug: str) -> ServerInfo:
         """
@@ -382,22 +411,48 @@ class ProcessManager:
                 # Try graceful termination first
                 process.terminate()
                 try:
-                    await asyncio.wait_for(process.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    # Force kill if graceful termination fails
-                    process.kill()
-                    await process.wait()
+                    # Use a background thread for the timeout since process.wait is blocking
+                    import threading
+
+                    def wait_for_process():
+                        return process.wait()
+
+                    wait_thread = threading.Thread(target=wait_for_process)
+                    wait_thread.daemon = True
+                    wait_thread.start()
+                    wait_thread.join(timeout=5.0)
+
+                    if wait_thread.is_alive():
+                        # Timeout - force kill
+                        process.kill()
+                        process.wait()
+                except Exception:
+                    # Force kill if there's any error
+                    try:
+                        process.kill()
+                        process.wait()
+                    except Exception:
+                        pass
 
             except Exception as e:
-                # Process might already be dead
+                # Process might already be dead or killed
+                # Try force kill as last resort
                 try:
                     process.kill()
                 except Exception:
                     pass
-                raise MCPError(f"Error stopping server '{server.config.name}': {e}")
+                # Don't raise error - cleanup will happen in finally block
+                # Log the error but consider it a successful stop since cleanup happens
+                logger.warning(
+                    f"Error during stop of server '{server.config.name}': {e}. "
+                    "Process cleanup will continue."
+                )
+                # Continue with cleanup - don't re-raise the exception
 
             finally:
-                del self._processes[server.id]
+                # Always cleanup process tracking
+                if server.id in self._processes:
+                    del self._processes[server.id]
                 server.status = ServerStatus.STOPPED
                 server.process_id = None
                 server.stopped_at = datetime.utcnow().isoformat()
@@ -454,7 +509,7 @@ class ProcessManager:
                 return_exceptions=True,
             )
 
-    def get_process(self, server_id: str) -> Optional[asyncio.subprocess.Process]:
+    def get_process(self, server_id: str) -> Optional[subprocess.Popen]:
         """
         Get the process for a running server.
 
@@ -466,7 +521,7 @@ class ProcessManager:
         """
         return self._processes.get(server_id)
 
-    async def check_server_health(self, server_id: str) -> bool:
+    def check_server_health(self, server_id: str) -> bool:
         """
         Check if a server process is still healthy.
 
@@ -481,4 +536,4 @@ class ProcessManager:
             return False
 
         # Check if process is still running
-        return process.returncode is None
+        return process.poll() is None
