@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from .endpoints.servers import router, get_server_manager
 from .endpoints.providers import router as providers_router
+from .endpoints.chat import router as chat_router
 from ..exceptions import MCPError
 
 # Configure logging
@@ -66,6 +67,7 @@ app.add_middleware(
 # Include routers
 app.include_router(router)
 app.include_router(providers_router)
+app.include_router(chat_router)
 
 
 @app.exception_handler(MCPError)
@@ -123,7 +125,11 @@ async def root():
             "update_model": "PUT /providers/{id}/models/{model_name}",
             "delete_model": "DELETE /providers/{id}/models/{model_name}",
             "test_provider": "POST /providers/{id}/test",
-            "test_model": "POST /providers/{id}/models/{model_name}/test"
+            "test_model": "POST /providers/{id}/models/{model_name}/test",
+            "openai_chat": "/v1/chat/completions",
+            "stream_chat": "/v1/chat/stream",
+            "list_models": "/v1/models",
+            "list_tools": "/v1/tools"
         }
     }
 
