@@ -4,7 +4,7 @@ Message operations for conversations.
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from ...api.models.conversation import Message
 from .storage import ConversationStorage
@@ -21,9 +21,12 @@ class MessageOperations:
         self,
         conversation_id: str,
         role: str,
-        content: str,
+        content: Optional[str] = None,
         message_id: Optional[str] = None,
         timestamp: Optional[str] = None,
+        tool_calls: Optional[List[Dict[str, Any]]] = None,
+        tool_call_id: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> Optional[Message]:
         """Add a message to a conversation."""
         conversation = self.storage.load(conversation_id)
@@ -36,7 +39,13 @@ class MessageOperations:
             timestamp = datetime.utcnow().isoformat() + "Z"
 
         message = Message(
-            id=message_id, role=role, content=content, timestamp=timestamp
+            id=message_id,
+            role=role,
+            content=content,
+            timestamp=timestamp,
+            tool_calls=tool_calls,
+            tool_call_id=tool_call_id,
+            name=name,
         )
 
         conversation.messages.append(message)

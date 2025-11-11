@@ -47,9 +47,18 @@ class Message(BaseModel):
     """Message in a conversation."""
 
     id: str = Field(..., description="Message ID")
-    role: str = Field(..., description="Message role (user, assistant, system)")
-    content: str = Field(..., description="Message content")
+    role: str = Field(..., description="Message role (user, assistant, system, tool)")
+    content: Optional[str] = Field(None, description="Message content")
     timestamp: str = Field(..., description="Message timestamp")
+    tool_calls: Optional[List[Dict[str, Any]]] = Field(
+        None, description="Tool calls made by the assistant"
+    )
+    tool_call_id: Optional[str] = Field(
+        None, description="Tool call ID (for tool response messages)"
+    )
+    name: Optional[str] = Field(
+        None, description="Tool name (for tool response messages)"
+    )
 
     model_config = ConfigDict(extra="forbid")
 
