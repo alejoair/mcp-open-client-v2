@@ -83,7 +83,7 @@ async def enable_tool(conversation_id: str, request: EnabledToolCreateRequest):
         )
 
     # Add the tool
-    enabled_tools = conversation_manager.add_enabled_tool(
+    enabled_tools = conversation_manager.enable_tool(
         conversation_id=conversation_id,
         server_id=request.server_id,
         tool_name=request.tool_name,
@@ -109,7 +109,7 @@ async def disable_tool(
     - **server_id**: Server UUID or slug
     - **tool_name**: Name of the tool to disable
     """
-    enabled_tools = conversation_manager.remove_enabled_tool(
+    enabled_tools = conversation_manager.disable_tool(
         conversation_id=conversation_id, server_id=server_id, tool_name=tool_name
     )
 

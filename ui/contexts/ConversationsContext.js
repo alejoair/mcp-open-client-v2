@@ -112,6 +112,16 @@ function ConversationsProvider({ children }) {
         }
     }, []);
 
+    const sendMessage = React.useCallback(async function(conversationId, content) {
+        try {
+            const response = await conversationsService.sendMessage(conversationId, content);
+            return response;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        }
+    }, []);
+
     React.useEffect(function() {
         loadConversations();
     }, [loadConversations]);
@@ -128,7 +138,8 @@ function ConversationsProvider({ children }) {
         getTools: getTools,
         getAvailableTools: getAvailableTools,
         enableTool: enableTool,
-        disableTool: disableTool
+        disableTool: disableTool,
+        sendMessage: sendMessage
     };
 
     return React.createElement(ConversationsContext.Provider, { value: value }, children);

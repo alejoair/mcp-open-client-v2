@@ -1,5 +1,6 @@
 // Base API client
-const API_BASE_URL = 'http://127.0.0.1:8001';
+// Use the same origin as the page to avoid CORS issues
+const API_BASE_URL = window.location.origin;
 
 async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;

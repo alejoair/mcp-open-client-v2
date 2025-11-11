@@ -74,6 +74,13 @@ class Conversation(BaseModel):
     system_prompt: str = Field(
         default="You are a helpful AI assistant.", description="System prompt"
     )
+    max_tokens: Optional[int] = Field(
+        default=None, description="Maximum tokens for rolling window (None = unlimited)"
+    )
+    max_messages: Optional[int] = Field(
+        default=None,
+        description="Maximum number of messages to keep (None = unlimited)",
+    )
     enabled_tools: List[EnabledTool] = Field(
         default_factory=list, description="Tools enabled for this conversation"
     )
@@ -101,6 +108,12 @@ class ConversationCreateRequest(BaseModel):
     system_prompt: str = Field(
         default="You are a helpful AI assistant.", description="System prompt"
     )
+    max_tokens: Optional[int] = Field(
+        default=None, description="Maximum tokens for rolling window"
+    )
+    max_messages: Optional[int] = Field(
+        default=None, description="Maximum number of messages to keep"
+    )
 
     model_config = ConfigDict(extra="forbid")
 
@@ -111,6 +124,12 @@ class ConversationUpdateRequest(BaseModel):
     title: Optional[str] = Field(None, description="New title")
     description: Optional[str] = Field(None, description="New description")
     system_prompt: Optional[str] = Field(None, description="New system prompt")
+    max_tokens: Optional[int] = Field(
+        None, description="Maximum tokens for rolling window"
+    )
+    max_messages: Optional[int] = Field(
+        None, description="Maximum number of messages to keep"
+    )
 
     model_config = ConfigDict(extra="forbid")
 
@@ -276,5 +295,10 @@ class ConversationChatResponse(BaseModel):
     user_message: Message = Field(..., description="The user message that was sent")
     assistant_message: Message = Field(..., description="The assistant's response")
     message: str = Field(..., description="Operation result message")
+    token_count: int = Field(..., description="Total tokens in conversation context")
+    tokens_sent: int = Field(..., description="Tokens sent to LLM in this request")
+    messages_in_context: int = Field(
+        ..., description="Number of messages included in context"
+    )
 
     model_config = ConfigDict(extra="forbid")

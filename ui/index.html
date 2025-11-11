@@ -25,6 +25,9 @@
     <!-- Ant Design JS -->
     <script src="https://unpkg.com/antd@5.28.0/dist/antd.min.js"></script>
 
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <!-- Tailwind for Canvas custom styles -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -156,6 +159,15 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+
+        /* Tabs content height fix */
+        .ant-tabs-content {
+            height: 100%;
+        }
+
+        .ant-tabs-tabpane {
+            height: 100%;
+        }
     </style>
 
 </head>
@@ -184,6 +196,14 @@
     <script type="text/babel" src="components/conversations-list.js"></script>
     <script type="text/babel" src="components/conversation-settings-modal.js"></script>
     <script type="text/babel" src="components/conversation-tools-modal.js"></script>
+
+    <!-- Chat components -->
+    <script type="text/babel" src="components/markdown-renderer.js"></script>
+    <script type="text/babel" src="components/chat-message.js"></script>
+    <script type="text/babel" src="components/chat-messages-list.js"></script>
+    <script type="text/babel" src="components/chat-input.js"></script>
+    <script type="text/babel" src="components/chat-container.js"></script>
+
     <script type="text/babel" src="components/chat-layout.js"></script>
     <script type="text/babel" src="components/left_sidebar.js"></script>
     <script type="text/babel" src="components/right_sidebar.js"></script>

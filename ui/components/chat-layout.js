@@ -26,19 +26,9 @@ function ChatLayout({ onOpenConversationChange }) {
             const newTab = {
                 key: conversation.id,
                 label: renderTabLabel(conversation),
-                children: React.createElement('div', {
-                    style: {
-                        padding: '24px',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }
-                },
-                    React.createElement(Text, {
-                        style: { color: '#999', fontSize: '14px' }
-                    }, 'Start chatting...')
-                ),
+                children: React.createElement(ChatContainer, {
+                    conversationId: conversation.id
+                }),
                 conversation: conversation
             };
 
@@ -72,19 +62,9 @@ function ChatLayout({ onOpenConversationChange }) {
             const newTab = {
                 key: conversation.id,
                 label: renderTabLabel(conversation),
-                children: React.createElement('div', {
-                    style: {
-                        padding: '24px',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }
-                },
-                    React.createElement(Text, {
-                        style: { color: '#999', fontSize: '14px' }
-                    }, 'Start chatting...')
-                ),
+                children: React.createElement(ChatContainer, {
+                    conversationId: conversation.id
+                }),
                 conversation: conversation
             };
 

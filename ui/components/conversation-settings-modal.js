@@ -1,4 +1,4 @@
-const { Modal, Form, Input, message } = antd;
+const { Modal, Form, Input, InputNumber, message } = antd;
 const { TextArea } = Input;
 
 function ConversationSettingsModal({ visible, onClose, conversation, onSave }) {
@@ -10,7 +10,9 @@ function ConversationSettingsModal({ visible, onClose, conversation, onSave }) {
             form.setFieldsValue({
                 title: conversation.title,
                 description: conversation.description,
-                system_prompt: conversation.system_prompt
+                system_prompt: conversation.system_prompt,
+                max_tokens: conversation.max_tokens,
+                max_messages: conversation.max_messages
             });
         }
     }, [visible, conversation, form]);
@@ -72,6 +74,34 @@ function ConversationSettingsModal({ visible, onClose, conversation, onSave }) {
                 React.createElement(TextArea, {
                     rows: 4,
                     placeholder: 'You are a helpful AI assistant.'
+                })
+            ),
+            React.createElement('div', { style: { marginTop: '16px', marginBottom: '8px', fontWeight: 'bold' } },
+                'Rolling Window Settings'
+            ),
+            React.createElement('div', { style: { color: '#666', fontSize: '12px', marginBottom: '12px' } },
+                'Limit the conversation context sent to the LLM. Leave empty for no limit.'
+            ),
+            React.createElement(Form.Item, {
+                name: 'max_tokens',
+                label: 'Max Tokens',
+                extra: 'Maximum number of tokens to send to LLM (e.g., 4000)'
+            },
+                React.createElement(InputNumber, {
+                    placeholder: 'No limit',
+                    min: 1,
+                    style: { width: '100%' }
+                })
+            ),
+            React.createElement(Form.Item, {
+                name: 'max_messages',
+                label: 'Max Messages',
+                extra: 'Maximum number of messages to keep in context (e.g., 20)'
+            },
+                React.createElement(InputNumber, {
+                    placeholder: 'No limit',
+                    min: 1,
+                    style: { width: '100%' }
                 })
             )
         )

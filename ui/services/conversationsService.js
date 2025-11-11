@@ -82,5 +82,10 @@ const conversationsService = {
 
     async removeEditor(conversationId, filePath) {
         return await api.delete(`/conversations/${conversationId}/editors?file_path=${encodeURIComponent(filePath)}`);
+    },
+
+    // Chat
+    async sendMessage(conversationId, content) {
+        return await api.post(`/conversations/${conversationId}/chat`, { content });
     }
 };

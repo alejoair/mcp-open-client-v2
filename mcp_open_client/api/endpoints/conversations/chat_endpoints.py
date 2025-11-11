@@ -51,7 +51,7 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
     # Use the provider info directly (already got from get_default_provider)
     provider_config = default_provider_info
 
-    # Prepare messages for LLM
+    # Prepare messages for LLM (now with token counting and rolling window)
     result = conversation_manager.prepare_chat_messages(
         conversation_id, request.content
     )
@@ -61,7 +61,22 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
             detail=f"Conversation '{conversation_id}' not found",
         )
 
-    system_prompt, messages_for_llm, enabled_tools = result
+    system_prompt, messages_for_llm, enabled_tools, token_count, messages_in_context = (
+        result
+    )
+
+    # Determine which model to use (prefer main model)
+    model_name = None
+    if provider_config.config.models.main:
+        model_name = provider_config.config.models.main.model_name
+    elif provider_config.config.models.small:
+        model_name = provider_config.config.models.small.model_name
+
+    if not model_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"No model configured for provider '{provider_config.id}'",
+        )
 
     # Get tool definitions from MCP servers and create mapping
     tools_for_llm = []
@@ -100,19 +115,6 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                 # Skip tools that fail to load
                 continue
 
-    # Determine which model to use (prefer main model)
-    model_name = None
-    if provider_config.config.models.main:
-        model_name = provider_config.config.models.main.model_name
-    elif provider_config.config.models.small:
-        model_name = provider_config.config.models.small.model_name
-
-    if not model_name:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"No model configured for provider '{provider_config.id}'",
-        )
-
     # Get OpenAI client
     client = OpenAI(
         api_key=provider_config.config.api_key, base_url=provider_config.config.base_url
@@ -141,6 +143,15 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
     # Add tools if available
     if tools_for_llm:
         request_params["tools"] = tools_for_llm
+        print(f"[DEBUG] Sending {len(tools_for_llm)} tools to LLM:")
+        import json
+
+        for tool in tools_for_llm:
+            print(f"  - {tool['function']['name']}")
+        print(f"[DEBUG] Full tools JSON:\n{json.dumps(tools_for_llm, indent=2)}")
+    else:
+        print("[DEBUG] No tools available for this conversation")
+        print(f"[DEBUG] enabled_tools from conversation: {enabled_tools}")
 
     try:
         # Tool calling loop - continue until we get a final response
@@ -206,12 +217,33 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                     else:
                         try:
                             # Execute the tool
-                            tool_result = await server_manager.call_server_tool(
+                            tool_result_raw = await server_manager.call_server_tool(
                                 server_id=server_id,
                                 tool_name=tool_name,
                                 arguments=tool_args,
                             )
-                            tool_result = json.dumps(tool_result)
+
+                            # Convert MCP result to serializable format
+                            if isinstance(tool_result_raw, list):
+                                # Handle list of TextContent objects
+                                result_text = ""
+                                for item in tool_result_raw:
+                                    if hasattr(item, "text"):
+                                        result_text += item.text
+                                    elif isinstance(item, dict) and "text" in item:
+                                        result_text += item["text"]
+                                    else:
+                                        result_text += str(item)
+                                tool_result = result_text
+                            elif hasattr(tool_result_raw, "text"):
+                                # Single TextContent object
+                                tool_result = tool_result_raw.text
+                            elif isinstance(tool_result_raw, (str, int, float, bool)):
+                                tool_result = str(tool_result_raw)
+                            elif isinstance(tool_result_raw, dict):
+                                tool_result = json.dumps(tool_result_raw)
+                            else:
+                                tool_result = str(tool_result_raw)
                         except Exception as e:
                             tool_result = json.dumps({"error": str(e)})
 
@@ -271,6 +303,9 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
             user_message=user_message,
             assistant_message=assistant_message,
             message="Chat completed successfully",
+            token_count=token_count,
+            tokens_sent=token_count,
+            messages_in_context=messages_in_context,
         )
 
     except HTTPException:

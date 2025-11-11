@@ -85,12 +85,24 @@ class ConversationManager:
         self,
         conversation_id: str,
         role: str,
-        content: str,
+        content: Optional[str] = None,
         message_id: Optional[str] = None,
         timestamp: Optional[str] = None,
+        tool_calls: Optional[list] = None,
+        tool_call_id: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> Optional[Message]:
         """Add a message to a conversation."""
-        return self.messages.add(conversation_id, role, content, message_id, timestamp)
+        return self.messages.add(
+            conversation_id,
+            role,
+            content,
+            message_id,
+            timestamp,
+            tool_calls,
+            tool_call_id,
+            name,
+        )
 
     def get_messages(self, conversation_id: str) -> Optional[list[Message]]:
         """Get all messages from a conversation."""
@@ -194,7 +206,7 @@ class ConversationManager:
 
     def prepare_chat_messages(
         self, conversation_id: str, new_user_message: str
-    ) -> Optional[tuple[str, list[dict[str, str]], list]]:
+    ) -> Optional[tuple[str, list[dict[str, str]], list, int, int]]:
         """Prepare messages for LLM based on conversation data."""
         return self.chat.prepare_messages(conversation_id, new_user_message)
 
