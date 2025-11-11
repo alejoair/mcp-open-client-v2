@@ -250,3 +250,22 @@ class OpenEditorResponse(BaseModel):
     message: str = Field(..., description="Operation result message")
 
     model_config = ConfigDict(extra="forbid")
+
+
+class ConversationChatRequest(BaseModel):
+    """Request to send a message in a conversation."""
+
+    content: str = Field(..., description="User message content")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ConversationChatResponse(BaseModel):
+    """Response from conversation chat."""
+
+    success: bool = Field(..., description="Whether the operation was successful")
+    user_message: Message = Field(..., description="The user message that was sent")
+    assistant_message: Message = Field(..., description="The assistant's response")
+    message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(extra="forbid")

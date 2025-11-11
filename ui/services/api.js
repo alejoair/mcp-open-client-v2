@@ -17,7 +17,20 @@ async function request(endpoint, options = {}) {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.detail || data.error || 'Request failed');
+            const errorMessage = typeof data.detail === 'string'
+                ? data.detail
+                : (data.detail && typeof data.detail === 'object'
+                    ? JSON.stringify(data.detail)
+                    : (data.error || 'Request failed'));
+
+            console.error('API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: url,
+                data: data
+            });
+
+            throw new Error(errorMessage);
         }
 
         return data;

@@ -163,18 +163,25 @@
     <script src="services/api.js"></script>
     <script src="services/providersService.js"></script>
     <script src="services/serversService.js"></script>
+    <script src="services/conversationsService.js"></script>
 
     <!-- Import contexts -->
     <script type="text/babel" src="contexts/ProvidersContext.js"></script>
     <script type="text/babel" src="contexts/ServersContext.js"></script>
+    <script type="text/babel" src="contexts/ConversationsContext.js"></script>
 
     <!-- Import hooks -->
     <script type="text/babel" src="hooks/useProviders.js"></script>
     <script type="text/babel" src="hooks/useServers.js"></script>
+    <script type="text/babel" src="hooks/useConversations.js"></script>
 
     <!-- Import components with Babel -->
     <script type="text/babel" src="components/configuration.js"></script>
     <script type="text/babel" src="components/mcp_servers.js"></script>
+    <script type="text/babel" src="components/conversations-list.js"></script>
+    <script type="text/babel" src="components/conversation-settings-modal.js"></script>
+    <script type="text/babel" src="components/conversation-tools-modal.js"></script>
+    <script type="text/babel" src="components/chat-layout.js"></script>
     <script type="text/babel" src="components/left_sidebar.js"></script>
     <script type="text/babel" src="components/right_sidebar.js"></script>
     <script type="text/babel" src="components/header.js"></script>
@@ -186,7 +193,9 @@
             return (
                 <ProvidersProvider>
                     <ServersProvider>
-                        <MainLayout />
+                        <ConversationsProvider>
+                            <MainLayout />
+                        </ConversationsProvider>
                     </ServersProvider>
                 </ProvidersProvider>
             );

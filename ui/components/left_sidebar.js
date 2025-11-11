@@ -2,17 +2,33 @@ const { Sider } = antd.Layout;
 const { Collapse, Divider, Typography } = antd;
 const { Title } = Typography;
 
-function LeftSidebar({ collapsed, onCollapse }) {
+function LeftSidebar({ collapsed, onCollapse, onSelectConversation }) {
     const items = [
         {
             key: '1',
-            label: 'Configuration',
-            children: <Configuration />
+            label: React.createElement('span', null,
+                React.createElement('i', { className: 'fas fa-comments', style: { marginRight: '8px' } }),
+                'Conversations'
+            ),
+            children: React.createElement(ConversationsList, {
+                onSelectConversation: onSelectConversation
+            })
         },
         {
             key: '2',
-            label: 'MCP Servers',
-            children: <MCPServers />
+            label: React.createElement('span', null,
+                React.createElement('i', { className: 'fas fa-cog', style: { marginRight: '8px' } }),
+                'Configuration'
+            ),
+            children: React.createElement(Configuration)
+        },
+        {
+            key: '3',
+            label: React.createElement('span', null,
+                React.createElement('i', { className: 'fas fa-server', style: { marginRight: '8px' } }),
+                'MCP Servers'
+            ),
+            children: React.createElement(MCPServers)
         }
     ];
 
