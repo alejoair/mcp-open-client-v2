@@ -18,7 +18,7 @@ class ModelConfig(BaseModel):
     description: Optional[str] = Field(None, description="Model description")
 
     model_config = ConfigDict(
-        extra="allow"
+        extra="allow", protected_namespaces=()
     )  # Allow additional fields for future extensions
 
 
@@ -137,6 +137,8 @@ class ModelCreateRequest(BaseModel):
     model_name: str = Field(..., description="Model name")
     config: ModelConfig = Field(..., description="Model configuration")
 
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class ModelCreateResponse(BaseModel):
     """Response after adding a model."""
@@ -145,6 +147,8 @@ class ModelCreateResponse(BaseModel):
     model_name: str = Field(..., description="Added model name")
     provider_id: str = Field(..., description="Provider ID")
     message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class ModelUpdateRequest(BaseModel):
@@ -161,6 +165,8 @@ class ModelUpdateResponse(BaseModel):
     provider_id: str = Field(..., description="Provider ID")
     message: str = Field(..., description="Operation result message")
 
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class ModelSetRequest(BaseModel):
     """Request to set small or main model for a provider."""
@@ -168,7 +174,7 @@ class ModelSetRequest(BaseModel):
     model_type: str = Field(..., description="Model type: 'small' or 'main'")
     config: ModelConfig = Field(..., description="Model configuration")
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", protected_namespaces=())
 
 
 class ModelSetResponse(BaseModel):
@@ -179,6 +185,8 @@ class ModelSetResponse(BaseModel):
     model_type: str = Field(..., description="Model type that was set")
     model_name: str = Field(..., description="Model name that was set")
     message: str = Field(..., description="Operation result message")
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class ProviderDeleteResponse(BaseModel):
@@ -196,6 +204,8 @@ class ModelDeleteResponse(BaseModel):
     provider_id: str = Field(..., description="Provider ID")
     message: str = Field(..., description="Operation result message")
 
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class ProviderConfigResponse(BaseModel):
     """Response for global provider configuration."""
@@ -210,6 +220,8 @@ class ProviderTestRequest(BaseModel):
     """Request to test a provider."""
 
     model_name: Optional[str] = Field(None, description="Specific model to test")
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class ProviderTestResponse(BaseModel):
@@ -228,6 +240,8 @@ class ProviderTestResponse(BaseModel):
         None, description="Error message if test failed"
     )
     message: str = Field(..., description="Test result message")
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class ModelTestRequest(BaseModel):
@@ -250,3 +264,5 @@ class ModelTestResponse(BaseModel):
         None, description="Error message if test failed"
     )
     message: str = Field(..., description="Test result message")
+
+    model_config = ConfigDict(protected_namespaces=())
