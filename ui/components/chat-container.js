@@ -120,6 +120,11 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         const filteredTemp = currentMessages.filter(function(msg) {
             if (!msg._isTemporary) return false;
 
+            // Remove optimistic user messages - they should now be in DB
+            if (msg.role === 'user' && msg._source === 'optimistic') {
+                return false;
+            }
+
             // Keep temporary tool messages only if no DB version exists
             if (msg.role === 'tool') {
                 const hasDBVersion = dbMessages.some(function(db) {
@@ -240,6 +245,22 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
             return;
         }
 
+        // 1. OPTIMISTIC UPDATE: Add user message immediately
+        const tempUserId = 'temp-user-' + Date.now();
+        const optimisticUserMsg = {
+            id: tempUserId,
+            role: 'user',
+            content: content,
+            timestamp: new Date().toISOString(),
+            _isTemporary: true,
+            _status: 'pending',
+            _source: 'optimistic'
+        };
+
+        setMessages(function(prev) {
+            return [...prev, optimisticUserMsg];
+        });
+
         setLoading(true);
         try {
             const response = await sendMessage(conversationId, content);
@@ -273,11 +294,27 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                     });
                 }
             } else {
+                // Request failed - rollback optimistic message
+                setMessages(function(prev) {
+                    return prev.filter(function(m) {
+                        return m.id !== tempUserId;
+                    });
+                });
                 antMessage.error('Failed to send message');
+                throw new Error('Failed to send message'); // Trigger catch in ChatInput
             }
         } catch (err) {
             console.error('Failed to send message:', err);
+
+            // 2. ROLLBACK: Remove optimistic message on error
+            setMessages(function(prev) {
+                return prev.filter(function(m) {
+                    return m.id !== tempUserId;
+                });
+            });
+
             antMessage.error('Failed to send message: ' + err.message);
+            throw err; // Re-throw to allow ChatInput to restore content
         } finally {
             setLoading(false);
         }

@@ -1,14 +1,28 @@
 const { Input, Button, Space } = antd;
 const { TextArea } = Input;
 
-function ChatInput({ onSend, disabled }) {
+function ChatInput({ onSend, disabled, onSendFailed }) {
     const [value, setValue] = React.useState('');
 
     const handleSend = React.useCallback(function() {
         if (!value.trim() || disabled) return;
-        onSend(value);
-        setValue('');
-    }, [value, disabled, onSend]);
+        const messageContent = value;
+        setValue(''); // Clear immediately for optimistic UI
+
+        // Call onSend and handle potential restoration on failure
+        const result = onSend(messageContent);
+
+        // If onSend returns a promise that might fail, handle it
+        if (result && result.catch) {
+            result.catch(function(error) {
+                // Restore message content on failure
+                if (onSendFailed) {
+                    onSendFailed(messageContent);
+                }
+                setValue(messageContent);
+            });
+        }
+    }, [value, disabled, onSend, onSendFailed]);
 
     const handleKeyPress = React.useCallback(function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
