@@ -1,5 +1,5 @@
 """
-FastMCP Transport Factory - Creates appropriate transports based on command configuration.
+FastMCP Client Factory - Creates appropriate FastMCP clients based on command configuration.
 """
 
 import logging
@@ -10,22 +10,22 @@ from ..exceptions import MCPError
 logger = logging.getLogger(__name__)
 
 
-def create_transport(config) -> Any:
+def create_client(config) -> Any:
     """
-    Create appropriate FastMCP transport based on command configuration.
+    Create appropriate FastMCP client based on command configuration.
 
-    Returns a transport with keep_alive=True, which maintains the subprocess
-    connection across multiple Client usages.
+    Returns a FastMCP Client that maintains the subprocess connection.
 
     Args:
         config: ServerConfig object with command, args, env, cwd
 
     Returns:
-        FastMCP transport instance
+        FastMCP Client instance
 
     Raises:
-        MCPError: If transport creation fails
+        MCPError: If client creation fails
     """
+    from fastmcp import Client
     from fastmcp.client import (
         NodeStdioTransport,
         NpxStdioTransport,
@@ -34,31 +34,35 @@ def create_transport(config) -> Any:
     )
 
     command = config.command.lower()
-    logger.info(f"Creating FastMCP transport for command: {config.command}")
+    logger.info(f"Creating FastMCP client for command: {config.command}")
     logger.info(f"Command lower: {command}")
     logger.info(f"Args: {config.args}")
 
     # Handle npm/npx packages
     if command == "npx" or command == "npm.cmd" or "npx.cmd" in command:
-        return _create_npx_transport(config)
+        transport = _create_npx_transport(config)
+        return Client(transport)
 
     # Handle node commands
     elif command == "node" or command.endswith("node.exe"):
-        return _create_node_transport(config)
+        transport = _create_node_transport(config)
+        return Client(transport)
 
     # Handle python commands
     elif command == "python" or command == "python3" or command.endswith("python.exe"):
-        return _create_python_transport(config)
+        transport = _create_python_transport(config)
+        return Client(transport)
 
     # Fallback to generic stdio transport
     logger.info("Using fallback generic StdioTransport")
-    return StdioTransport(
+    transport = StdioTransport(
         command=config.command,
         args=config.args,
         env=config.env,
         cwd=config.cwd,
         keep_alive=True,
     )
+    return Client(transport)
 
 
 def _create_npx_transport(config) -> Any:

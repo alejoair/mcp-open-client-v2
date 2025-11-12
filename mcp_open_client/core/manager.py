@@ -2,7 +2,7 @@
 MCP Server Manager - Main orchestrator for MCP server operations.
 
 This manager coordinates between different specialized modules:
-- transport_factory: Creates FastMCP transports
+- transport_factory: Creates FastMCP clients
 - lifecycle_manager: Handles server start/stop/shutdown
 - tool_operations: Manages tool discovery and execution
 - process: Manages server configuration and state
@@ -18,18 +18,17 @@ from .process import ProcessManager
 
 class MCPServerManager:
     """
-    Main manager for MCP servers using FastMCP transports.
+    Main manager for MCP servers using FastMCP clients.
 
-    This manager creates and manages FastMCP transports (not clients) for each server.
-    The transports have keep_alive=True, which means they maintain subprocess connections.
-    When tools need to be called, we create a temporary Client with the transport using
-    'async with', which FastMCP handles efficiently.
+    This manager creates and manages FastMCP Client instances for each server.
+    The clients maintain subprocess connections and can be used directly for
+    operations like listing tools and calling tools.
     """
 
     def __init__(self):
         """Initialize MCP server manager."""
         self._process_manager = ProcessManager()
-        self._transports: Dict[str, Any] = {}  # Stores ClientTransport instances
+        self._clients: Dict[str, Any] = {}  # Stores FastMCP Client instances
 
     # ========== Server Configuration Operations ==========
 
@@ -112,7 +111,7 @@ class MCPServerManager:
 
         return await lifecycle_manager.start_server(
             server,
-            self._transports,
+            self._clients,
             self._process_manager,
         )
 
@@ -135,7 +134,7 @@ class MCPServerManager:
 
         return await lifecycle_manager.stop_server(
             server,
-            self._transports,
+            self._clients,
             self._process_manager,
         )
 
@@ -158,14 +157,14 @@ class MCPServerManager:
 
         return await lifecycle_manager.remove_server(
             server,
-            self._transports,
+            self._clients,
             self._process_manager,
         )
 
     async def shutdown_all(self) -> None:
         """Shutdown all running servers and clean up transports."""
         await lifecycle_manager.shutdown_all(
-            self._transports,
+            self._clients,
             self._process_manager,
         )
 
@@ -188,7 +187,7 @@ class MCPServerManager:
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        transport = self._transports.get(server.id)
+        transport = self._clients.get(server.id)
         return await tool_operations.get_server_tools(server, transport)
 
     async def call_server_tool(
@@ -212,7 +211,7 @@ class MCPServerManager:
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        transport = self._transports.get(server.id)
+        transport = self._clients.get(server.id)
         return await tool_operations.call_server_tool(
             server,
             transport,
@@ -222,30 +221,27 @@ class MCPServerManager:
 
     # ========== Utility Methods ==========
 
-    def get_transport(self, server_id: str) -> Optional[Any]:
+    def get_client(self, server_id: str) -> Optional[Any]:
         """
-        Get the FastMCP transport for a server.
-
-        Note: This returns the transport, not a client. To use it, create
-        a temporary client with: async with Client(transport) as client:
+        Get the FastMCP client for a server.
 
         Args:
             server_id: Server identifier
 
         Returns:
-            FastMCP transport or None if not available
+            FastMCP client or None if not available
         """
-        return self._transports.get(server_id)
+        return self._clients.get(server_id)
 
     def check_server_health(self, server_id: str) -> bool:
         """
-        Check if a server is healthy by checking if it has a running transport.
+        Check if a server is healthy by checking if it has a running client.
 
         Args:
             server_id: Server identifier
 
         Returns:
-            True if server has a transport (is running), False otherwise
+            True if server has a client (is running), False otherwise
         """
         from ..api.models.server import ServerStatus
 
@@ -253,5 +249,5 @@ class MCPServerManager:
         if not server:
             return False
 
-        # Server is healthy if it has a transport and status is RUNNING
-        return server.status == ServerStatus.RUNNING and server.id in self._transports
+        # Server is healthy if it has a client and status is RUNNING
+        return server.status == ServerStatus.RUNNING and server.id in self._clients
