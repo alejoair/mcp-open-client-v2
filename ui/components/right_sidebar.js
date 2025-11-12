@@ -1,24 +1,63 @@
 const { Sider } = antd.Layout;
-const { Typography, Divider } = antd;
+const { Typography, Divider, Tooltip } = antd;
 const { Title, Text } = Typography;
 
 function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount }) {
+    // Custom trigger button
+    const customTrigger = React.createElement(Tooltip, {
+        title: collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+        placement: 'left'
+    },
+        React.createElement('div', {
+            onClick: function() { onCollapse(!collapsed); },
+            style: {
+                width: '100%',
+                height: '48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.3s',
+                position: 'absolute',
+                bottom: 0,
+                left: 0
+            },
+            onMouseEnter: function(e) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            },
+            onMouseLeave: function(e) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+            }
+        },
+            React.createElement('i', {
+                className: collapsed ? 'fas fa-angles-left' : 'fas fa-angles-right',
+                style: {
+                    color: '#fff',
+                    fontSize: '18px',
+                    transition: 'transform 0.3s'
+                }
+            })
+        )
+    );
+
     return React.createElement(Sider, {
-        collapsible: true,
         collapsed: collapsed,
         onCollapse: onCollapse,
-        reverseArrow: true,
         width: 320,
-        collapsedWidth: 80,
+        collapsedWidth: 50,
         style: {
             background: '#1f1f1f',
             overflowY: 'auto',
-            overflowX: 'hidden'
-        }
+            overflowX: 'hidden',
+            position: 'relative'
+        },
+        trigger: null
     },
         !collapsed && React.createElement('div', {
             style: {
-                height: '100%',
+                height: 'calc(100% - 48px)',
                 display: 'flex',
                 flexDirection: 'column'
             }
@@ -95,6 +134,28 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                     })
                 )
             )
-        )
+        ),
+        collapsed && React.createElement('div', {
+            style: {
+                height: 'calc(100% - 48px)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingTop: '20px',
+                gap: '20px'
+            }
+        },
+            React.createElement(Tooltip, { title: 'Conversation Info', placement: 'left' },
+                React.createElement('i', {
+                    className: 'fas fa-info-circle',
+                    style: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '20px',
+                        cursor: 'pointer'
+                    }
+                })
+            )
+        ),
+        customTrigger
     );
 }

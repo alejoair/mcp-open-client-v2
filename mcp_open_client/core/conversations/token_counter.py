@@ -1,5 +1,6 @@
 """Token counting utilities for conversations."""
 
+import json
 from typing import Any, Dict, List, Optional
 
 import tiktoken
@@ -36,8 +37,13 @@ class TokenCounter:
             num_tokens += tokens_per_message
             for key, value in message.items():
                 if value is not None:
-                    # Convert to string if needed
-                    text = str(value) if not isinstance(value, str) else value
+                    # Handle complex structures (tool_calls, etc.)
+                    if isinstance(value, (list, dict)):
+                        text = json.dumps(value)
+                    elif isinstance(value, str):
+                        text = value
+                    else:
+                        text = str(value)
                     num_tokens += len(encoding.encode(text))
                     if key == "name":
                         num_tokens += tokens_per_name
@@ -73,6 +79,10 @@ class TokenCounter:
         # Apply max_tokens limit (more complex)
         if max_tokens is not None:
             messages = self._safe_apply_max_tokens(messages, max_tokens, model)
+
+        # Final verification to ensure tool integrity
+        # This is a safety check in case any edge cases were missed
+        messages = self._verify_tool_integrity(messages)
 
         # Count final token total
         total_tokens = self.count_message_tokens(messages, model)
@@ -155,38 +165,13 @@ class TokenCounter:
 
             # Check if adding this message would exceed limit
             if current_tokens + msg_tokens > max_tokens:
-                # If this is an assistant message with tool_calls,
-                # we need to check if we should also exclude its tool response
-                if message.get("role") == "assistant" and message.get("tool_calls"):
-                    # This tool call would exceed the limit, skip this AND its potential response
-                    print(f"[DEBUG] Skipping tool call that would exceed token limit")
-                    continue
-                else:
-                    # This message would exceed the limit, stop here
-                    break
+                # This message would exceed the limit, stop here
+                break
 
-            # If this is a tool response and we're including it, verify its tool call is also included
-            if message.get("role") == "tool":
-                tool_call_id = message.get("tool_call_id")
-                if tool_call_id:
-                    # Find the corresponding tool call in our filtered list
-                    tool_call_found = any(
-                        msg.get("role") == "assistant"
-                        and msg.get("tool_calls")
-                        and any(
-                            tc.get("id") == tool_call_id
-                            for tc in msg.get("tool_calls", [])
-                        )
-                        for msg in filtered
-                    )
-                    if not tool_call_found:
-                        # Tool response without its call, skip it
-                        print(
-                            f"[DEBUG] Skipping tool response without corresponding call: {tool_call_id}"
-                        )
-                        continue
-
+            # Add message to filtered list
             filtered.insert(0, message)
             current_tokens += msg_tokens
 
-        return filtered
+        # Verify tool integrity before returning
+        # This ensures no orphaned tool_calls or tool responses remain
+        return self._verify_tool_integrity(filtered)
