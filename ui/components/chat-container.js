@@ -8,6 +8,159 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
     const [conversation, setConversation] = React.useState(null);
     const { sendMessage, getConversation } = useConversations();
 
+    // SSE connection for real-time tool events
+    const handleToolEvent = React.useCallback(function(eventType, event) {
+        const data = event.data;
+
+        if (eventType === 'tool_call') {
+            console.log('[Tool Event] Tool call started:', data.tool_name, data.tool_call_id);
+
+            // Create temporary assistant message with tool_calls (if not exists)
+            setMessages(function(prev) {
+                // Check if assistant message already exists for this tool_call
+                const hasAssistantMsg = prev.some(function(m) {
+                    return m.role === 'assistant' && m.tool_calls && m.tool_calls.some(function(tc) {
+                        return tc.id === data.tool_call_id;
+                    });
+                });
+
+                const newMessages = [...prev];
+
+                if (!hasAssistantMsg) {
+                    // Add temporary assistant message
+                    newMessages.push({
+                        id: 'temp-assistant-' + data.tool_call_id,
+                        role: 'assistant',
+                        content: data.assistant_content || '',
+                        timestamp: data.timestamp,
+                        tool_calls: [{
+                            id: data.tool_call_id,
+                            type: 'function',
+                            function: {
+                                name: data.tool_name,
+                                arguments: JSON.stringify(data.arguments)
+                            }
+                        }],
+                        _source: 'sse',
+                        _status: 'pending',
+                        _isTemporary: true
+                    });
+                }
+
+                // Add temporary tool message (pending)
+                newMessages.push({
+                    id: 'temp-tool-' + data.tool_call_id,
+                    role: 'tool',
+                    content: null,
+                    timestamp: data.timestamp,
+                    tool_call_id: data.tool_call_id,
+                    name: data.tool_name,
+                    _source: 'sse',
+                    _status: 'pending',
+                    _isTemporary: true
+                });
+
+                return newMessages;
+            });
+        }
+        else if (eventType === 'tool_response') {
+            console.log('[Tool Event] Tool response received:', data.tool_name, data.tool_call_id);
+
+            // Update temporary tool message with result
+            setMessages(function(prev) {
+                return prev.map(function(msg) {
+                    if (msg.tool_call_id === data.tool_call_id && msg._isTemporary) {
+                        return {
+                            ...msg,
+                            content: data.result,
+                            _status: 'completed',
+                            timestamp: data.timestamp
+                        };
+                    }
+                    return msg;
+                });
+            });
+        }
+        else if (eventType === 'tool_error') {
+            console.log('[Tool Event] Tool error:', data.tool_name, data.error);
+
+            // Update temporary tool message with error
+            setMessages(function(prev) {
+                return prev.map(function(msg) {
+                    if (msg.tool_call_id === data.tool_call_id && msg._isTemporary) {
+                        return {
+                            ...msg,
+                            content: JSON.stringify({ error: data.error }),
+                            _status: 'error',
+                            timestamp: data.timestamp
+                        };
+                    }
+                    return msg;
+                });
+            });
+        }
+    }, []);
+
+    // Connect to SSE
+    const { connected: sseConnected } = useSSEConnection(conversationId, handleToolEvent);
+
+    // Merge DB messages with temporary SSE messages
+    const mergeMessages = React.useCallback(function(dbMessages, currentMessages) {
+        console.log('[Merge] Merging', dbMessages.length, 'DB messages with', currentMessages.length, 'current messages');
+
+        // Get temporary tool_call_ids
+        const tempToolCallIds = new Set();
+        currentMessages.forEach(function(msg) {
+            if (msg._isTemporary && msg.tool_call_id) {
+                tempToolCallIds.add(msg.tool_call_id);
+            }
+        });
+
+        // Filter out temporary messages that now exist in DB
+        const filteredTemp = currentMessages.filter(function(msg) {
+            if (!msg._isTemporary) return false;
+
+            // Keep temporary tool messages only if no DB version exists
+            if (msg.role === 'tool') {
+                const hasDBVersion = dbMessages.some(function(db) {
+                    return db.role === 'tool' && db.tool_call_id === msg.tool_call_id;
+                });
+                return !hasDBVersion;
+            }
+
+            // Keep temporary assistant messages only if no DB version with this tool_call exists
+            if (msg.role === 'assistant' && msg.tool_calls) {
+                const toolCallId = msg.tool_calls[0]?.id;
+                const hasDBVersion = dbMessages.some(function(db) {
+                    return db.role === 'assistant' && db.tool_calls &&
+                           db.tool_calls.some(function(tc) { return tc.id === toolCallId; });
+                });
+                return !hasDBVersion;
+            }
+
+            return true;
+        });
+
+        // Add metadata to DB messages
+        const dbMessagesWithMeta = dbMessages.map(function(msg) {
+            return {
+                ...msg,
+                _source: 'db',
+                _status: 'completed',
+                _isTemporary: false
+            };
+        });
+
+        // Merge and sort by timestamp
+        const merged = [...dbMessagesWithMeta, ...filteredTemp];
+        merged.sort(function(a, b) {
+            return new Date(a.timestamp) - new Date(b.timestamp);
+        });
+
+        console.log('[Merge] Result:', merged.length, 'messages');
+        return merged;
+    }, []);
+
     // Load conversation and messages when conversation changes
     React.useEffect(function() {
         if (!conversationId) {
@@ -23,9 +176,12 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                 const conversationData = await getConversation(conversationId);
                 setConversation(conversationData);
 
-                // Load messages
+                // Load messages and merge with temporary ones
                 const messagesData = await conversationsService.getMessages(conversationId);
-                setMessages(messagesData.messages || []);
+                const dbMessages = messagesData.messages || [];
+                setMessages(function(prev) {
+                    return mergeMessages(dbMessages, prev);
+                });
             } catch (err) {
                 console.error('Failed to load conversation data:', err);
                 antMessage.error('Failed to load conversation data');
@@ -33,7 +189,7 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         }
 
         loadData();
-    }, [conversationId, getConversation]);
+    }, [conversationId, getConversation, mergeMessages]);
 
     // Filter messages based on max_messages setting
     React.useEffect(function() {
@@ -81,10 +237,16 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                     messagesInContext: response.messages_in_context
                 });
 
-                // Reload all messages to include tool calls and tool responses
+                // Wait a bit for SSE events to arrive, then reload
+                await new Promise(function(resolve) { setTimeout(resolve, 500); });
+
+                // Reload all messages and merge with temporary ones
                 try {
                     const messagesData = await conversationsService.getMessages(conversationId);
-                    setMessages(messagesData.messages || []);
+                    const dbMessages = messagesData.messages || [];
+                    setMessages(function(prev) {
+                        return mergeMessages(dbMessages, prev);
+                    });
                     // Reload conversation data to get updated settings
                     const conversationData = await getConversation(conversationId);
                     setConversation(conversationData);
@@ -104,7 +266,7 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         } finally {
             setLoading(false);
         }
-    }, [conversationId, sendMessage]);
+    }, [conversationId, sendMessage, mergeMessages, getConversation]);
 
     return React.createElement('div', {
         style: {

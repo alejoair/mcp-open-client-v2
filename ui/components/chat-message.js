@@ -1,4 +1,4 @@
-const { Typography, Tag, Collapse, Space } = antd;
+const { Typography, Tag, Collapse, Space, Spin } = antd;
 const { Text } = Typography;
 const { Panel } = Collapse;
 
@@ -6,6 +6,8 @@ function ChatMessage({ message }) {
     const isUser = message.role === 'user';
     const isAssistant = message.role === 'assistant';
     const isTool = message.role === 'tool';
+    const isPending = message._status === 'pending';
+    const isError = message._status === 'error';
 
     // Format timestamp
     const timestamp = React.useMemo(function() {
@@ -136,7 +138,7 @@ function ChatMessage({ message }) {
         // Try to parse the tool response as JSON
         let parsedResponse = null;
         let isValidJSON = false;
-        
+
         if (message.content) {
             try {
                 parsedResponse = JSON.parse(message.content);
@@ -146,31 +148,41 @@ function ChatMessage({ message }) {
                 parsedResponse = message.content;
             }
         }
-        
+
         return React.createElement('div', {
             style: {
                 display: 'flex',
                 justifyContent: 'flex-start',
-                marginBottom: '16px'
+                marginBottom: '16px',
+                opacity: isPending ? 0.7 : 1
             }
         },
             React.createElement('div', {
                 style: {
                     maxWidth: '70%',
-                    background: '#f5f5f5',
+                    background: isError ? '#fff1f0' : '#f5f5f5',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    borderLeft: '3px solid #1890ff'
+                    borderLeft: '3px solid ' + (isError ? '#ff4d4f' : '#1890ff')
                 }
             },
                 React.createElement(Space, { direction: 'vertical', style: { width: '100%' } },
-                    React.createElement(Tag, { color: 'blue' }, message.name),
-                    React.createElement(Collapse, {
+                    React.createElement('div', {
+                        style: { display: 'flex', gap: '8px', alignItems: 'center' }
+                    },
+                        React.createElement(Tag, { color: isError ? 'red' : 'blue' }, message.name),
+                        isPending && React.createElement(Spin, { size: 'small' }),
+                        isPending && React.createElement(Text, {
+                            type: 'secondary',
+                            style: { fontSize: '12px' }
+                        }, 'Executing...')
+                    ),
+                    !isPending && message.content && React.createElement(Collapse, {
                         ghost: true,
                         defaultActiveKey: []
                     },
                         React.createElement(Panel, {
-                            header: isValidJSON ? 'Tool Response (JSON)' : 'Tool Response',
+                            header: isError ? 'Error' : (isValidJSON ? 'Tool Response (JSON)' : 'Tool Response'),
                             key: '1'
                         },
                             isValidJSON ? React.createElement('pre', {
