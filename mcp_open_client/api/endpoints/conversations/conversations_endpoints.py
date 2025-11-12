@@ -31,6 +31,8 @@ async def create_conversation(request: ConversationCreateRequest):
             title=request.title,
             description=request.description,
             system_prompt=request.system_prompt,
+            max_tokens=request.max_tokens,
+            max_messages=request.max_messages,
         )
         return ConversationResponse(
             success=True,
@@ -121,6 +123,8 @@ async def update_conversation(conversation_id: str, request: ConversationUpdateR
         title=request.title,
         description=request.description,
         system_prompt=request.system_prompt,
+        max_tokens=request.max_tokens,
+        max_messages=request.max_messages,
     )
 
     if not conversation:

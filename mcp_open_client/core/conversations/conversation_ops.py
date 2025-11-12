@@ -22,6 +22,8 @@ class ConversationOperations:
         title: str,
         description: str = "",
         system_prompt: str = "You are a helpful AI assistant.",
+        max_tokens: Optional[int] = 20000,
+        max_messages: Optional[int] = 100,
     ) -> Conversation:
         """Create a new conversation."""
         conversation_id = f"conv-{uuid.uuid4().hex[:16]}"
@@ -34,6 +36,8 @@ class ConversationOperations:
             created_at=now,
             updated_at=now,
             system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            max_messages=max_messages,
             enabled_tools=[],
             open_editors=[],
             context={},
@@ -53,6 +57,8 @@ class ConversationOperations:
         title: Optional[str] = None,
         description: Optional[str] = None,
         system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+        max_messages: Optional[int] = None,
     ) -> Optional[Conversation]:
         """Update conversation metadata."""
         conversation = self.storage.load(conversation_id)
@@ -65,6 +71,10 @@ class ConversationOperations:
             conversation.description = description
         if system_prompt is not None:
             conversation.system_prompt = system_prompt
+        if max_tokens is not None:
+            conversation.max_tokens = max_tokens
+        if max_messages is not None:
+            conversation.max_messages = max_messages
 
         conversation.updated_at = datetime.utcnow().isoformat() + "Z"
         self.storage.save(conversation)

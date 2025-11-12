@@ -47,9 +47,13 @@ class ConversationManager:
         title: str,
         description: str = "",
         system_prompt: str = "You are a helpful AI assistant.",
+        max_tokens: Optional[int] = 20000,
+        max_messages: Optional[int] = 100,
     ) -> Conversation:
         """Create a new conversation."""
-        return self.conversations.create(title, description, system_prompt)
+        return self.conversations.create(
+            title, description, system_prompt, max_tokens, max_messages
+        )
 
     def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
         """Get a conversation by ID."""
@@ -61,10 +65,12 @@ class ConversationManager:
         title: Optional[str] = None,
         description: Optional[str] = None,
         system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+        max_messages: Optional[int] = None,
     ) -> Optional[Conversation]:
         """Update conversation metadata."""
         return self.conversations.update(
-            conversation_id, title, description, system_prompt
+            conversation_id, title, description, system_prompt, max_tokens, max_messages
         )
 
     def delete_conversation(self, conversation_id: str) -> bool:

@@ -68,46 +68,62 @@ function ConversationToolsModal({ visible, onClose, conversationId }) {
         }
     }, []);
 
-    const loadTools = React.useCallback(async function() {
+    React.useEffect(function() {
         if (!visible || !conversationId) return;
 
-        setLoading(true);
-        try {
-            // First, start all servers
-            await startServers();
+        let cancelled = false;
 
-            // Then load tools
-            const [available, enabled] = await Promise.all([
-                getAvailableTools(conversationId),
-                getTools(conversationId)
-            ]);
-            setAvailableTools(available);
-            setEnabledTools(enabled);
+        async function loadTools() {
+            setLoading(true);
+            try {
+                // First, start all servers
+                await startServers();
 
-            // Group tools by server
-            const grouped = {};
-            available.forEach(function(tool) {
-                if (!grouped[tool.server_id]) {
-                    grouped[tool.server_id] = {
-                        server_id: tool.server_id,
-                        server_name: tool.server_name,
-                        server_slug: tool.server_slug,
-                        tools: []
-                    };
+                if (cancelled) return;
+
+                // Then load tools
+                const [available, enabled] = await Promise.all([
+                    getAvailableTools(conversationId),
+                    getTools(conversationId)
+                ]);
+
+                if (cancelled) return;
+
+                setAvailableTools(available);
+                setEnabledTools(enabled);
+
+                // Group tools by server
+                const grouped = {};
+                available.forEach(function(tool) {
+                    if (!grouped[tool.server_id]) {
+                        grouped[tool.server_id] = {
+                            server_id: tool.server_id,
+                            server_name: tool.server_name,
+                            server_slug: tool.server_slug,
+                            tools: []
+                        };
+                    }
+                    grouped[tool.server_id].tools.push(tool);
+                });
+                setGroupedTools(grouped);
+            } catch (err) {
+                if (!cancelled) {
+                    console.error('Failed to load tools:', err);
+                    antMessage.error('Failed to load tools: ' + err.message);
                 }
-                grouped[tool.server_id].tools.push(tool);
-            });
-            setGroupedTools(grouped);
-        } catch (err) {
-            antMessage.error('Failed to load tools: ' + err.message);
-        } finally {
-            setLoading(false);
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
         }
-    }, [visible, conversationId, getAvailableTools, getTools, startServers]);
 
-    React.useEffect(function() {
         loadTools();
-    }, [loadTools]);
+
+        return function() {
+            cancelled = true;
+        };
+    }, [visible, conversationId, getAvailableTools, getTools, startServers]);
 
     const isToolEnabled = function(tool) {
         return enabledTools.some(function(t) {
@@ -281,7 +297,7 @@ function ConversationToolsModal({ visible, onClose, conversationId }) {
         React.createElement('div', null,
             Object.keys(serverStatus).length > 0 && renderServerStatus(),
             React.createElement(Collapse, {
-                defaultActiveKey: Object.keys(groupedTools),
+                defaultActiveKey: [],
                 style: { background: '#fff' }
             },
                 Object.values(groupedTools).map(function(server) {

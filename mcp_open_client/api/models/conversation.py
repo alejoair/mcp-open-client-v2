@@ -75,10 +75,11 @@ class Conversation(BaseModel):
         default="You are a helpful AI assistant.", description="System prompt"
     )
     max_tokens: Optional[int] = Field(
-        default=None, description="Maximum tokens for rolling window (None = unlimited)"
+        default=20000,
+        description="Maximum tokens for rolling window (None = unlimited)",
     )
     max_messages: Optional[int] = Field(
-        default=None,
+        default=100,
         description="Maximum number of messages to keep (None = unlimited)",
     )
     enabled_tools: List[EnabledTool] = Field(
@@ -109,10 +110,10 @@ class ConversationCreateRequest(BaseModel):
         default="You are a helpful AI assistant.", description="System prompt"
     )
     max_tokens: Optional[int] = Field(
-        default=None, description="Maximum tokens for rolling window"
+        default=20000, description="Maximum tokens for rolling window"
     )
     max_messages: Optional[int] = Field(
-        default=None, description="Maximum number of messages to keep"
+        default=100, description="Maximum number of messages to keep"
     )
 
     model_config = ConfigDict(extra="forbid")

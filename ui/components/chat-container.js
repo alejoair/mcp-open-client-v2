@@ -2,29 +2,104 @@ const { message: antMessage } = antd;
 
 function ChatContainer({ conversationId }) {
     const [messages, setMessages] = React.useState([]);
+    const [filteredMessages, setFilteredMessages] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
     const [tokenInfo, setTokenInfo] = React.useState(null);
-    const { sendMessage } = useConversations();
+    const [conversation, setConversation] = React.useState(null);
+    const { sendMessage, getConversation } = useConversations();
+    
+    // Import hook dynamically to avoid circular dependencies
+    const [toolEvents, setToolEvents] = React.useState([]);
+    const [isSSEConnected, setIsSSEConnected] = React.useState(false);
+    const [isSSEConnecting, setIsSSEConnecting] = React.useState(false);
+    
+    // Setup SSE connection
+    React.useEffect(function() {
+        if (!conversationId) return;
+        
+        setIsSSEConnecting(true);
+        setToolEvents([]);
+        
+        const baseUrl = window.location.origin;
+        const sseUrl = `${baseUrl}/sse/conversations/${conversationId}`;
+        
+        const eventSource = new EventSource(sseUrl);
+        
+        eventSource.onopen = function() {
+            console.log('SSE connection opened for conversation:', conversationId);
+            setIsSSEConnecting(false);
+            setIsSSEConnected(true);
+        };
+        
+        eventSource.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('SSE Event received:', data);
+                setToolEvents(prev => [...prev, {
+                    ...data,
+                    id: Date.now() + Math.random()
+                }]);
+            } catch (error) {
+                console.error('Error parsing SSE event data:', error);
+            }
+        };
+        
+        eventSource.onerror = function(error) {
+            console.error('SSE connection error:', error);
+            setIsSSEConnecting(false);
+            setIsSSEConnected(false);
+        };
+        
+        return function() {
+            eventSource.close();
+            setIsSSEConnected(false);
+            setIsSSEConnecting(false);
+        };
+    }, [conversationId]);
 
-    // Load messages when conversation changes
+    // Load conversation and messages when conversation changes
     React.useEffect(function() {
         if (!conversationId) {
             setMessages([]);
+            setFilteredMessages([]);
+            setConversation(null);
             return;
         }
 
-        async function loadMessages() {
+        async function loadData() {
             try {
-                const response = await conversationsService.getMessages(conversationId);
-                setMessages(response.messages || []);
+                // Load conversation settings
+                const conversationData = await getConversation(conversationId);
+                setConversation(conversationData);
+
+                // Load messages
+                const messagesData = await conversationsService.getMessages(conversationId);
+                setMessages(messagesData.messages || []);
             } catch (err) {
-                console.error('Failed to load messages:', err);
-                antMessage.error('Failed to load messages');
+                console.error('Failed to load conversation data:', err);
+                antMessage.error('Failed to load conversation data');
             }
         }
 
-        loadMessages();
-    }, [conversationId]);
+        loadData();
+    }, [conversationId, getConversation]);
+
+    // Filter messages based on max_messages setting
+    React.useEffect(function() {
+        if (!conversation || !messages.length) {
+            setFilteredMessages(messages);
+            return;
+        }
+
+        const maxMessages = conversation.max_messages;
+        if (!maxMessages || maxMessages >= messages.length) {
+            setFilteredMessages(messages);
+        } else {
+            // Show only the last maxMessages messages
+            const startIndex = messages.length - maxMessages;
+            setFilteredMessages(messages.slice(startIndex));
+        }
+    }, [messages, conversation]);
 
     const handleSend = React.useCallback(async function(content) {
         if (!conversationId) {
@@ -48,6 +123,9 @@ function ChatContainer({ conversationId }) {
                 try {
                     const messagesData = await conversationsService.getMessages(conversationId);
                     setMessages(messagesData.messages || []);
+                    // Reload conversation data to get updated settings
+                    const conversationData = await getConversation(conversationId);
+                    setConversation(conversationData);
                 } catch (err) {
                     console.error('Failed to reload messages:', err);
                     // Fallback: just add user and assistant messages
@@ -82,7 +160,8 @@ function ChatContainer({ conversationId }) {
                 borderBottom: '1px solid #d9d9d9',
                 display: 'flex',
                 gap: '12px',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
+                alignItems: 'center'
             }
         },
             React.createElement(antd.Tag, { color: 'blue' },
@@ -93,6 +172,24 @@ function ChatContainer({ conversationId }) {
             ),
             React.createElement(antd.Tag, { color: 'orange' },
                 'Messages: ' + tokenInfo.messagesInContext
+            ),
+            // Show hidden messages indicator
+            conversation && conversation.max_messages && messages.length > conversation.max_messages && React.createElement('div', {
+                style: {
+                    marginLeft: 'auto',
+                    fontSize: '12px',
+                    color: '#666',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }
+            },
+                React.createElement(antd.Tag, { color: 'default', size: 'small' },
+                    `${messages.length - conversation.max_messages} hidden`
+                ),
+                React.createElement('span', null,
+                    `Showing ${filteredMessages.length} of ${messages.length} messages`
+                )
             )
         ),
         // Messages list (takes remaining space with scroll)
@@ -104,8 +201,14 @@ function ChatContainer({ conversationId }) {
             }
         },
             React.createElement(ChatMessagesList, {
-                messages: messages,
+                messages: filteredMessages,
                 loading: loading
+            }),
+            // Tool call streaming display
+            React.createElement(ToolCallDisplay, {
+                events: toolEvents,
+                isConnected: isSSEConnected,
+                isConnecting: isSSEConnecting
             })
         ),
         // Input at bottom (fixed)

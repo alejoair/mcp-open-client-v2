@@ -1,19 +1,17 @@
 """
-Process management for MCP servers using STDIO transport.
+Process management for MCP servers - Configuration and state management.
+
+Note: Actual process lifecycle is now managed by FastMCP clients in manager.py.
+This module handles server configuration persistence and state tracking only.
 """
 
-import asyncio
 import json
 import logging
-import os
 import re
-import signal
-import subprocess
-import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from ..api.models.server import ServerConfig, ServerInfo, ServerStatus
 from ..config import ensure_config_directory, get_config_path
@@ -47,7 +45,12 @@ def _slugify(text: str) -> str:
 
 
 class ProcessManager:
-    """Manages MCP server processes using STDIO transport."""
+    """
+    Manages MCP server configurations and state.
+
+    Note: Process lifecycle (start/stop) is handled by FastMCP clients in MCPServerManager.
+    This class only manages configuration persistence and status tracking.
+    """
 
     def __init__(self, config_file: str = "mcp_servers.json"):
         """
@@ -56,7 +59,6 @@ class ProcessManager:
         Args:
             config_file: Path to JSON configuration file (relative to user config dir)
         """
-        self._processes: Dict[str, subprocess.Popen] = {}
         self._servers: Dict[str, ServerInfo] = {}
         self._slug_to_id: Dict[str, str] = {}  # Slug to UUID mapping
 
@@ -109,8 +111,8 @@ class ProcessManager:
 
         except Exception as e:
             # If loading fails, start with empty server list
-            print(
-                f"Warning: Failed to load server configurations from {self._config_file}: {e}"
+            logger.warning(
+                f"Failed to load server configurations from {self._config_file}: {e}"
             )
             self._servers = {}
 
@@ -159,8 +161,8 @@ class ProcessManager:
                 json.dump(data, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
-            print(
-                f"Warning: Failed to save server configurations to {self._config_file}: {e}"
+            logger.warning(
+                f"Failed to save server configurations to {self._config_file}: {e}"
             )
 
     def _generate_unique_slug(self, base_slug: str) -> str:
@@ -278,187 +280,6 @@ class ProcessManager:
                 return server
         return None
 
-    async def start_server(self, server_id_or_slug: str) -> ServerInfo:
-        """
-        Start an MCP server process.
-
-        Args:
-            server_id_or_slug: Server identifier (UUID) or slug
-
-        Returns:
-            Updated server information
-
-        Raises:
-            MCPError: If server not found or already running
-        """
-        import traceback
-
-        logger.info(f"Starting server: {server_id_or_slug}")
-
-        server = self.get_server(server_id_or_slug)
-        if not server:
-            raise MCPError(f"Server with ID or slug '{server_id_or_slug}' not found")
-
-        logger.info(f"Found server: {server.config.name}")
-        logger.info(f"Server status: {server.status}")
-
-        if server.status == ServerStatus.RUNNING:
-            raise MCPError(f"Server '{server.config.name}' is already running")
-
-        if server.status == ServerStatus.STARTING:
-            raise MCPError(f"Server '{server.config.name}' is already starting")
-
-        # Update status to starting
-        server.status = ServerStatus.STARTING
-        server.error_message = None
-
-        try:
-            # Prepare environment
-            env = os.environ.copy()
-            if server.config.env:
-                env.update(server.config.env)
-
-            # Prepare command
-            cmd = [server.config.command] + server.config.args
-            logger.info(f"Command to execute: {' '.join(cmd)}")
-
-            # Start the process - use subprocess.Popen for better Windows compatibility
-            import subprocess
-
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=env,
-                cwd=server.config.cwd,
-            )
-
-            logger.info(f"Process started with PID: {process.pid}")
-
-            # Store process and update server info
-            self._processes[server.id] = process
-            server.status = ServerStatus.RUNNING
-            server.process_id = process.pid
-            server.started_at = datetime.utcnow().isoformat()
-
-            # Check if process is still running immediately
-            if process.poll() is not None:
-                # Process exited immediately
-                stderr_output = ""
-                try:
-                    stderr_output = process.stderr.read().decode("utf-8")
-                except Exception:
-                    pass
-
-                logger.error(
-                    f"Process exited immediately with code {process.returncode}"
-                )
-                logger.error(f"Stderr: {stderr_output}")
-
-                server.status = ServerStatus.ERROR
-                server.error_message = f"Process exited immediately with code {process.returncode}: {stderr_output}"
-                server.process_id = None
-                server.started_at = None
-                del self._processes[server.id]
-
-                raise MCPError(
-                    f"Failed to start server '{server.config.name}': Process exited with code {process.returncode}"
-                )
-
-            logger.info(f"Server '{server.config.name}' started successfully")
-            return server
-
-        except Exception as e:
-            error_details = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
-            logger.error(
-                f"Error starting server '{server.config.name}': {error_details}"
-            )
-
-            server.status = ServerStatus.ERROR
-            server.error_message = str(e)
-            if server.id in self._processes:
-                del self._processes[server.id]
-            raise MCPError(
-                f"Failed to start server '{server.config.name}': {error_details}"
-            )
-
-    async def stop_server(self, server_id_or_slug: str) -> ServerInfo:
-        """
-        Stop an MCP server process.
-
-        Args:
-            server_id_or_slug: Server identifier (UUID) or slug
-
-        Returns:
-            Updated server information
-
-        Raises:
-            MCPError: If server not found or not running
-        """
-        server = self.get_server(server_id_or_slug)
-        if not server:
-            raise MCPError(f"Server with ID or slug '{server_id_or_slug}' not found")
-
-        if server.status not in [ServerStatus.RUNNING, ServerStatus.STARTING]:
-            raise MCPError(f"Server '{server.config.name}' is not running")
-
-        process = self._processes.get(server.id)
-        if process:
-            server.status = ServerStatus.STOPPING
-
-            try:
-                # Try graceful termination first
-                process.terminate()
-                try:
-                    # Use a background thread for the timeout since process.wait is blocking
-                    import threading
-
-                    def wait_for_process():
-                        return process.wait()
-
-                    wait_thread = threading.Thread(target=wait_for_process)
-                    wait_thread.daemon = True
-                    wait_thread.start()
-                    wait_thread.join(timeout=5.0)
-
-                    if wait_thread.is_alive():
-                        # Timeout - force kill
-                        process.kill()
-                        process.wait()
-                except Exception:
-                    # Force kill if there's any error
-                    try:
-                        process.kill()
-                        process.wait()
-                    except Exception:
-                        pass
-
-            except Exception as e:
-                # Process might already be dead or killed
-                # Try force kill as last resort
-                try:
-                    process.kill()
-                except Exception:
-                    pass
-                # Don't raise error - cleanup will happen in finally block
-                # Log the error but consider it a successful stop since cleanup happens
-                logger.warning(
-                    f"Error during stop of server '{server.config.name}': {e}. "
-                    "Process cleanup will continue."
-                )
-                # Continue with cleanup - don't re-raise the exception
-
-            finally:
-                # Always cleanup process tracking
-                if server.id in self._processes:
-                    del self._processes[server.id]
-                server.status = ServerStatus.STOPPED
-                server.process_id = None
-                server.stopped_at = datetime.utcnow().isoformat()
-
-        return server
-
     async def remove_server(self, server_id_or_slug: str) -> bool:
         """
         Remove a server configuration.
@@ -489,51 +310,54 @@ class ProcessManager:
 
         return True
 
-    async def shutdown_all(self) -> None:
+    def _update_server_status(
+        self,
+        server_id: str,
+        status: ServerStatus,
+        process_id: Optional[int] = None,
+        error_message: Optional[str] = None,
+    ) -> ServerInfo:
         """
-        Shutdown all running servers.
+        Update server status without managing processes.
 
-        This should be called when the application is shutting down.
-        """
-        # Get list of running servers
-        running_server_ids = [
-            server_id
-            for server_id, server in self._servers.items()
-            if server.status in [ServerStatus.RUNNING, ServerStatus.STARTING]
-        ]
-
-        # Stop all running servers concurrently
-        if running_server_ids:
-            await asyncio.gather(
-                *[self.stop_server(server_id) for server_id in running_server_ids],
-                return_exceptions=True,
-            )
-
-    def get_process(self, server_id: str) -> Optional[subprocess.Popen]:
-        """
-        Get the process for a running server.
+        This is used by MCPServerManager to update status when FastMCP
+        manages the process lifecycle.
 
         Args:
             server_id: Server identifier
+            status: New server status
+            process_id: Optional process ID
+            error_message: Optional error message
 
         Returns:
-            Process or None if not found or not running
+            Updated server information
+
+        Raises:
+            MCPError: If server not found
         """
-        return self._processes.get(server_id)
+        server = self._servers.get(server_id)
+        if not server:
+            raise MCPError(f"Server with ID '{server_id}' not found")
 
-    def check_server_health(self, server_id: str) -> bool:
-        """
-        Check if a server process is still healthy.
+        # Update status
+        server.status = status
 
-        Args:
-            server_id: Server identifier
+        # Update timestamps based on status
+        if status == ServerStatus.STARTING:
+            server.error_message = None
+        elif status == ServerStatus.RUNNING:
+            server.started_at = datetime.utcnow().isoformat()
+            server.stopped_at = None
+            server.error_message = None
+            if process_id:
+                server.process_id = process_id
+        elif status == ServerStatus.STOPPING:
+            pass  # Keep current timestamps
+        elif status == ServerStatus.STOPPED:
+            server.stopped_at = datetime.utcnow().isoformat()
+            server.process_id = None
+        elif status == ServerStatus.ERROR:
+            server.error_message = error_message
+            server.process_id = None
 
-        Returns:
-            True if server is healthy, False otherwise
-        """
-        process = self._processes.get(server_id)
-        if not process:
-            return False
-
-        # Check if process is still running
-        return process.poll() is None
+        return server

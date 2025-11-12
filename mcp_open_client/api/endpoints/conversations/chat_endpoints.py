@@ -2,14 +2,19 @@
 Chat endpoint for LLM interactions.
 """
 
+import asyncio
 import json
 import uuid
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
 from openai import OpenAI
 
 from ...models.conversation import ConversationChatRequest, ConversationChatResponse
+
+# Import the shared SSE service from the sse module
+from ..sse import get_local_sse_service
 from . import router
 from .dependencies import conversation_manager, provider_manager, server_manager
 
@@ -166,8 +171,19 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
             response = client.chat.completions.create(**request_params)
             response_message = response.choices[0].message
 
+            # Log iteration without content (may contain emojis that cause encoding errors)
+            tool_call_count = (
+                len(response_message.tool_calls) if response_message.tool_calls else 0
+            )
+            print(
+                f"[DEBUG] Iteration {iteration}: Got response (content_length={len(response_message.content or '')}) and tool_calls={tool_call_count}"
+            )
+
             # Check if the assistant wants to call tools
             if response_message.tool_calls:
+                print(
+                    f"[DEBUG] Assistant wants to call {len(response_message.tool_calls)} tools"
+                )
                 # Save assistant message with tool calls
                 assistant_msg_id = f"msg-{uuid.uuid4().hex[:16]}"
                 timestamp = datetime.utcnow().isoformat() + "Z"
@@ -203,6 +219,33 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                     }
                 )
 
+                # Emit SSE event for tool calls detected
+                for tool_call in response_message.tool_calls:
+                    tool_name = tool_call.function.name
+                    tool_args = json.loads(tool_call.function.arguments)
+
+                    print(
+                        f"[DEBUG] Executing tool call: {tool_name} (id: {tool_call.id})"
+                    )
+
+                    # Emit tool call event (non-blocking, don't let SSE errors interrupt flow)
+                    try:
+                        sse_service = get_local_sse_service()
+                        await sse_service.emit_tool_call(
+                            conversation_id,
+                            {
+                                "tool_call_id": tool_call.id,
+                                "tool_name": tool_name,
+                                "arguments": tool_args,
+                                "assistant_content": response_message.content,
+                                "timestamp": timestamp,
+                            },
+                        )
+                    except Exception as sse_error:
+                        print(
+                            f"[DEBUG] SSE emit_tool_call failed (non-critical): {sse_error}"
+                        )
+
                 # Execute each tool call
                 for tool_call in response_message.tool_calls:
                     tool_name = tool_call.function.name
@@ -214,8 +257,28 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                         tool_result = json.dumps(
                             {"error": f"Tool '{tool_name}' not found"}
                         )
+                        print(f"[DEBUG] Tool '{tool_name}' not found in mapping")
+                        # Emit error event (non-blocking, don't let SSE errors interrupt flow)
+                        try:
+                            sse_service = get_local_sse_service()
+                            await sse_service.emit_tool_error(
+                                conversation_id,
+                                {
+                                    "tool_call_id": tool_call.id,
+                                    "tool_name": tool_name,
+                                    "error": f"Tool '{tool_name}' not found",
+                                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                                },
+                            )
+                        except Exception as sse_error:
+                            print(
+                                f"[DEBUG] SSE emit_tool_error failed (non-critical): {sse_error}"
+                            )
                     else:
                         try:
+                            print(
+                                f"[DEBUG] Calling tool '{tool_name}' on server '{server_id}' with args: {tool_args}"
+                            )
                             # Execute the tool
                             tool_result_raw = await server_manager.call_server_tool(
                                 server_id=server_id,
@@ -244,8 +307,51 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                                 tool_result = json.dumps(tool_result_raw)
                             else:
                                 tool_result = str(tool_result_raw)
+
+                            print(
+                                f"[DEBUG] Tool '{tool_name}' returned result (length={len(str(tool_result))})"
+                            )
+
+                            # Emit tool response event (non-blocking, don't let SSE errors interrupt flow)
+                            try:
+                                sse_service = get_local_sse_service()
+                                await sse_service.emit_tool_response(
+                                    conversation_id,
+                                    {
+                                        "tool_call_id": tool_call.id,
+                                        "tool_name": tool_name,
+                                        "result": tool_result,
+                                        "timestamp": datetime.utcnow().isoformat()
+                                        + "Z",
+                                    },
+                                )
+                            except Exception as sse_error:
+                                print(
+                                    f"[DEBUG] SSE emit_tool_response failed (non-critical): {sse_error}"
+                                )
+
                         except Exception as e:
                             tool_result = json.dumps({"error": str(e)})
+                            print(
+                                f"[DEBUG] Tool '{tool_name}' failed with error: {str(e)}"
+                            )
+                            # Emit error event (non-blocking, don't let SSE errors interrupt flow)
+                            try:
+                                sse_service = get_local_sse_service()
+                                await sse_service.emit_tool_error(
+                                    conversation_id,
+                                    {
+                                        "tool_call_id": tool_call.id,
+                                        "tool_name": tool_name,
+                                        "error": str(e),
+                                        "timestamp": datetime.utcnow().isoformat()
+                                        + "Z",
+                                    },
+                                )
+                            except Exception as sse_error:
+                                print(
+                                    f"[DEBUG] SSE emit_tool_error failed (non-critical): {sse_error}"
+                                )
 
                     # Save tool response message
                     tool_msg_id = f"msg-{uuid.uuid4().hex[:16]}"
@@ -271,6 +377,15 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                         }
                     )
 
+                # Debug print to see what's happening
+                print(
+                    f"[DEBUG] After tool execution, messages_for_llm length: {len(messages_for_llm)}"
+                )
+                for i, msg in enumerate(messages_for_llm):
+                    print(
+                        f"[DEBUG] Message {i}: {msg['role']} - {msg.get('tool_call_id', 'no tool_id')}"
+                    )
+
                 # Update request params for next iteration
                 request_params["messages"] = [
                     {"role": "system", "content": system_prompt}
@@ -278,6 +393,9 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
 
             else:
                 # Final response without tool calls
+                print(
+                    f"[DEBUG] Final assistant response (length={len(response_message.content or '')})"
+                )
                 assistant_msg_id = f"msg-{uuid.uuid4().hex[:16]}"
                 timestamp = datetime.utcnow().isoformat() + "Z"
 

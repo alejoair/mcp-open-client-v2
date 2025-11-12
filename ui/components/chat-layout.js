@@ -94,7 +94,9 @@ function ChatLayout({ onOpenConversationChange }) {
                     icon: React.createElement('i', { className: 'fas fa-cog', style: { fontSize: '12px' } }),
                     onClick: function(e) {
                         e.stopPropagation();
-                        setSelectedConversation(conversation);
+                        // Get fresh conversation data from the conversations list to ensure we have latest values
+                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
+                        setSelectedConversation(freshConversation);
                         setSettingsVisible(true);
                     },
                     style: { padding: '2px 4px', height: 'auto' }
@@ -230,6 +232,9 @@ function ChatLayout({ onOpenConversationChange }) {
                     return item;
                 });
             });
+
+            // Update selected conversation so modal shows updated values if reopened
+            setSelectedConversation(updated);
         } catch (err) {
             throw err;
         }
@@ -284,7 +289,10 @@ function ChatLayout({ onOpenConversationChange }) {
         }),
         React.createElement(ConversationSettingsModal, {
             visible: settingsVisible,
-            onClose: function() { setSettingsVisible(false); },
+            onClose: function() {
+                setSettingsVisible(false);
+                setSelectedConversation(null);
+            },
             conversation: selectedConversation,
             onSave: handleSaveSettings
         }),

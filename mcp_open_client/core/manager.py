@@ -1,96 +1,37 @@
 """
-MCP Server Manager - Integrates FastMCP clients with process management.
+MCP Server Manager - Main orchestrator for MCP server operations.
+
+This manager coordinates between different specialized modules:
+- transport_factory: Creates FastMCP transports
+- lifecycle_manager: Handles server start/stop/shutdown
+- tool_operations: Manages tool discovery and execution
+- process: Manages server configuration and state
 """
 
-import asyncio
 from typing import Any, Dict, List, Optional
 
-try:
-    from fastmcp import Client
-except ImportError:
-    Client = None
-
-from ..api.models.server import ServerInfo, ServerStatus, ToolInfo
+from ..api.models.server import ServerInfo, ToolInfo
 from ..exceptions import MCPError
+from . import lifecycle_manager, tool_operations
 from .process import ProcessManager
 
 
 class MCPServerManager:
     """
-    Main manager for MCP servers using FastMCP clients and process management.
+    Main manager for MCP servers using FastMCP transports.
+
+    This manager creates and manages FastMCP transports (not clients) for each server.
+    The transports have keep_alive=True, which means they maintain subprocess connections.
+    When tools need to be called, we create a temporary Client with the transport using
+    'async with', which FastMCP handles efficiently.
     """
 
     def __init__(self):
         """Initialize MCP server manager."""
         self._process_manager = ProcessManager()
-        self._clients: Dict[str, Client] = {}
+        self._transports: Dict[str, Any] = {}  # Stores ClientTransport instances
 
-    def _create_fastmcp_client(self, config):
-        """Create appropriate FastMCP client based on command configuration."""
-        import logging
-
-        logger = logging.getLogger(__name__)
-
-        from fastmcp.client import (
-            NodeStdioTransport,
-            NpxStdioTransport,
-            PythonStdioTransport,
-        )
-
-        command = config.command.lower()
-        logger.info(f"Creating FastMCP client for command: {config.command}")
-        logger.info(f"Command lower: {command}")
-        logger.info(f"Args: {config.args}")
-
-        # Handle npm/npx packages
-        if command == "npx" or command == "npm.cmd" or "npx.cmd" in command:
-            logger.info("Detected npx/npm command, using NpxStdioTransport")
-            # Extract package name from args
-            if config.args and len(config.args) >= 2:
-                if config.args[0] in ["-y", "-x"]:
-                    package_name = config.args[1]
-                    remaining_args = config.args[2:] if len(config.args) > 2 else []
-                else:
-                    package_name = config.args[0]
-                    remaining_args = config.args[1:] if len(config.args) > 1 else []
-
-                logger.info(f"Package: {package_name}, Args: {remaining_args}")
-                transport = NpxStdioTransport(
-                    package=package_name, args=remaining_args, env_vars=config.env
-                )
-                return Client(transport)
-            else:
-                logger.error("Not enough arguments for npx command")
-
-        # Handle node commands
-        elif command == "node" or command.endswith("node.exe"):
-            logger.info("Detected node command, using NodeStdioTransport")
-            if config.args:
-                script_path = config.args[0]
-                remaining_args = config.args[1:] if len(config.args) > 1 else []
-                transport = NodeStdioTransport(
-                    script=script_path, args=remaining_args, env_vars=config.env
-                )
-                return Client(transport)
-
-        # Handle python commands
-        elif (
-            command == "python"
-            or command == "python3"
-            or command.endswith("python.exe")
-        ):
-            logger.info("Detected python command, using PythonStdioTransport")
-            if config.args:
-                module_path = config.args[0]
-                remaining_args = config.args[1:] if len(config.args) > 1 else []
-                transport = PythonStdioTransport(
-                    module=module_path, args=remaining_args, env_vars=config.env
-                )
-                return Client(transport)
-
-        # Fallback to generic stdio transport (command string)
-        logger.info("Using fallback generic stdio transport")
-        return Client(f"{config.command} {' '.join(config.args)}")
+    # ========== Server Configuration Operations ==========
 
     async def add_server(
         self,
@@ -139,7 +80,7 @@ class MCPServerManager:
         return await self._process_manager.add_server(config)
 
     def get_server(self, server_id: str) -> Optional[ServerInfo]:
-        """Get server information by ID."""
+        """Get server information by ID or slug."""
         return self._process_manager.get_server(server_id)
 
     def get_all_servers(self) -> List[ServerInfo]:
@@ -150,179 +91,105 @@ class MCPServerManager:
         """Find server by name."""
         return self._process_manager.find_server_by_name(name)
 
+    # ========== Server Lifecycle Operations ==========
+
     async def start_server(self, server_id: str) -> ServerInfo:
         """
-        Start an MCP server and create FastMCP client.
+        Start an MCP server by creating a FastMCP transport.
 
         Args:
-            server_id: Server identifier
+            server_id: Server identifier (UUID or slug)
 
         Returns:
             Updated server information
+
+        Raises:
+            MCPError: If server start fails
         """
-        import logging
-        import traceback
+        server = self._process_manager.get_server(server_id)
+        if not server:
+            raise MCPError(f"Server with ID '{server_id}' not found")
 
-        logger = logging.getLogger(__name__)
-
-        if Client is None:
-            raise MCPError(
-                "FastMCP is not installed. Install with: pip install fastmcp"
-            )
-
-        # Start the process
-        server = await self._process_manager.start_server(server_id)
-
-        try:
-            logger.info(
-                f"Process started successfully for server: {server.config.name}"
-            )
-
-            # Create FastMCP client for the running process
-            # For STDIO processes, we need to create the client using the command
-            process = self._process_manager.get_process(server.id)
-            if not process:
-                raise MCPError(f"Process not found for server ID '{server.id}'")
-
-            logger.info(f"Creating FastMCP client for server: {server.config.name}")
-            logger.info(f"Config command: {server.config.command}")
-            logger.info(f"Config args: {server.config.args}")
-
-            # Create FastMCP client using appropriate transport
-            client = self._create_fastmcp_client(server.config)
-
-            logger.info(
-                f"FastMCP client created successfully for server: {server.config.name}"
-            )
-
-            # Store the client using the actual UUID
-            self._clients[server.id] = client
-
-            return server
-
-        except Exception as e:
-            # Log full traceback for debugging
-            error_details = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
-            logger.error(
-                f"Failed to start server '{server.config.name}': {error_details}"
-            )
-
-            # If client creation fails, stop the process using UUID
-            try:
-                await self._process_manager.stop_server(server.id)
-            except Exception as stop_error:
-                logger.error(f"Error stopping server during cleanup: {stop_error}")
-
-            # Re-raise with full error details
-            raise MCPError(
-                f"Failed to create FastMCP client for '{server.config.name}': {error_details}"
-            )
+        return await lifecycle_manager.start_server(
+            server,
+            self._transports,
+            self._process_manager,
+        )
 
     async def stop_server(self, server_id: str) -> ServerInfo:
         """
-        Stop an MCP server and clean up FastMCP client.
+        Stop an MCP server and close the FastMCP transport.
 
         Args:
-            server_id: Server identifier (UUID) or slug
+            server_id: Server identifier (UUID or slug)
 
         Returns:
             Updated server information
-        """
-        # Get server to resolve UUID
-        server = self._process_manager.get_server(server_id)
-        if server:
-            # Clean up FastMCP client if exists (clients are stored by UUID)
-            client = self._clients.get(server.id)
-            if client:
-                try:
-                    # Close client connection if it's connected
-                    if hasattr(client, "is_connected") and client.is_connected():
-                        # FastMCP client might need explicit cleanup
-                        pass
-                except Exception:
-                    pass  # Ignore cleanup errors
-                finally:
-                    del self._clients[server.id]
 
-        # Stop the process
-        return await self._process_manager.stop_server(server_id)
+        Raises:
+            MCPError: If server not found
+        """
+        server = self._process_manager.get_server(server_id)
+        if not server:
+            raise MCPError(f"Server with ID '{server_id}' not found")
+
+        return await lifecycle_manager.stop_server(
+            server,
+            self._transports,
+            self._process_manager,
+        )
 
     async def remove_server(self, server_id: str) -> bool:
         """
         Remove a server configuration.
 
         Args:
-            server_id: Server identifier (UUID) or slug
+            server_id: Server identifier (UUID or slug)
 
         Returns:
             True if server was removed
-        """
-        # Get server to resolve UUID
-        server = self._process_manager.get_server(server_id)
-        if server:
-            # Clean up FastMCP client if exists (clients are stored by UUID)
-            client = self._clients.get(server.id)
-            if client:
-                del self._clients[server.id]
 
-        return await self._process_manager.remove_server(server_id)
+        Raises:
+            MCPError: If server not found
+        """
+        server = self._process_manager.get_server(server_id)
+        if not server:
+            return False
+
+        return await lifecycle_manager.remove_server(
+            server,
+            self._transports,
+            self._process_manager,
+        )
+
+    async def shutdown_all(self) -> None:
+        """Shutdown all running servers and clean up transports."""
+        await lifecycle_manager.shutdown_all(
+            self._transports,
+            self._process_manager,
+        )
+
+    # ========== Tool Operations ==========
 
     async def get_server_tools(self, server_id: str) -> List[ToolInfo]:
         """
         Get tools available from a running server.
 
         Args:
-            server_id: Server identifier (UUID) or slug
+            server_id: Server identifier (UUID or slug)
 
         Returns:
             List of available tools
 
         Raises:
-            MCPError: If server not running or client not available
+            MCPError: If server not running or transport not available
         """
         server = self._process_manager.get_server(server_id)
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        if server.status != ServerStatus.RUNNING:
-            raise MCPError(
-                f"Server '{server.config.name}' is not running (status: {server.status})"
-            )
-
-        # Clients are stored by UUID
-        client = self._clients.get(server.id)
-        if not client:
-            raise MCPError(
-                f"No FastMCP client available for server '{server.config.name}'"
-            )
-
-        try:
-            # Use FastMCP client to list tools
-            async with client:
-                tools_response = await client.list_tools()
-
-                # Convert FastMCP tools to ToolInfo models
-                tool_infos = []
-                # Handle different response formats
-                tools_list = (
-                    tools_response.tools
-                    if hasattr(tools_response, "tools")
-                    else tools_response
-                )
-                for tool in tools_list:
-                    tool_info = ToolInfo(
-                        name=tool.name,
-                        description=getattr(tool, "description", None),
-                        input_schema=getattr(tool, "inputSchema", None),
-                    )
-                    tool_infos.append(tool_info)
-
-                return tool_infos
-
-        except Exception as e:
-            raise MCPError(
-                f"Failed to get tools from server '{server.config.name}': {e}"
-            )
+        transport = self._transports.get(server.id)
+        return await tool_operations.get_server_tools(server, transport)
 
     async def call_server_tool(
         self, server_id: str, tool_name: str, arguments: Dict[str, Any] = None
@@ -331,7 +198,7 @@ class MCPServerManager:
         Call a tool on a running server.
 
         Args:
-            server_id: Server identifier (UUID) or slug
+            server_id: Server identifier (UUID or slug)
             tool_name: Name of the tool to call
             arguments: Tool arguments
 
@@ -339,73 +206,52 @@ class MCPServerManager:
             Tool execution result
 
         Raises:
-            MCPError: If server not running or client not available
+            MCPError: If server not running or transport not available
         """
         server = self._process_manager.get_server(server_id)
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        if server.status != ServerStatus.RUNNING:
-            raise MCPError(
-                f"Server '{server.config.name}' is not running (status: {server.status})"
-            )
+        transport = self._transports.get(server.id)
+        return await tool_operations.call_server_tool(
+            server,
+            transport,
+            tool_name,
+            arguments,
+        )
 
-        # Clients are stored by UUID
-        client = self._clients.get(server.id)
-        if not client:
-            raise MCPError(
-                f"No FastMCP client available for server '{server.config.name}'"
-            )
+    # ========== Utility Methods ==========
 
-        try:
-            # Use FastMCP client to call tool
-            async with client:
-                result = await client.call_tool(tool_name, arguments or {})
-                return result
-
-        except Exception as e:
-            raise MCPError(
-                f"Failed to call tool '{tool_name}' on server '{server.config.name}': {e}"
-            )
-
-    async def shutdown_all(self) -> None:
-        """Shutdown all running servers and clean up clients."""
-        # Close all FastMCP clients
-        for server_id in list(self._clients.keys()):
-            client = self._clients.get(server_id)
-            if client:
-                try:
-                    # Close client connection if it's connected
-                    if hasattr(client, "is_connected") and client.is_connected():
-                        pass
-                except Exception:
-                    pass  # Ignore cleanup errors
-
-        self._clients.clear()
-
-        # Shutdown all processes
-        await self._process_manager.shutdown_all()
-
-    def get_client(self, server_id: str) -> Optional[Client]:
+    def get_transport(self, server_id: str) -> Optional[Any]:
         """
-        Get the FastMCP client for a server.
+        Get the FastMCP transport for a server.
+
+        Note: This returns the transport, not a client. To use it, create
+        a temporary client with: async with Client(transport) as client:
 
         Args:
             server_id: Server identifier
 
         Returns:
-            FastMCP client or None if not available
+            FastMCP transport or None if not available
         """
-        return self._clients.get(server_id)
+        return self._transports.get(server_id)
 
     def check_server_health(self, server_id: str) -> bool:
         """
-        Check if a server process is still healthy.
+        Check if a server is healthy by checking if it has a running transport.
 
         Args:
             server_id: Server identifier
 
         Returns:
-            True if server is healthy, False otherwise
+            True if server has a transport (is running), False otherwise
         """
-        return self._process_manager.check_server_health(server_id)
+        from ..api.models.server import ServerStatus
+
+        server = self._process_manager.get_server(server_id)
+        if not server:
+            return False
+
+        # Server is healthy if it has a transport and status is RUNNING
+        return server.status == ServerStatus.RUNNING and server.id in self._transports

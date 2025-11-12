@@ -68,11 +68,56 @@ function ChatMessage({ message }) {
                     React.createElement(Space, { direction: 'vertical', style: { width: '100%', marginBottom: '8px' } },
                         React.createElement(Text, { strong: true, style: { fontSize: '12px' } }, 'Tool Calls:'),
                         message.tool_calls.map(function(tc) {
-                            return React.createElement(Tag, {
+                            // Parse arguments if available
+                            let parsedArgs = null;
+                            let isValidJSON = false;
+                            
+                            if (tc.function.arguments) {
+                                try {
+                                    parsedArgs = JSON.parse(tc.function.arguments);
+                                    isValidJSON = true;
+                                } catch (e) {
+                                    parsedArgs = tc.function.arguments;
+                                }
+                            }
+                            
+                            // Create summary for header
+                            let argsDisplay = '';
+                            if (parsedArgs && typeof parsedArgs === 'object') {
+                                const keys = Object.keys(parsedArgs);
+                                if (keys.length === 0) {
+                                    argsDisplay = 'no arguments';
+                                } else {
+                                    argsDisplay = `${keys[0]}: ${parsedArgs[keys[0]]}`;
+                                    if (keys.length > 1) argsDisplay += '...';
+                                }
+                            } else if (typeof parsedArgs === 'string') {
+                                argsDisplay = 'arguments provided';
+                            }
+                            
+                            return React.createElement(Collapse, {
                                 key: tc.id,
-                                color: 'blue',
-                                style: { marginBottom: '4px' }
-                            }, tc.function.name);
+                                ghost: true,
+                                defaultActiveKey: []
+                            },
+                                React.createElement(Panel, {
+                                    header: isValidJSON ? 'Tool Call (JSON)' : 'Tool Call Arguments',
+                                    key: '1'
+                                },
+                                    React.createElement('pre', {
+                                        style: {
+                                            background: 'white',
+                                            padding: '8px',
+                                            borderRadius: '4px',
+                                            fontSize: '12px',
+                                            overflow: 'auto',
+                                            maxHeight: '300px',
+                                            margin: 0,
+                                            whiteSpace: 'pre-wrap'
+                                        }
+                                    }, isValidJSON ? JSON.stringify(parsedArgs, null, 2) : parsedArgs || 'No arguments provided')
+                                )
+                            );
                         })
                     ) : null,
                 // Show content if present
@@ -88,6 +133,20 @@ function ChatMessage({ message }) {
 
     // Tool response message style
     if (isTool) {
+        // Try to parse the tool response as JSON
+        let parsedResponse = null;
+        let isValidJSON = false;
+        
+        if (message.content) {
+            try {
+                parsedResponse = JSON.parse(message.content);
+                isValidJSON = true;
+            } catch (e) {
+                // Not valid JSON, will display as text
+                parsedResponse = message.content;
+            }
+        }
+        
         return React.createElement('div', {
             style: {
                 display: 'flex',
@@ -111,9 +170,20 @@ function ChatMessage({ message }) {
                         defaultActiveKey: []
                     },
                         React.createElement(Panel, {
-                            header: 'Tool Response',
+                            header: isValidJSON ? 'Tool Response (JSON)' : 'Tool Response',
                             key: '1'
                         },
+                            isValidJSON ? React.createElement('pre', {
+                                style: {
+                                    background: 'white',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    overflow: 'auto',
+                                    maxHeight: '300px',
+                                    whiteSpace: 'pre-wrap'
+                                }
+                            }, JSON.stringify(parsedResponse, null, 2)) :
                             React.createElement('pre', {
                                 style: {
                                     background: 'white',
@@ -121,7 +191,8 @@ function ChatMessage({ message }) {
                                     borderRadius: '4px',
                                     fontSize: '12px',
                                     overflow: 'auto',
-                                    maxHeight: '300px'
+                                    maxHeight: '300px',
+                                    whiteSpace: 'pre-wrap'
                                 }
                             }, message.content)
                         )
