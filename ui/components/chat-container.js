@@ -7,55 +7,6 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
     const [tokenInfo, setTokenInfo] = React.useState(null);
     const [conversation, setConversation] = React.useState(null);
     const { sendMessage, getConversation } = useConversations();
-    
-    // Import hook dynamically to avoid circular dependencies
-    const [toolEvents, setToolEvents] = React.useState([]);
-    const [isSSEConnected, setIsSSEConnected] = React.useState(false);
-    const [isSSEConnecting, setIsSSEConnecting] = React.useState(false);
-    
-    // Setup SSE connection
-    React.useEffect(function() {
-        if (!conversationId) return;
-        
-        setIsSSEConnecting(true);
-        setToolEvents([]);
-        
-        const baseUrl = window.location.origin;
-        const sseUrl = `${baseUrl}/sse/conversations/${conversationId}`;
-        
-        const eventSource = new EventSource(sseUrl);
-        
-        eventSource.onopen = function() {
-            console.log('SSE connection opened for conversation:', conversationId);
-            setIsSSEConnecting(false);
-            setIsSSEConnected(true);
-        };
-        
-        eventSource.onmessage = function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                console.log('SSE Event received:', data);
-                setToolEvents(prev => [...prev, {
-                    ...data,
-                    id: Date.now() + Math.random()
-                }]);
-            } catch (error) {
-                console.error('Error parsing SSE event data:', error);
-            }
-        };
-        
-        eventSource.onerror = function(error) {
-            console.error('SSE connection error:', error);
-            setIsSSEConnecting(false);
-            setIsSSEConnected(false);
-        };
-        
-        return function() {
-            eventSource.close();
-            setIsSSEConnected(false);
-            setIsSSEConnecting(false);
-        };
-    }, [conversationId]);
 
     // Load conversation and messages when conversation changes
     React.useEffect(function() {
@@ -236,12 +187,6 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
             React.createElement(ChatMessagesList, {
                 messages: filteredMessages,
                 loading: loading
-            }),
-            // Tool call streaming display
-            React.createElement(ToolCallDisplay, {
-                events: toolEvents,
-                isConnected: isSSEConnected,
-                isConnecting: isSSEConnecting
             })
         ),
         // Input at bottom (fixed)
