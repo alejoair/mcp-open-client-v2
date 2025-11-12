@@ -49,9 +49,9 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
         collapsedWidth: 50,
         style: {
             background: '#1f1f1f',
-            overflowY: 'auto',
             overflowX: 'hidden',
-            position: 'relative'
+            position: 'relative',
+            height: '100vh'
         },
         trigger: null
     },

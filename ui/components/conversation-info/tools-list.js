@@ -11,7 +11,8 @@ function ToolsList({ conversationId }) {
         async function loadServers() {
             try {
                 const response = await fetch('/servers/');
-                const servers = await response.json();
+                const data = await response.json();
+                const servers = Array.isArray(data) ? data : [];
                 const map = {};
                 servers.forEach(function(server) {
                     map[server.id] = server.config.slug || server.config.name;

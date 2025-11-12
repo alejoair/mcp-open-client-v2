@@ -182,6 +182,21 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                 setMessages(function(prev) {
                     return mergeMessages(dbMessages, prev);
                 });
+
+                // Calculate approximate token count (rough estimate: 4 chars = 1 token)
+                if (dbMessages.length > 0) {
+                    const totalChars = dbMessages.reduce(function(sum, msg) {
+                        const contentLength = msg.content ? msg.content.length : 0;
+                        return sum + contentLength;
+                    }, 0);
+                    const estimatedTokens = Math.ceil(totalChars / 4);
+
+                    setTokenInfo({
+                        tokenCount: estimatedTokens,
+                        tokensSent: estimatedTokens,
+                        messagesInContext: dbMessages.length
+                    });
+                }
             } catch (err) {
                 console.error('Failed to load conversation data:', err);
                 antMessage.error('Failed to load conversation data');

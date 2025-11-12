@@ -41,7 +41,14 @@ function ChatInput({ onSend, disabled }) {
                 onClick: handleSend,
                 disabled: disabled || !value.trim(),
                 icon: React.createElement('i', { className: 'fas fa-paper-plane' }),
-                style: { height: 'auto' }
+                style: {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderColor: '#667eea',
+                    fontWeight: 600,
+                    minHeight: '32px',
+                    display: 'flex',
+                    alignItems: 'center'
+                }
             })
         )
     );

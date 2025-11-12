@@ -95,6 +95,22 @@ function ProvidersProvider({ children }) {
         }
     }, []);
 
+    // Create provider
+    const createProvider = React.useCallback(async (data) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await providersService.create(data);
+            await loadProviders(); // Reload providers after creation
+            return response;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [loadProviders]);
+
     // Load providers on mount
     React.useEffect(() => {
         loadProviders();
@@ -107,6 +123,7 @@ function ProvidersProvider({ children }) {
         error,
         loadProviders,
         getProvider,
+        createProvider,
         updateModelConfig,
         updateProviderPartial,
         testProvider,

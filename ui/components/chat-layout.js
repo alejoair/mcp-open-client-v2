@@ -85,6 +85,18 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         setActiveConversationData(data);
     }, []);
 
+    // Update toolsRefreshKey in activeConversationData when it changes
+    React.useEffect(function() {
+        if (activeConversationData) {
+            setActiveConversationData(function(prev) {
+                if (prev) {
+                    return { ...prev, toolsRefreshKey: toolsRefreshKey };
+                }
+                return prev;
+            });
+        }
+    }, [toolsRefreshKey]);
+
     // Restore tabs from localStorage on mount
     React.useEffect(function() {
         if (!isRestored && conversations.length > 0 && openConversation) {

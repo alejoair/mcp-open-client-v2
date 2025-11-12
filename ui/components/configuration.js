@@ -1,15 +1,18 @@
-const { Form, Select, InputNumber, Button, message, Input, Space, Switch, Typography } = antd;
+const { Form, Select, InputNumber, Button, message, Input, Space, Switch, Typography, Modal, Alert } = antd;
 const { Text } = Typography;
 
 function Configuration() {
-    const { providers, defaultProvider, loading, updateModelConfig, updateProviderPartial, testProvider, setDefaultProvider } = useProviders();
+    const { providers, defaultProvider, loading, updateModelConfig, updateProviderPartial, testProvider, setDefaultProvider, createProvider } = useProviders();
     const [form] = Form.useForm();
+    const [newProviderForm] = Form.useForm();
     const [saving, setSaving] = React.useState(false);
     const [testing, setTesting] = React.useState(false);
     const [availableModels, setAvailableModels] = React.useState([]);
     const [modelsFetched, setModelsFetched] = React.useState(false);
     const [initialized, setInitialized] = React.useState(false);
     const [selectedProviderId, setSelectedProviderId] = React.useState(null);
+    const [createModalVisible, setCreateModalVisible] = React.useState(false);
+    const [creating, setCreating] = React.useState(false);
 
     // Set initial values when default provider loads (only once)
     React.useEffect(() => {
@@ -115,8 +118,42 @@ function Configuration() {
         }
     };
 
+    const handleCreateProvider = async (values) => {
+        setCreating(true);
+        try {
+            await createProvider({
+                name: values.name,
+                type: 'openai',
+                base_url: values.base_url,
+                api_key: ''
+            });
+            message.success('Provider created successfully');
+            setCreateModalVisible(false);
+            newProviderForm.resetFields();
+        } catch (error) {
+            message.error('Failed to create provider: ' + error.message);
+        } finally {
+            setCreating(false);
+        }
+    };
+
     return (
         <div style={{ padding: '16px', color: 'rgba(255, 255, 255, 0.9)' }}>
+            <Button
+                type="dashed"
+                block
+                icon={React.createElement('i', { className: 'fas fa-plus' })}
+                onClick={() => setCreateModalVisible(true)}
+                style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    color: 'rgba(255, 255, 255, 0.85)',
+                    marginBottom: '16px'
+                }}
+            >
+                Create New Provider
+            </Button>
+
             <Form form={form} layout="vertical" onFinish={handleSave}>
                 <Form.Item
                     label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Provider')}
@@ -238,6 +275,62 @@ function Configuration() {
                     </>
                 )}
             </Form>
+
+            <Modal
+                title="Create New Provider"
+                open={createModalVisible}
+                onCancel={() => {
+                    setCreateModalVisible(false);
+                    newProviderForm.resetFields();
+                }}
+                footer={null}
+            >
+                <Alert
+                    message="OpenAI-Compatible APIs Only"
+                    description="Currently, only OpenAI-compatible API providers are supported. This includes OpenAI, Azure OpenAI, and other services that implement the OpenAI API format."
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: '16px' }}
+                />
+                <Form
+                    form={newProviderForm}
+                    layout="vertical"
+                    onFinish={handleCreateProvider}
+                >
+                    <Form.Item
+                        label="Provider Name"
+                        name="name"
+                        rules={[{ required: true, message: 'Please enter provider name' }]}
+                    >
+                        <Input placeholder="e.g., My OpenAI Provider" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Base URL"
+                        name="base_url"
+                        rules={[
+                            { required: true, message: 'Please enter base URL' },
+                            { type: 'url', message: 'Please enter a valid URL' }
+                        ]}
+                    >
+                        <Input placeholder="e.g., https://api.openai.com/v1" />
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                            <Button onClick={() => {
+                                setCreateModalVisible(false);
+                                newProviderForm.resetFields();
+                            }}>
+                                Cancel
+                            </Button>
+                            <Button type="primary" htmlType="submit" loading={creating}>
+                                Create
+                            </Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 }
