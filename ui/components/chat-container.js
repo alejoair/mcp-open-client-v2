@@ -280,8 +280,8 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         React.createElement('div', {
             style: {
                 padding: '8px 16px',
-                backgroundColor: '#f0f0f0',
-                borderBottom: '1px solid #d9d9d9',
+                backgroundColor: '#2a2a2a',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                 display: 'flex',
                 gap: '12px',
                 flexWrap: 'wrap',
@@ -301,7 +301,7 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
             tokenInfo && conversation && conversation.max_messages && messages.length > conversation.max_messages && React.createElement('div', {
                 style: {
                     fontSize: '12px',
-                    color: '#666',
+                    color: 'rgba(255, 255, 255, 0.7)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'

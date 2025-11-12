@@ -116,10 +116,10 @@ function Configuration() {
     };
 
     return (
-        <div style={{ padding: '16px' }}>
+        <div style={{ padding: '16px', color: 'rgba(255, 255, 255, 0.9)' }}>
             <Form form={form} layout="vertical" onFinish={handleSave}>
                 <Form.Item
-                    label="Provider"
+                    label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Provider')}
                     name="provider_id"
                     rules={[{ required: true, message: 'Please select a provider' }]}
                 >
@@ -143,7 +143,7 @@ function Configuration() {
 
                 <Form.Item>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text>Set as active provider</Text>
+                        <Text style={{ color: 'rgba(255, 255, 255, 0.85)' }}>Set as active provider</Text>
                         <Switch
                             checked={selectedProviderId === defaultProvider}
                             onChange={(checked) => handleSetDefault(selectedProviderId, checked)}
@@ -153,7 +153,7 @@ function Configuration() {
                 </Form.Item>
 
                 <Form.Item
-                    label="API Key"
+                    label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'API Key')}
                     name="api_key"
                     rules={[{ required: true, message: 'Please enter API key' }]}
                 >
@@ -177,7 +177,7 @@ function Configuration() {
                 {modelsFetched && (
                     <>
                         <Form.Item
-                            label="Main Model"
+                            label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Main Model')}
                             name="main_model"
                             rules={[{ required: true, message: 'Please select main model' }]}
                         >
@@ -191,7 +191,7 @@ function Configuration() {
                         </Form.Item>
 
                         <Form.Item
-                            label="Main Model Max Tokens"
+                            label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Main Model Max Tokens')}
                             name="main_max_tokens"
                             rules={[{ required: true, message: 'Please enter max tokens' }]}
                         >
@@ -204,7 +204,7 @@ function Configuration() {
                         </Form.Item>
 
                         <Form.Item
-                            label="Small Model"
+                            label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Small Model')}
                             name="small_model"
                             rules={[{ required: true, message: 'Please select small model' }]}
                         >
@@ -218,7 +218,7 @@ function Configuration() {
                         </Form.Item>
 
                         <Form.Item
-                            label="Small Model Max Tokens"
+                            label={React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } }, 'Small Model Max Tokens')}
                             name="small_max_tokens"
                             rules={[{ required: true, message: 'Please enter max tokens' }]}
                         >

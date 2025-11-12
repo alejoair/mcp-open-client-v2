@@ -133,7 +133,7 @@ function MCPServers() {
                 alignItems: 'center',
                 marginBottom: '8px'
             }}>
-                <Text strong style={{ fontSize: '14px' }}>MCP Servers</Text>
+                <Text strong style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.9)' }}>MCP Servers</Text>
                 <Button
                     type="primary"
                     size="small"
@@ -154,7 +154,7 @@ function MCPServers() {
                             key={server.id}
                             style={{
                                 padding: '8px 0',
-                                borderBottom: '1px solid #f0f0f0'
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
                             }}
                         >
                             <div style={{ width: '100%' }}>
@@ -164,7 +164,7 @@ function MCPServers() {
                                     alignItems: 'center',
                                     marginBottom: '4px'
                                 }}>
-                                    <Text strong style={{ fontSize: '13px' }}>
+                                    <Text strong style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.9)' }}>
                                         {server.config.name}
                                     </Text>
                                     <Tag
@@ -224,15 +224,15 @@ function MCPServers() {
                                     <div style={{
                                         marginTop: '8px',
                                         padding: '8px',
-                                        backgroundColor: '#f6f8fa',
+                                        backgroundColor: '#2a2a2a',
                                         borderRadius: '4px',
-                                        border: '1px solid #e1e4e8'
+                                        border: '1px solid rgba(255, 255, 255, 0.1)'
                                     }}>
-                                        <Text strong style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>
+                                        <Text strong style={{ fontSize: '12px', marginBottom: '4px', display: 'block', color: 'rgba(255, 255, 255, 0.85)' }}>
                                             Available Tools:
                                         </Text>
                                         {loadingTools[server.id] ? (
-                                            <Text style={{ fontSize: '11px', color: '#666' }}>Loading tools...</Text>
+                                            <Text style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.6)' }}>Loading tools...</Text>
                                         ) : (
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                                 {(serverTools[server.id] || []).map(function(tool) {

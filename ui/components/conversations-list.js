@@ -54,7 +54,7 @@ function ConversationsList({ onSelectConversation }) {
         return React.createElement('div', {
             style: { padding: '20px', textAlign: 'center' }
         },
-            React.createElement(Spin, { tip: 'Loading...' })
+            React.createElement(Spin, { tip: React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.7)' } }, 'Loading...') })
         );
     }
 
@@ -64,9 +64,10 @@ function ConversationsList({ onSelectConversation }) {
         },
             React.createElement(Empty, {
                 description: React.createElement(Text, {
-                    style: { color: '#999', fontSize: '12px' }
+                    style: { color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }
                 }, 'No conversations yet'),
-                image: Empty.PRESENTED_IMAGE_SIMPLE
+                image: Empty.PRESENTED_IMAGE_SIMPLE,
+                imageStyle: { opacity: 0.3 }
             })
         );
     }
@@ -75,12 +76,15 @@ function ConversationsList({ onSelectConversation }) {
         style: {
             padding: '8px',
             maxHeight: 'calc(100vh - 300px)',
-            overflow: 'auto'
+            overflow: 'auto',
+            background: 'transparent'
         }
     },
         React.createElement(List, {
             dataSource: conversations,
             size: 'small',
+            split: false,
+            style: { background: 'transparent' },
             renderItem: function(conversation) {
                 const isSelected = selectedId === conversation.id;
 

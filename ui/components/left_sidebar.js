@@ -6,29 +6,32 @@ function LeftSidebar({ collapsed, onCollapse, onSelectConversation }) {
     const items = [
         {
             key: '1',
-            label: React.createElement('span', null,
+            label: React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } },
                 React.createElement('i', { className: 'fas fa-comments', style: { marginRight: '8px' } }),
                 'Conversations'
             ),
             children: React.createElement(ConversationsList, {
                 onSelectConversation: onSelectConversation
-            })
+            }),
+            style: { background: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }
         },
         {
             key: '2',
-            label: React.createElement('span', null,
+            label: React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } },
                 React.createElement('i', { className: 'fas fa-cog', style: { marginRight: '8px' } }),
                 'Configuration'
             ),
-            children: React.createElement(Configuration)
+            children: React.createElement(Configuration),
+            style: { background: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }
         },
         {
             key: '3',
-            label: React.createElement('span', null,
+            label: React.createElement('span', { style: { color: 'rgba(255, 255, 255, 0.85)' } },
                 React.createElement('i', { className: 'fas fa-server', style: { marginRight: '8px' } }),
                 'MCP Servers'
             ),
-            children: React.createElement(MCPServers)
+            children: React.createElement(MCPServers),
+            style: { background: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }
         }
     ];
 
@@ -95,11 +98,26 @@ function LeftSidebar({ collapsed, onCollapse, onSelectConversation }) {
                         style: { margin: 0, color: 'white' }
                     }, 'MCP Open Client')
                 ),
-                React.createElement(Divider, { style: { margin: 0 } }),
+                React.createElement(Divider, { style: { margin: 0, background: 'rgba(255, 255, 255, 0.1)' } }),
                 React.createElement(Collapse, {
                     accordion: true,
                     items: items,
-                    defaultActiveKey: ['1']
+                    defaultActiveKey: ['1'],
+                    style: {
+                        background: 'transparent',
+                        border: 'none'
+                    },
+                    expandIconPosition: 'end',
+                    styles: {
+                        header: {
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            color: 'rgba(255, 255, 255, 0.85)'
+                        },
+                        content: {
+                            background: '#1a1a1a',
+                            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                        }
+                    }
                 })
             ),
             collapsed && React.createElement('div', {

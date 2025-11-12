@@ -6,12 +6,13 @@ function Header() {
     return (
         React.createElement(AntHeader, {
             style: {
-                background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
+                background: '#1f1f1f',
                 padding: '0 24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                 height: '64px',
                 position: 'sticky',
                 top: 0,

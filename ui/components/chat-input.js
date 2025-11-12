@@ -20,8 +20,8 @@ function ChatInput({ onSend, disabled }) {
     return React.createElement('div', {
         style: {
             padding: '16px',
-            background: 'white',
-            borderTop: '1px solid #f0f0f0'
+            background: '#2a2a2a',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
         }
     },
         React.createElement(Space.Compact, {

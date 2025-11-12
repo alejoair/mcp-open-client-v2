@@ -50,7 +50,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #f5f7fa;
+            background: #1a1a1a;
         }
 
         #root {
@@ -64,30 +64,163 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #2a2a2a;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: #555;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #777;
         }
 
         /* Ant Design customizations */
         .ant-layout {
             min-height: 100vh;
+            background: #1a1a1a;
         }
 
         .ant-layout-sider {
-            background: #fff;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+            background: #1f1f1f;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.3);
         }
 
         .ant-layout-content {
-            background: #f5f7fa;
+            background: #1a1a1a;
+        }
+
+        /* Collapse dark theme - specific to left sidebar */
+        .ant-collapse {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .ant-collapse-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .ant-collapse-header {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            padding: 12px 16px !important;
+        }
+
+        .ant-collapse-header:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .ant-collapse-content {
+            background: transparent !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .ant-collapse-content-box {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+
+        .ant-collapse .ant-collapse-arrow {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        /* List dark theme */
+        .ant-list {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-list-item {
+            background: transparent !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .ant-list-split .ant-list-item {
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Empty component dark theme */
+        .ant-empty {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .ant-empty-description {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Spin component dark theme */
+        .ant-spin {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .ant-spin-text {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        /* Tabs dark theme */
+        .ant-tabs {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-tabs-nav {
+            background: #2a2a2a !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .ant-tabs-nav-wrap {
+            background: transparent !important;
+        }
+
+        .ant-tabs-nav-operations {
+            background: #2a2a2a !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .ant-tabs-tab {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .ant-tabs-tab-active {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .ant-tabs-tab:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-tabs-nav-add {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .ant-tabs-nav-add:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-tabs-content-holder {
+            background: #1a1a1a !important;
+        }
+
+        .ant-tabs-content {
+            background: #1a1a1a !important;
+        }
+
+        .ant-tabs-content-top {
+            background: #1a1a1a !important;
+        }
+
+        .ant-tabs-tabpane {
+            background: #1a1a1a !important;
+        }
+
+        .ant-tabs-ink-bar {
+            background: #667eea !important;
         }
 
         /* Card animations */

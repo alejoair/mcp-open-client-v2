@@ -28,19 +28,27 @@ function ChatMessage({ message, toolResponses }) {
         },
             React.createElement('div', {
                 style: {
+                    minWidth: '200px',
                     maxWidth: '70%',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: 'white',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    borderBottomRightRadius: '4px'
+                    borderBottomRightRadius: '4px',
+                    position: 'relative'
                 }
             },
                 React.createElement(Text, {
-                    style: { color: 'white', display: 'block', marginBottom: '4px' }
+                    style: { color: 'white', display: 'block' }
                 }, message.content),
                 React.createElement(Text, {
-                    style: { color: 'rgba(255,255,255,0.7)', fontSize: '12px' }
+                    style: {
+                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: '9px',
+                        position: 'absolute',
+                        bottom: '4px',
+                        right: '8px'
+                    }
                 }, timestamp)
             )
         );
@@ -60,11 +68,13 @@ function ChatMessage({ message, toolResponses }) {
             React.createElement('div', {
                 style: {
                     maxWidth: '90%',
-                    background: 'white',
+                    background: '#2a2a2a',
                     padding: '10px 14px',
                     borderRadius: '12px',
                     borderBottomLeftRadius: '4px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    position: 'relative',
+                    color: 'rgba(255, 255, 255, 0.9)'
                 }
             },
                 // Show tool calls if present - Ultra compact design
@@ -136,11 +146,11 @@ function ChatMessage({ message, toolResponses }) {
                                         // Arguments column
                                         React.createElement('div', null,
                                             React.createElement('div', {
-                                                style: { fontWeight: 600, marginBottom: '4px', color: '#666' }
+                                                style: { fontWeight: 600, marginBottom: '4px', color: 'rgba(255, 255, 255, 0.7)' }
                                             }, 'Arguments:'),
                                             React.createElement('pre', {
                                                 style: {
-                                                    background: '#f5f5f5',
+                                                    background: '#1a1a1a',
                                                     padding: '4px',
                                                     borderRadius: '3px',
                                                     fontSize: '9px',
@@ -148,7 +158,9 @@ function ChatMessage({ message, toolResponses }) {
                                                     maxHeight: '100px',
                                                     margin: 0,
                                                     whiteSpace: 'pre-wrap',
-                                                    lineHeight: '1.2'
+                                                    lineHeight: '1.2',
+                                                    color: 'rgba(255, 255, 255, 0.9)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.1)'
                                                 }
                                             }, isValidJSON ? JSON.stringify(parsedArgs, null, 2) : parsedArgs || 'No arguments')
                                         ),
@@ -159,7 +171,7 @@ function ChatMessage({ message, toolResponses }) {
                                             }, responseError ? 'Error:' : 'Result:'),
                                             toolResponse._status !== 'pending' && React.createElement('pre', {
                                                 style: {
-                                                    background: responseError ? '#fff1f0' : '#f6ffed',
+                                                    background: responseError ? '#3d1a1a' : '#1a3d1a',
                                                     padding: '4px',
                                                     borderRadius: '3px',
                                                     fontSize: '9px',
@@ -167,7 +179,9 @@ function ChatMessage({ message, toolResponses }) {
                                                     maxHeight: '100px',
                                                     margin: 0,
                                                     whiteSpace: 'pre-wrap',
-                                                    lineHeight: '1.2'
+                                                    lineHeight: '1.2',
+                                                    color: responseError ? '#ff7875' : '#95de64',
+                                                    border: '1px solid ' + (responseError ? 'rgba(255, 77, 79, 0.3)' : 'rgba(82, 196, 26, 0.3)')
                                                 }
                                             }, isValidResponseJSON ? JSON.stringify(parsedResponse, null, 2) : parsedResponse)
                                         )
@@ -179,10 +193,16 @@ function ChatMessage({ message, toolResponses }) {
                 // Show content if present
                 message.content ? React.createElement(MarkdownRenderer, {
                     content: message.content,
-                    style: hasToolCalls ? { marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e8e8e8' } : {}
+                    style: hasToolCalls ? { marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' } : {}
                 }) : null,
                 React.createElement(Text, {
-                    style: { color: 'rgba(0,0,0,0.45)', fontSize: '12px', display: 'block', marginTop: '4px' }
+                    style: {
+                        color: 'rgba(255,255,255,0.4)',
+                        fontSize: '9px',
+                        position: 'absolute',
+                        bottom: '4px',
+                        right: '8px'
+                    }
                 }, timestamp)
             )
         );
@@ -216,10 +236,12 @@ function ChatMessage({ message, toolResponses }) {
             React.createElement('div', {
                 style: {
                     maxWidth: 'calc(70% - 20px)',
-                    background: isError ? '#fff1f0' : '#f5f5f5',
+                    background: isError ? '#3d1a1a' : '#2a2a2a',
                     padding: '10px 14px',
                     borderRadius: '12px',
-                    borderLeft: '4px solid ' + (isError ? '#ff4d4f' : '#1890ff')
+                    borderLeft: '4px solid ' + (isError ? '#ff4d4f' : '#1890ff'),
+                    position: 'relative',
+                    color: 'rgba(255, 255, 255, 0.9)'
                 }
             },
                 React.createElement(Space, { direction: 'vertical', style: { width: '100%' } },
@@ -246,30 +268,40 @@ function ChatMessage({ message, toolResponses }) {
                         },
                             isValidJSON ? React.createElement('pre', {
                                 style: {
-                                    background: 'white',
+                                    background: '#1a1a1a',
                                     padding: '8px',
                                     borderRadius: '4px',
                                     fontSize: '12px',
                                     overflow: 'auto',
                                     maxHeight: '300px',
-                                    whiteSpace: 'pre-wrap'
+                                    whiteSpace: 'pre-wrap',
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)'
                                 }
                             }, JSON.stringify(parsedResponse, null, 2)) :
                             React.createElement('pre', {
                                 style: {
-                                    background: 'white',
+                                    background: '#1a1a1a',
                                     padding: '8px',
                                     borderRadius: '4px',
                                     fontSize: '12px',
                                     overflow: 'auto',
                                     maxHeight: '300px',
-                                    whiteSpace: 'pre-wrap'
+                                    whiteSpace: 'pre-wrap',
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)'
                                 }
                             }, message.content)
                         )
                     ),
                     React.createElement(Text, {
-                        style: { color: 'rgba(0,0,0,0.45)', fontSize: '12px' }
+                        style: {
+                            color: 'rgba(255,255,255,0.4)',
+                            fontSize: '9px',
+                            position: 'absolute',
+                            bottom: '4px',
+                            right: '8px'
+                        }
                     }, timestamp)
                 )
             )
@@ -280,7 +312,10 @@ function ChatMessage({ message, toolResponses }) {
     return React.createElement('div', {
         style: { marginBottom: '16px' }
     },
-        React.createElement(Text, { type: 'secondary' },
+        React.createElement(Text, {
+            type: 'secondary',
+            style: { color: 'rgba(255, 255, 255, 0.7)' }
+        },
             `Unknown message type: ${message.role}`
         )
     );

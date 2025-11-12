@@ -66,11 +66,16 @@ function ChatMessagesList({ messages, loading }) {
                 height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                background: '#1a1a1a'
             }
         },
             React.createElement(Empty, {
-                description: 'No messages yet. Start a conversation!'
+                description: React.createElement('span', {
+                    style: { color: 'rgba(255, 255, 255, 0.5)' }
+                }, 'No messages yet. Start a conversation!'),
+                image: Empty.PRESENTED_IMAGE_SIMPLE,
+                imageStyle: { opacity: 0.3 }
             })
         );
     }
@@ -80,7 +85,8 @@ function ChatMessagesList({ messages, loading }) {
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '100%'
+            minHeight: '100%',
+            background: '#1a1a1a'
         }
     },
         // Render grouped messages
@@ -108,10 +114,11 @@ function ChatMessagesList({ messages, loading }) {
         },
             React.createElement('div', {
                 style: {
-                    background: 'white',
+                    background: '#2a2a2a',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    color: 'rgba(255, 255, 255, 0.9)'
                 }
             },
                 React.createElement(Spin, {
