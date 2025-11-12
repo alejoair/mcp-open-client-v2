@@ -122,10 +122,12 @@ function Configuration() {
         setCreating(true);
         try {
             await createProvider({
-                name: values.name,
-                type: 'openai',
-                base_url: values.base_url,
-                api_key: ''
+                provider: {
+                    name: values.name,
+                    type: 'openai',
+                    base_url: values.base_url,
+                    api_key: ''
+                }
             });
             message.success('Provider created successfully');
             setCreateModalVisible(false);
@@ -140,14 +142,11 @@ function Configuration() {
     return (
         <div style={{ padding: '16px', color: 'rgba(255, 255, 255, 0.9)' }}>
             <Button
-                type="dashed"
+                type="primary"
                 block
                 icon={React.createElement('i', { className: 'fas fa-plus' })}
                 onClick={() => setCreateModalVisible(true)}
                 style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    color: 'rgba(255, 255, 255, 0.85)',
                     marginBottom: '16px'
                 }}
             >

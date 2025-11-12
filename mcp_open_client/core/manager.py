@@ -28,7 +28,7 @@ class MCPServerManager:
     def __init__(self):
         """Initialize MCP server manager."""
         self._process_manager = ProcessManager()
-        self._clients: Dict[str, Any] = {}  # Stores FastMCP Client instances
+        self._transports: Dict[str, Any] = {}  # Stores FastMCP Transport instances
 
     # ========== Server Configuration Operations ==========
 
@@ -111,7 +111,7 @@ class MCPServerManager:
 
         return await lifecycle_manager.start_server(
             server,
-            self._clients,
+            self._transports,
             self._process_manager,
         )
 
@@ -134,7 +134,7 @@ class MCPServerManager:
 
         return await lifecycle_manager.stop_server(
             server,
-            self._clients,
+            self._transports,
             self._process_manager,
         )
 
@@ -157,14 +157,14 @@ class MCPServerManager:
 
         return await lifecycle_manager.remove_server(
             server,
-            self._clients,
+            self._transports,
             self._process_manager,
         )
 
     async def shutdown_all(self) -> None:
         """Shutdown all running servers and clean up transports."""
         await lifecycle_manager.shutdown_all(
-            self._clients,
+            self._transports,
             self._process_manager,
         )
 
@@ -187,7 +187,7 @@ class MCPServerManager:
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        transport = self._clients.get(server.id)
+        transport = self._transports.get(server.id)
         return await tool_operations.get_server_tools(server, transport)
 
     async def call_server_tool(
@@ -211,7 +211,7 @@ class MCPServerManager:
         if not server:
             raise MCPError(f"Server with ID or slug '{server_id}' not found")
 
-        transport = self._clients.get(server.id)
+        transport = self._transports.get(server.id)
         return await tool_operations.call_server_tool(
             server,
             transport,
@@ -221,27 +221,27 @@ class MCPServerManager:
 
     # ========== Utility Methods ==========
 
-    def get_client(self, server_id: str) -> Optional[Any]:
+    def get_transport(self, server_id: str) -> Optional[Any]:
         """
-        Get the FastMCP client for a server.
+        Get the FastMCP transport for a server.
 
         Args:
             server_id: Server identifier
 
         Returns:
-            FastMCP client or None if not available
+            FastMCP transport or None if not available
         """
-        return self._clients.get(server_id)
+        return self._transports.get(server_id)
 
     def check_server_health(self, server_id: str) -> bool:
         """
-        Check if a server is healthy by checking if it has a running client.
+        Check if a server is healthy by checking if it has a running transport.
 
         Args:
             server_id: Server identifier
 
         Returns:
-            True if server has a client (is running), False otherwise
+            True if server has a transport (is running), False otherwise
         """
         from ..api.models.server import ServerStatus
 
@@ -249,5 +249,5 @@ class MCPServerManager:
         if not server:
             return False
 
-        # Server is healthy if it has a client and status is RUNNING
-        return server.status == ServerStatus.RUNNING and server.id in self._clients
+        # Server is healthy if it has a transport and status is RUNNING
+        return server.status == ServerStatus.RUNNING and server.id in self._transports

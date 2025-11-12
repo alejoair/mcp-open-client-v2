@@ -19,42 +19,46 @@ logger = logging.getLogger(__name__)
 
 async def get_server_tools(
     server: ServerInfo,
-    client: Any,
+    transport: Any,
 ) -> List[ToolInfo]:
     """
     Get tools available from a running server.
 
-    Uses the FastMCP Client to list available tools.
-    The client maintains the subprocess connection across calls.
+    Creates a temporary FastMCP Client using the stored transport.
+    The transport maintains the subprocess connection across calls.
 
     Args:
         server: ServerInfo object
-        client: FastMCP client instance
+        transport: FastMCP transport instance
 
     Returns:
         List of available tools
 
     Raises:
-        MCPError: If server not running or client not available
+        MCPError: If server not running or transport not available
     """
     if server.status != ServerStatus.RUNNING:
         raise MCPError(
             f"Server '{server.config.name}' is not running (status: {server.status})"
         )
 
-    if not client:
-        raise MCPError(f"No FastMCP client available for server '{server.config.name}'")
+    if not transport:
+        raise MCPError(
+            f"No FastMCP transport available for server '{server.config.name}'"
+        )
 
     try:
         logger.info(
             f"Getting tools from server '{server.config.name}' (ID: {server.id})"
         )
 
-        # Use the client directly to list tools
-        # Add timeout to prevent hanging
-        tools_response = await asyncio.wait_for(
-            client.list_tools(), timeout=10.0  # 10 second timeout
-        )
+        # Create temporary client with the transport
+        # The transport reuses the subprocess connection
+        async with Client(transport) as client:
+            # Add timeout to prevent hanging
+            tools_response = await asyncio.wait_for(
+                client.list_tools(), timeout=10.0  # 10 second timeout
+            )
 
         # Convert FastMCP tools to ToolInfo models
         tool_infos = []
@@ -89,19 +93,19 @@ async def get_server_tools(
 
 async def call_server_tool(
     server: ServerInfo,
-    client: Any,
+    transport: Any,
     tool_name: str,
     arguments: Dict[str, Any] = None,
 ) -> Any:
     """
     Call a tool on a running server.
 
-    Uses the FastMCP Client to call the tool.
-    The client maintains the subprocess connection across calls.
+    Creates a temporary FastMCP Client using the stored transport.
+    The transport maintains the subprocess connection across calls.
 
     Args:
         server: ServerInfo object
-        client: FastMCP client instance
+        transport: FastMCP transport instance
         tool_name: Name of the tool to call
         arguments: Tool arguments
 
@@ -109,27 +113,31 @@ async def call_server_tool(
         Tool execution result
 
     Raises:
-        MCPError: If server not running or client not available
+        MCPError: If server not running or transport not available
     """
     if server.status != ServerStatus.RUNNING:
         raise MCPError(
             f"Server '{server.config.name}' is not running (status: {server.status})"
         )
 
-    if not client:
-        raise MCPError(f"No FastMCP client available for server '{server.config.name}'")
+    if not transport:
+        raise MCPError(
+            f"No FastMCP transport available for server '{server.config.name}'"
+        )
 
     try:
         logger.info(
             f"Calling tool '{tool_name}' on server '{server.config.name}' with args: {arguments}"
         )
 
-        # Use the client directly to call tool
-        # Call tool with timeout
-        result = await asyncio.wait_for(
-            client.call_tool(tool_name, arguments or {}),
-            timeout=30.0,  # 30 second timeout for tool execution
-        )
+        # Create temporary client with the transport
+        # The transport reuses the subprocess connection
+        async with Client(transport) as client:
+            # Call tool with timeout
+            result = await asyncio.wait_for(
+                client.call_tool(tool_name, arguments or {}),
+                timeout=30.0,  # 30 second timeout for tool execution
+            )
         logger.info(f"Tool '{tool_name}' completed successfully")
         return result
 

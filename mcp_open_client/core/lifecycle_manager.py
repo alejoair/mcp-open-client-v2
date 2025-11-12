@@ -14,25 +14,26 @@ except ImportError:
 from ..api.models.server import ServerInfo, ServerStatus
 from ..exceptions import MCPError
 from .process import ProcessManager
-from .transport_factory import create_client
+from .transport_factory import create_transport
 
 logger = logging.getLogger(__name__)
 
 
 async def start_server(
     server: ServerInfo,
-    clients: Dict[str, Any],
+    transports: Dict[str, Any],
     process_manager: ProcessManager,
 ) -> ServerInfo:
     """
-    Start an MCP server by creating a FastMCP client.
+    Start an MCP server by creating a FastMCP transport.
 
-    The client maintains the subprocess connection and can be reused
-    for multiple operations.
+    The transport has keep_alive=True, which means it will start and maintain
+    the subprocess connection. The transport can be reused across multiple
+    Client instances.
 
     Args:
         server: ServerInfo object
-        clients: Dictionary storing client instances by server ID
+        transports: Dictionary storing transport instances by server ID
         process_manager: ProcessManager instance
 
     Returns:
@@ -44,10 +45,10 @@ async def start_server(
     if Client is None:
         raise MCPError("FastMCP is not installed. Install with: pip install fastmcp")
 
-    # Check if client already exists (server was already running)
-    if server.id in clients:
+    # Check if transport already exists (server was already running)
+    if server.id in transports:
         logger.info(
-            f"Client already exists for server: {server.config.name}, server is running"
+            f"Transport already exists for server: {server.config.name}, server is running"
         )
         return server
 
@@ -55,22 +56,17 @@ async def start_server(
     server = process_manager._update_server_status(server.id, ServerStatus.STARTING)
 
     try:
-        logger.info(f"Creating FastMCP client for server: {server.config.name}")
+        logger.info(f"Creating FastMCP transport for server: {server.config.name}")
         logger.info(f"Config command: {server.config.command}")
         logger.info(f"Config args: {server.config.args}")
 
-        # Create FastMCP client
-        client = create_client(server.config)
+        # Create FastMCP transport (with keep_alive=True)
+        transport = create_transport(server.config)
 
-        # Connect the client initially
-        await client.__aenter__()
+        logger.info(f"Transport created successfully for server: {server.config.name}")
 
-        logger.info(
-            f"Client created and connected successfully for server: {server.config.name}"
-        )
-
-        # Store the client
-        clients[server.id] = client
+        # Store the transport
+        transports[server.id] = transport
 
         # Update server status to running
         server = process_manager._update_server_status(server.id, ServerStatus.RUNNING)
@@ -88,15 +84,15 @@ async def start_server(
             server.id, ServerStatus.ERROR, error_message=str(e)
         )
 
-        # Clean up client if it was stored
-        if server.id in clients:
+        # Clean up transport if it was stored
+        if server.id in transports:
             try:
-                client_instance = clients[server.id]
-                await client_instance.__aexit__(None, None, None)
+                transport_instance = transports[server.id]
+                await transport_instance.close()
             except Exception:
                 pass
             finally:
-                del clients[server.id]
+                del transports[server.id]
 
         # Re-raise with full error details
         raise MCPError(
@@ -106,15 +102,15 @@ async def start_server(
 
 async def stop_server(
     server: ServerInfo,
-    clients: Dict[str, Any],
+    transports: Dict[str, Any],
     process_manager: ProcessManager,
 ) -> ServerInfo:
     """
-    Stop an MCP server and close the FastMCP client.
+    Stop an MCP server and close the FastMCP transport.
 
     Args:
         server: ServerInfo object
-        clients: Dictionary storing client instances by server ID
+        transports: Dictionary storing transport instances by server ID
         process_manager: ProcessManager instance
 
     Returns:
@@ -123,18 +119,18 @@ async def stop_server(
     # Update status to stopping
     server = process_manager._update_server_status(server.id, ServerStatus.STOPPING)
 
-    # Close client if it exists
-    client = clients.get(server.id)
-    if client:
+    # Close transport if it exists
+    transport = transports.get(server.id)
+    if transport:
         try:
-            logger.info(f"Closing client for server: {server.config.name}")
-            # Close client (this stops the subprocess)
-            await client.__aexit__(None, None, None)
-            logger.info(f"Client closed for server: {server.config.name}")
+            logger.info(f"Closing transport for server: {server.config.name}")
+            # Close transport (this stops the subprocess)
+            await transport.close()
+            logger.info(f"Transport closed for server: {server.config.name}")
         except Exception as e:
-            logger.error(f"Error closing client: {e}")
+            logger.error(f"Error closing transport: {e}")
         finally:
-            del clients[server.id]
+            del transports[server.id]
 
     # Update status to stopped
     server = process_manager._update_server_status(server.id, ServerStatus.STOPPED)
@@ -144,7 +140,7 @@ async def stop_server(
 
 async def remove_server(
     server: ServerInfo,
-    clients: Dict[str, Any],
+    transports: Dict[str, Any],
     process_manager: ProcessManager,
 ) -> bool:
     """
@@ -152,48 +148,48 @@ async def remove_server(
 
     Args:
         server: ServerInfo object
-        clients: Dictionary storing client instances by server ID
+        transports: Dictionary storing transport instances by server ID
         process_manager: ProcessManager instance
 
     Returns:
         True if server was removed
     """
-    # Clean up FastMCP client if exists
-    client = clients.get(server.id)
-    if client:
+    # Clean up FastMCP transport if exists
+    transport = transports.get(server.id)
+    if transport:
         try:
-            await client.__aexit__(None, None, None)
+            await transport.close()
         except Exception:
             pass  # Ignore cleanup errors
         finally:
-            del clients[server.id]
+            del transports[server.id]
 
     return await process_manager.remove_server(server.id)
 
 
 async def shutdown_all(
-    clients: Dict[str, Any],
+    transports: Dict[str, Any],
     process_manager: ProcessManager,
 ) -> None:
     """
-    Shutdown all running servers and clean up clients.
+    Shutdown all running servers and clean up transports.
 
     Args:
-        clients: Dictionary storing client instances by server ID
+        transports: Dictionary storing transport instances by server ID
         process_manager: ProcessManager instance
     """
-    # Close all FastMCP clients
-    for server_id in list(clients.keys()):
-        client = clients.get(server_id)
-        if client:
+    # Close all FastMCP transports
+    for server_id in list(transports.keys()):
+        transport = transports.get(server_id)
+        if transport:
             try:
-                logger.info(f"Closing client for server {server_id}")
-                await client.__aexit__(None, None, None)
+                logger.info(f"Closing transport for server {server_id}")
+                await transport.close()
             except Exception as e:
-                logger.error(f"Error closing client for server {server_id}: {e}")
+                logger.error(f"Error closing transport for server {server_id}: {e}")
                 pass  # Ignore cleanup errors
 
-    clients.clear()
+    transports.clear()
 
     # Update all server statuses to stopped
     for server in process_manager.get_all_servers():

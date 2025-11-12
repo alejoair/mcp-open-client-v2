@@ -10,22 +10,21 @@ from ..exceptions import MCPError
 logger = logging.getLogger(__name__)
 
 
-def create_client(config) -> Any:
+def create_transport(config) -> Any:
     """
-    Create appropriate FastMCP client based on command configuration.
+    Create appropriate FastMCP transport based on command configuration.
 
-    Returns a FastMCP Client that maintains the subprocess connection.
+    Returns a FastMCP Transport that maintains the subprocess connection.
 
     Args:
         config: ServerConfig object with command, args, env, cwd
 
     Returns:
-        FastMCP Client instance
+        FastMCP Transport instance
 
     Raises:
-        MCPError: If client creation fails
+        MCPError: If transport creation fails
     """
-    from fastmcp import Client
     from fastmcp.client import (
         NodeStdioTransport,
         NpxStdioTransport,
@@ -40,57 +39,43 @@ def create_client(config) -> Any:
 
     # Handle npm/npx packages
     if command == "npx" or command == "npm.cmd" or "npx.cmd" in command:
-        transport = _create_npx_transport(config)
-        return Client(transport)
+        return _create_npx_transport(config)
 
     # Handle node commands
     elif command == "node" or command.endswith("node.exe"):
-        transport = _create_node_transport(config)
-        return Client(transport)
+        return _create_node_transport(config)
 
     # Handle python commands
     elif command == "python" or command == "python3" or command.endswith("python.exe"):
-        transport = _create_python_transport(config)
-        return Client(transport)
+        return _create_python_transport(config)
 
     # Fallback to generic stdio transport
     logger.info("Using fallback generic StdioTransport")
-    transport = StdioTransport(
+    return StdioTransport(
         command=config.command,
         args=config.args,
         env=config.env,
         cwd=config.cwd,
         keep_alive=True,
     )
-    return Client(transport)
 
 
 def _create_npx_transport(config) -> Any:
-    """Create NpxStdioTransport for npm/npx packages."""
-    from fastmcp.client import NpxStdioTransport
+    """Create StdioTransport for npm/npx packages."""
+    from fastmcp.client import StdioTransport
 
-    logger.info("Detected npx/npm command, using NpxStdioTransport")
+    logger.info("Detected npx/npm command, using StdioTransport directly")
 
-    # Extract package name from args
-    if config.args and len(config.args) >= 2:
-        if config.args[0] in ["-y", "-x"]:
-            package_name = config.args[1]
-            remaining_args = config.args[2:] if len(config.args) > 2 else []
-        else:
-            package_name = config.args[0]
-            remaining_args = config.args[1:] if len(config.args) > 1 else []
-
-        logger.info(f"Package: {package_name}, Args: {remaining_args}")
-        return NpxStdioTransport(
-            package=package_name,
-            args=remaining_args,
-            env_vars=config.env,
-            project_directory=config.cwd,
-            keep_alive=True,  # Reuse subprocess across calls
-        )
-    else:
-        logger.error("Not enough arguments for npx command")
-        raise MCPError("Not enough arguments for npx command")
+    # Use StdioTransport directly with full command
+    # This is the recommended approach per FastMCP documentation
+    logger.info(f"Command: {config.command}, Args: {config.args}")
+    return StdioTransport(
+        command=config.command,
+        args=config.args,
+        env=config.env,
+        cwd=config.cwd,
+        keep_alive=True,
+    )
 
 
 def _create_node_transport(config) -> Any:

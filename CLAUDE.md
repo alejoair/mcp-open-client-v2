@@ -283,3 +283,4 @@ The system auto-detects and uses appropriate FastMCP transports:
 ### Process Cleanup
 - API uses lifespan events for graceful shutdown
 - Always use `await manager.shutdown_all()` when manually managing
+- siempre mata el servidor, valida con curl que no esta corriendo y solo alli lanzalo de nuevo
