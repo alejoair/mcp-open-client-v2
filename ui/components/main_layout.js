@@ -4,11 +4,16 @@ function MainLayout() {
     const [leftCollapsed, setLeftCollapsed] = React.useState(false);
     const [rightCollapsed, setRightCollapsed] = React.useState(false);
     const [openConversationFn, setOpenConversationFn] = React.useState(null);
+    const [activeConversationData, setActiveConversationData] = React.useState(null);
 
     const handleOpenConversationChange = React.useCallback(function(fn) {
         setOpenConversationFn(function() {
             return fn;
         });
+    }, []);
+
+    const handleActiveConversationChange = React.useCallback(function(data) {
+        setActiveConversationData(data);
     }, []);
 
     return (
@@ -20,11 +25,17 @@ function MainLayout() {
             />
             <Layout>
                 <Header />
-                <MainContent onOpenConversationChange={handleOpenConversationChange} />
+                <MainContent
+                    onOpenConversationChange={handleOpenConversationChange}
+                    onActiveConversationChange={handleActiveConversationChange}
+                />
             </Layout>
             <RightSidebar
                 collapsed={rightCollapsed}
                 onCollapse={setRightCollapsed}
+                activeConversation={activeConversationData ? activeConversationData.conversation : null}
+                tokenInfo={activeConversationData ? activeConversationData.tokenInfo : null}
+                messageCount={activeConversationData ? activeConversationData.messageCount : null}
             />
         </Layout>
     );

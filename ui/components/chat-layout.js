@@ -1,13 +1,14 @@
-const { Tabs, Button, Dropdown, Typography, Space, message } = antd;
+const { Tabs, Dropdown, Typography, message } = antd;
 const { Text } = Typography;
 
-function ChatLayout({ onOpenConversationChange }) {
+function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
     const { createConversation, updateConversation, deleteConversation, conversations } = useConversations();
     const [activeKey, setActiveKey] = React.useState(null);
     const [items, setItems] = React.useState([]);
     const [settingsVisible, setSettingsVisible] = React.useState(false);
     const [toolsVisible, setToolsVisible] = React.useState(false);
     const [selectedConversation, setSelectedConversation] = React.useState(null);
+    const [activeConversationData, setActiveConversationData] = React.useState(null);
 
     const newTabIndex = React.useRef(0);
 
@@ -27,7 +28,17 @@ function ChatLayout({ onOpenConversationChange }) {
                 key: conversation.id,
                 label: renderTabLabel(conversation),
                 children: React.createElement(ChatContainer, {
-                    conversationId: conversation.id
+                    conversationId: conversation.id,
+                    onOpenSettings: function() {
+                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
+                        setSelectedConversation(freshConversation);
+                        setSettingsVisible(true);
+                    },
+                    onOpenTools: function() {
+                        setSelectedConversation(conversation);
+                        setToolsVisible(true);
+                    },
+                    onConversationUpdate: handleConversationUpdate
                 }),
                 conversation: conversation
             };
@@ -50,6 +61,17 @@ function ChatLayout({ onOpenConversationChange }) {
         setActiveKey(key);
     };
 
+    // Notify parent when active conversation changes
+    React.useEffect(function() {
+        if (onActiveConversationChange) {
+            onActiveConversationChange(activeConversationData);
+        }
+    }, [activeConversationData, onActiveConversationChange]);
+
+    const handleConversationUpdate = React.useCallback(function(data) {
+        setActiveConversationData(data);
+    }, []);
+
     const add = async function() {
         try {
             newTabIndex.current = newTabIndex.current + 1;
@@ -63,7 +85,17 @@ function ChatLayout({ onOpenConversationChange }) {
                 key: conversation.id,
                 label: renderTabLabel(conversation),
                 children: React.createElement(ChatContainer, {
-                    conversationId: conversation.id
+                    conversationId: conversation.id,
+                    onOpenSettings: function() {
+                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
+                        setSelectedConversation(freshConversation);
+                        setSettingsVisible(true);
+                    },
+                    onOpenTools: function() {
+                        setSelectedConversation(conversation);
+                        setToolsVisible(true);
+                    },
+                    onConversationUpdate: handleConversationUpdate
                 }),
                 conversation: conversation
             };
@@ -79,41 +111,7 @@ function ChatLayout({ onOpenConversationChange }) {
     };
 
     const renderTabLabel = function(conversation) {
-        return React.createElement('div', {
-            style: {
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-            }
-        },
-            React.createElement('span', null, conversation.title),
-            React.createElement(Space, { size: 4 },
-                React.createElement(Button, {
-                    type: 'text',
-                    size: 'small',
-                    icon: React.createElement('i', { className: 'fas fa-cog', style: { fontSize: '12px' } }),
-                    onClick: function(e) {
-                        e.stopPropagation();
-                        // Get fresh conversation data from the conversations list to ensure we have latest values
-                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
-                        setSelectedConversation(freshConversation);
-                        setSettingsVisible(true);
-                    },
-                    style: { padding: '2px 4px', height: 'auto' }
-                }),
-                React.createElement(Button, {
-                    type: 'text',
-                    size: 'small',
-                    icon: React.createElement('i', { className: 'fas fa-wrench', style: { fontSize: '12px' } }),
-                    onClick: function(e) {
-                        e.stopPropagation();
-                        setSelectedConversation(conversation);
-                        setToolsVisible(true);
-                    },
-                    style: { padding: '2px 4px', height: 'auto' }
-                })
-            )
-        );
+        return React.createElement('span', null, conversation.title);
     };
 
     const remove = async function(targetKey) {

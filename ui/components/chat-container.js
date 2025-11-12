@@ -1,6 +1,6 @@
-const { message: antMessage } = antd;
+const { message: antMessage, Button } = antd;
 
-function ChatContainer({ conversationId }) {
+function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversationUpdate }) {
     const [messages, setMessages] = React.useState([]);
     const [filteredMessages, setFilteredMessages] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -101,6 +101,17 @@ function ChatContainer({ conversationId }) {
         }
     }, [messages, conversation]);
 
+    // Notify parent of conversation updates
+    React.useEffect(function() {
+        if (onConversationUpdate) {
+            onConversationUpdate({
+                conversation: conversation,
+                tokenInfo: tokenInfo,
+                messageCount: messages.length
+            });
+        }
+    }, [conversation, tokenInfo, messages.length, onConversationUpdate]);
+
     const handleSend = React.useCallback(async function(content) {
         if (!conversationId) {
             antMessage.error('No conversation selected');
@@ -152,8 +163,8 @@ function ChatContainer({ conversationId }) {
             overflow: 'hidden'
         }
     },
-        // Token info display (if available)
-        tokenInfo && React.createElement('div', {
+        // Info bar with tokens and buttons (always visible)
+        React.createElement('div', {
             style: {
                 padding: '8px 16px',
                 backgroundColor: '#f0f0f0',
@@ -164,19 +175,18 @@ function ChatContainer({ conversationId }) {
                 alignItems: 'center'
             }
         },
-            React.createElement(antd.Tag, { color: 'blue' },
-                'Tokens: ' + tokenInfo.tokenCount
-            ),
-            React.createElement(antd.Tag, { color: 'green' },
-                'Sent: ' + tokenInfo.tokensSent
-            ),
-            React.createElement(antd.Tag, { color: 'orange' },
-                'Messages: ' + tokenInfo.messagesInContext
+            // Show token info if available
+            tokenInfo && React.createElement(React.Fragment, null,
+                React.createElement(antd.Tag, { color: 'blue' },
+                    'Tokens: ' + tokenInfo.tokenCount
+                ),
+                React.createElement(antd.Tag, { color: 'orange' },
+                    'Messages: ' + tokenInfo.messagesInContext
+                )
             ),
             // Show hidden messages indicator
-            conversation && conversation.max_messages && messages.length > conversation.max_messages && React.createElement('div', {
+            tokenInfo && conversation && conversation.max_messages && messages.length > conversation.max_messages && React.createElement('div', {
                 style: {
-                    marginLeft: 'auto',
                     fontSize: '12px',
                     color: '#666',
                     display: 'flex',
@@ -190,6 +200,29 @@ function ChatContainer({ conversationId }) {
                 React.createElement('span', null,
                     `Showing ${filteredMessages.length} of ${messages.length} messages`
                 )
+            ),
+            // Settings and tools buttons (always visible)
+            React.createElement('div', {
+                style: {
+                    marginLeft: 'auto',
+                    display: 'flex',
+                    gap: '8px'
+                }
+            },
+                React.createElement(Button, {
+                    type: 'default',
+                    size: 'small',
+                    icon: React.createElement('i', { className: 'fas fa-cog' }),
+                    onClick: onOpenSettings,
+                    title: 'Conversation Settings'
+                }, 'Settings'),
+                React.createElement(Button, {
+                    type: 'default',
+                    size: 'small',
+                    icon: React.createElement('i', { className: 'fas fa-wrench' }),
+                    onClick: onOpenTools,
+                    title: 'Configure Tools'
+                }, 'Tools')
             )
         ),
         // Messages list (takes remaining space with scroll)
