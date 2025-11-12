@@ -7,10 +7,11 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from ..exceptions import MCPError
 from .endpoints.chat import router as chat_router
@@ -23,6 +24,25 @@ from .endpoints.sse import router as sse_router
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware to disable caching for static files during development.
+
+    Adds Cache-Control headers to prevent browser caching of JS/CSS files.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        # Disable caching for static files (JS, CSS, etc.)
+        if request.url.path.startswith("/ui/"):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+
+        return response
 
 
 @asynccontextmanager
@@ -59,6 +79,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Add no-cache middleware for development (prevents browser caching of static files)
+app.add_middleware(NoCacheMiddleware)
 
 # Add CORS middleware
 app.add_middleware(

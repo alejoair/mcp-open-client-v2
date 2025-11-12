@@ -2,7 +2,7 @@ const { Typography, Tag, Collapse, Space, Spin } = antd;
 const { Text } = Typography;
 const { Panel } = Collapse;
 
-function ChatMessage({ message }) {
+function ChatMessage({ message, toolResponses }) {
     const isUser = message.role === 'user';
     const isAssistant = message.role === 'assistant';
     const isTool = message.role === 'tool';
@@ -48,19 +48,18 @@ function ChatMessage({ message }) {
 
     // Assistant message style
     if (isAssistant) {
-        // Reduce spacing when message has tool calls (response will follow)
         const hasToolCalls = message.tool_calls && message.tool_calls.length > 0;
 
         return React.createElement('div', {
             style: {
                 display: 'flex',
                 justifyContent: 'flex-start',
-                marginBottom: hasToolCalls ? '4px' : '16px'
+                marginBottom: '16px'
             }
         },
             React.createElement('div', {
                 style: {
-                    maxWidth: '70%',
+                    maxWidth: '90%',
                     background: 'white',
                     padding: '10px 14px',
                     borderRadius: '12px',
@@ -68,15 +67,13 @@ function ChatMessage({ message }) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }
             },
-                // Show tool calls if present
+                // Show tool calls if present - Ultra compact design
                 hasToolCalls ?
-                    React.createElement(Space, { direction: 'vertical', style: { width: '100%', marginBottom: '4px' } },
-                        React.createElement(Text, { strong: true, style: { fontSize: '11px' } }, 'Tool Calls:'),
-                        message.tool_calls.map(function(tc) {
-                            // Parse arguments if available
+                    React.createElement('div', { style: { marginBottom: '8px' } },
+                        message.tool_calls.map(function(tc, idx) {
+                            // Parse arguments
                             let parsedArgs = null;
                             let isValidJSON = false;
-                            
                             if (tc.function.arguments) {
                                 try {
                                     parsedArgs = JSON.parse(tc.function.arguments);
@@ -85,49 +82,104 @@ function ChatMessage({ message }) {
                                     parsedArgs = tc.function.arguments;
                                 }
                             }
-                            
-                            // Create summary for header
-                            let argsDisplay = '';
-                            if (parsedArgs && typeof parsedArgs === 'object') {
-                                const keys = Object.keys(parsedArgs);
-                                if (keys.length === 0) {
-                                    argsDisplay = 'no arguments';
-                                } else {
-                                    argsDisplay = `${keys[0]}: ${parsedArgs[keys[0]]}`;
-                                    if (keys.length > 1) argsDisplay += '...';
+
+                            // Find response
+                            const toolResponse = toolResponses ? toolResponses.find(function(tr) {
+                                return tr.tool_call_id === tc.id;
+                            }) : null;
+
+                            // Parse response
+                            let parsedResponse = null;
+                            let isValidResponseJSON = false;
+                            let responseError = false;
+                            if (toolResponse && toolResponse.content) {
+                                try {
+                                    parsedResponse = JSON.parse(toolResponse.content);
+                                    isValidResponseJSON = true;
+                                } catch (e) {
+                                    parsedResponse = toolResponse.content;
                                 }
-                            } else if (typeof parsedArgs === 'string') {
-                                argsDisplay = 'arguments provided';
+                                responseError = toolResponse._status === 'error';
                             }
-                            
+
+                            const statusColor = toolResponse ? (responseError ? 'red' : 'green') : 'blue';
+                            const statusIcon = toolResponse ? (responseError ? '❌' : '✅') : '⏳';
+
                             return React.createElement(Collapse, {
                                 key: tc.id,
                                 ghost: true,
-                                defaultActiveKey: []
+                                size: 'small',
+                                defaultActiveKey: [],
+                                style: { marginBottom: idx < message.tool_calls.length - 1 ? '2px' : 0 }
                             },
                                 React.createElement(Panel, {
-                                    header: isValidJSON ? 'Tool Call (JSON)' : 'Tool Call Arguments',
+                                    header: React.createElement('span', {
+                                        style: { fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }
+                                    },
+                                        React.createElement('span', null, statusIcon),
+                                        React.createElement(Tag, {
+                                            color: statusColor,
+                                            style: { fontSize: '10px', margin: 0, padding: '0 4px' }
+                                        }, tc.function.name),
+                                        toolResponse && toolResponse._status === 'pending' && React.createElement(Spin, { size: 'small' })
+                                    ),
                                     key: '1'
                                 },
-                                    React.createElement('pre', {
+                                    React.createElement('div', {
                                         style: {
-                                            background: 'white',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            fontSize: '12px',
-                                            overflow: 'auto',
-                                            maxHeight: '300px',
-                                            margin: 0,
-                                            whiteSpace: 'pre-wrap'
+                                            display: 'grid',
+                                            gridTemplateColumns: toolResponse ? '1fr 1fr' : '1fr',
+                                            gap: '8px',
+                                            fontSize: '10px'
                                         }
-                                    }, isValidJSON ? JSON.stringify(parsedArgs, null, 2) : parsedArgs || 'No arguments provided')
+                                    },
+                                        // Arguments column
+                                        React.createElement('div', null,
+                                            React.createElement('div', {
+                                                style: { fontWeight: 600, marginBottom: '4px', color: '#666' }
+                                            }, 'Arguments:'),
+                                            React.createElement('pre', {
+                                                style: {
+                                                    background: '#f5f5f5',
+                                                    padding: '4px',
+                                                    borderRadius: '3px',
+                                                    fontSize: '9px',
+                                                    overflow: 'auto',
+                                                    maxHeight: '100px',
+                                                    margin: 0,
+                                                    whiteSpace: 'pre-wrap',
+                                                    lineHeight: '1.2'
+                                                }
+                                            }, isValidJSON ? JSON.stringify(parsedArgs, null, 2) : parsedArgs || 'No arguments')
+                                        ),
+                                        // Response column
+                                        toolResponse && React.createElement('div', null,
+                                            React.createElement('div', {
+                                                style: { fontWeight: 600, marginBottom: '4px', color: responseError ? '#ff4d4f' : '#52c41a' }
+                                            }, responseError ? 'Error:' : 'Result:'),
+                                            toolResponse._status !== 'pending' && React.createElement('pre', {
+                                                style: {
+                                                    background: responseError ? '#fff1f0' : '#f6ffed',
+                                                    padding: '4px',
+                                                    borderRadius: '3px',
+                                                    fontSize: '9px',
+                                                    overflow: 'auto',
+                                                    maxHeight: '100px',
+                                                    margin: 0,
+                                                    whiteSpace: 'pre-wrap',
+                                                    lineHeight: '1.2'
+                                                }
+                                            }, isValidResponseJSON ? JSON.stringify(parsedResponse, null, 2) : parsedResponse)
+                                        )
+                                    )
                                 )
                             );
                         })
                     ) : null,
                 // Show content if present
                 message.content ? React.createElement(MarkdownRenderer, {
-                    content: message.content
+                    content: message.content,
+                    style: hasToolCalls ? { marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e8e8e8' } : {}
                 }) : null,
                 React.createElement(Text, {
                     style: { color: 'rgba(0,0,0,0.45)', fontSize: '12px', display: 'block', marginTop: '4px' }
