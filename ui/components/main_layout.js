@@ -36,6 +36,9 @@ function MainLayout() {
                 activeConversation={activeConversationData ? activeConversationData.conversation : null}
                 tokenInfo={activeConversationData ? activeConversationData.tokenInfo : null}
                 messageCount={activeConversationData ? activeConversationData.messageCount : null}
+                onOpenSettings={activeConversationData ? activeConversationData.onOpenSettings : null}
+                onOpenTools={activeConversationData ? activeConversationData.onOpenTools : null}
+                toolsRefreshKey={activeConversationData ? activeConversationData.toolsRefreshKey : 0}
             />
         </Layout>
     );

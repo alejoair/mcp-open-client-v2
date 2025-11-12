@@ -276,68 +276,6 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
             overflow: 'hidden'
         }
     },
-        // Info bar with tokens and buttons (always visible)
-        React.createElement('div', {
-            style: {
-                padding: '8px 16px',
-                backgroundColor: '#2a2a2a',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                display: 'flex',
-                gap: '12px',
-                flexWrap: 'wrap',
-                alignItems: 'center'
-            }
-        },
-            // Show token info if available
-            tokenInfo && React.createElement(React.Fragment, null,
-                React.createElement(antd.Tag, { color: 'blue' },
-                    'Tokens: ' + tokenInfo.tokenCount
-                ),
-                React.createElement(antd.Tag, { color: 'orange' },
-                    'Messages: ' + tokenInfo.messagesInContext
-                )
-            ),
-            // Show hidden messages indicator
-            tokenInfo && conversation && conversation.max_messages && messages.length > conversation.max_messages && React.createElement('div', {
-                style: {
-                    fontSize: '12px',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                }
-            },
-                React.createElement(antd.Tag, { color: 'default', size: 'small' },
-                    `${messages.length - conversation.max_messages} hidden`
-                ),
-                React.createElement('span', null,
-                    `Showing ${filteredMessages.length} of ${messages.length} messages`
-                )
-            ),
-            // Settings and tools buttons (always visible)
-            React.createElement('div', {
-                style: {
-                    marginLeft: 'auto',
-                    display: 'flex',
-                    gap: '8px'
-                }
-            },
-                React.createElement(Button, {
-                    type: 'default',
-                    size: 'small',
-                    icon: React.createElement('i', { className: 'fas fa-cog' }),
-                    onClick: onOpenSettings,
-                    title: 'Conversation Settings'
-                }, 'Settings'),
-                React.createElement(Button, {
-                    type: 'default',
-                    size: 'small',
-                    icon: React.createElement('i', { className: 'fas fa-wrench' }),
-                    onClick: onOpenTools,
-                    title: 'Configure Tools'
-                }, 'Tools')
-            )
-        ),
         // Messages list (takes remaining space with scroll)
         React.createElement('div', {
             style: {

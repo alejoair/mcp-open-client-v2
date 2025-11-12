@@ -9,11 +9,24 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
     const [toolsVisible, setToolsVisible] = React.useState(false);
     const [selectedConversation, setSelectedConversation] = React.useState(null);
     const [activeConversationData, setActiveConversationData] = React.useState(null);
+    const [isRestored, setIsRestored] = React.useState(false);
+    const [toolsRefreshKey, setToolsRefreshKey] = React.useState(0);
 
     const newTabIndex = React.useRef(0);
 
     // Function to open an existing conversation
     const openConversation = React.useCallback(function(conversation) {
+        const handleOpenSettings = function() {
+            const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
+            setSelectedConversation(freshConversation);
+            setSettingsVisible(true);
+        };
+
+        const handleOpenTools = function() {
+            setSelectedConversation(conversation);
+            setToolsVisible(true);
+        };
+
         // Check if conversation is already open
         const existingTab = items.find(function(item) {
             return item.key === conversation.id;
@@ -29,18 +42,18 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                 label: renderTabLabel(conversation),
                 children: React.createElement(ChatContainer, {
                     conversationId: conversation.id,
-                    onOpenSettings: function() {
-                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
-                        setSelectedConversation(freshConversation);
-                        setSettingsVisible(true);
-                    },
-                    onOpenTools: function() {
-                        setSelectedConversation(conversation);
-                        setToolsVisible(true);
-                    },
-                    onConversationUpdate: handleConversationUpdate
+                    onConversationUpdate: function(data) {
+                        handleConversationUpdate({
+                            ...data,
+                            onOpenSettings: handleOpenSettings,
+                            onOpenTools: handleOpenTools,
+                            toolsRefreshKey: toolsRefreshKey
+                        });
+                    }
                 }),
-                conversation: conversation
+                conversation: conversation,
+                onOpenSettings: handleOpenSettings,
+                onOpenTools: handleOpenTools
             };
 
             setItems(function(prevItems) {
@@ -48,7 +61,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
             });
             setActiveKey(conversation.id);
         }
-    }, [items]);
+    }, [items, conversations]);
 
     // Expose openConversation function to parent component
     React.useEffect(function() {
@@ -72,6 +85,38 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         setActiveConversationData(data);
     }, []);
 
+    // Restore tabs from localStorage on mount
+    React.useEffect(function() {
+        if (!isRestored && conversations.length > 0 && openConversation) {
+            const savedTabs = StorageService.get('mcp-tabs');
+            if (savedTabs && savedTabs.open && savedTabs.open.length > 0) {
+                // Restore tabs
+                savedTabs.open.forEach(function(convId) {
+                    const conv = conversations.find(function(c) { return c.id === convId; });
+                    if (conv) {
+                        openConversation(conv);
+                    }
+                });
+                // Restore active tab
+                if (savedTabs.active) {
+                    setActiveKey(savedTabs.active);
+                }
+            }
+            setIsRestored(true);
+        }
+    }, [conversations, openConversation, isRestored]);
+
+    // Save tabs to localStorage when they change
+    React.useEffect(function() {
+        if (isRestored) {
+            const openTabIds = items.map(function(item) { return item.key; });
+            StorageService.set('mcp-tabs', {
+                open: openTabIds,
+                active: activeKey
+            });
+        }
+    }, [items, activeKey, isRestored]);
+
     const add = async function() {
         try {
             newTabIndex.current = newTabIndex.current + 1;
@@ -81,23 +126,34 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                 system_prompt: 'You are a helpful AI assistant.'
             });
 
+            const handleOpenSettings = function() {
+                const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
+                setSelectedConversation(freshConversation);
+                setSettingsVisible(true);
+            };
+
+            const handleOpenTools = function() {
+                setSelectedConversation(conversation);
+                setToolsVisible(true);
+            };
+
             const newTab = {
                 key: conversation.id,
                 label: renderTabLabel(conversation),
                 children: React.createElement(ChatContainer, {
                     conversationId: conversation.id,
-                    onOpenSettings: function() {
-                        const freshConversation = conversations.find(function(c) { return c.id === conversation.id; }) || conversation;
-                        setSelectedConversation(freshConversation);
-                        setSettingsVisible(true);
-                    },
-                    onOpenTools: function() {
-                        setSelectedConversation(conversation);
-                        setToolsVisible(true);
-                    },
-                    onConversationUpdate: handleConversationUpdate
+                    onConversationUpdate: function(data) {
+                        handleConversationUpdate({
+                            ...data,
+                            onOpenSettings: handleOpenSettings,
+                            onOpenTools: handleOpenTools,
+                            toolsRefreshKey: toolsRefreshKey
+                        });
+                    }
                 }),
-                conversation: conversation
+                conversation: conversation,
+                onOpenSettings: handleOpenSettings,
+                onOpenTools: handleOpenTools
             };
 
             setItems(function(prevItems) {
@@ -296,7 +352,10 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         }),
         React.createElement(ConversationToolsModal, {
             visible: toolsVisible,
-            onClose: function() { setToolsVisible(false); },
+            onClose: function() {
+                setToolsVisible(false);
+                setToolsRefreshKey(function(prev) { return prev + 1; });
+            },
             conversationId: selectedConversation ? selectedConversation.id : null
         })
     );

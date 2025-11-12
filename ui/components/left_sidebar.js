@@ -3,6 +3,19 @@ const { Collapse, Divider, Typography, Tooltip } = antd;
 const { Title } = Typography;
 
 function LeftSidebar({ collapsed, onCollapse, onSelectConversation }) {
+    // Restore active panel from localStorage or default to '1'
+    const [activePanel, setActivePanel] = React.useState(function() {
+        const saved = StorageService.get('mcp-sidebar');
+        return saved && saved.activePanel ? [saved.activePanel] : ['1'];
+    });
+
+    // Save active panel when it changes
+    React.useEffect(function() {
+        StorageService.set('mcp-sidebar', {
+            activePanel: activePanel[0] || null
+        });
+    }, [activePanel]);
+
     const items = [
         {
             key: '1',
@@ -92,17 +105,32 @@ function LeftSidebar({ collapsed, onCollapse, onSelectConversation }) {
                     overflowY: 'auto'
                 }
             },
-                React.createElement('div', { style: { padding: '16px' } },
+                React.createElement('div', {
+                    style: {
+                        padding: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                    }
+                },
+                    React.createElement('i', {
+                        className: 'fas fa-bars',
+                        style: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: '20px'
+                        }
+                    }),
                     React.createElement(Title, {
                         level: 4,
                         style: { margin: 0, color: 'white' }
-                    }, 'MCP Open Client')
+                    }, 'Menu')
                 ),
                 React.createElement(Divider, { style: { margin: 0, background: 'rgba(255, 255, 255, 0.1)' } }),
                 React.createElement(Collapse, {
                     accordion: true,
                     items: items,
-                    defaultActiveKey: ['1'],
+                    activeKey: activePanel,
+                    onChange: setActivePanel,
                     style: {
                         background: 'transparent',
                         border: 'none'

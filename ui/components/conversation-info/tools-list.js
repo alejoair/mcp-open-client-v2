@@ -4,30 +4,50 @@ const { Text } = Typography;
 function ToolsList({ conversationId }) {
     const [tools, setTools] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
+    const [serverMap, setServerMap] = React.useState({});
 
+    // Load servers to get slugs
     React.useEffect(function() {
+        async function loadServers() {
+            try {
+                const response = await fetch('/servers/');
+                const servers = await response.json();
+                const map = {};
+                servers.forEach(function(server) {
+                    map[server.id] = server.config.slug || server.config.name;
+                });
+                setServerMap(map);
+            } catch (err) {
+                console.error('Failed to load servers:', err);
+            }
+        }
+        loadServers();
+    }, []);
+
+    const loadTools = React.useCallback(async function() {
         if (!conversationId) {
             setTools([]);
             return;
         }
 
-        async function loadTools() {
-            setLoading(true);
-            try {
-                const response = await fetch(`/conversations/${conversationId}/tools`);
-                const data = await response.json();
-                const toolsArray = Array.isArray(data.enabled_tools) ? data.enabled_tools : [];
-                setTools(toolsArray);
-            } catch (err) {
-                console.error('Failed to load tools:', err);
-                setTools([]);
-            } finally {
-                setLoading(false);
-            }
+        setLoading(true);
+        try {
+            const response = await fetch(`/conversations/${conversationId}/tools`);
+            const data = await response.json();
+            const toolsArray = Array.isArray(data.enabled_tools) ? data.enabled_tools : [];
+            setTools(toolsArray);
+        } catch (err) {
+            console.error('Failed to load tools:', err);
+            setTools([]);
+        } finally {
+            setLoading(false);
         }
-
-        loadTools();
     }, [conversationId]);
+
+    // Initial load
+    React.useEffect(function() {
+        loadTools();
+    }, [loadTools]);
 
     if (!conversationId) {
         return null;
@@ -125,7 +145,7 @@ function ToolsList({ conversationId }) {
                             fontSize: '10px',
                             color: 'rgba(255, 255, 255, 0.5)'
                         }
-                    }, `Server: ${tool.server_name}`)
+                    }, `Server: ${serverMap[tool.server_id] || tool.server_id}`)
                 );
             })
         )

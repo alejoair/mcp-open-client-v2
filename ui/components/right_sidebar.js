@@ -1,8 +1,8 @@
 const { Sider } = antd.Layout;
-const { Typography, Divider, Tooltip } = antd;
+const { Typography, Divider, Tooltip, Button } = antd;
 const { Title, Text } = Typography;
 
-function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount }) {
+function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey }) {
     // Custom trigger button
     const customTrigger = React.createElement(Tooltip, {
         title: collapsed ? 'Expand sidebar' : 'Collapse sidebar',
@@ -85,6 +85,41 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
             ),
             React.createElement(Divider, { style: { margin: 0, background: 'rgba(255, 255, 255, 0.1)' } }),
 
+            // Action buttons (Settings and Tools)
+            activeConversation && React.createElement('div', {
+                style: {
+                    padding: '12px 16px',
+                    display: 'flex',
+                    gap: '8px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }
+            },
+                React.createElement(Button, {
+                    type: 'default',
+                    size: 'small',
+                    block: true,
+                    icon: React.createElement('i', { className: 'fas fa-cog', style: { marginRight: '6px' } }),
+                    onClick: onOpenSettings,
+                    style: {
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.85)'
+                    }
+                }, 'Settings'),
+                React.createElement(Button, {
+                    type: 'default',
+                    size: 'small',
+                    block: true,
+                    icon: React.createElement('i', { className: 'fas fa-wrench', style: { marginRight: '6px' } }),
+                    onClick: onOpenTools,
+                    style: {
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.85)'
+                    }
+                }, 'Tools')
+            ),
+
             // Content
             React.createElement('div', {
                 style: {
@@ -124,6 +159,7 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                         conversation: activeConversation
                     }),
                     React.createElement(ToolsList, {
+                        key: toolsRefreshKey,
                         conversationId: activeConversation ? activeConversation.id : null
                     }),
                     React.createElement(ContextItems, {
