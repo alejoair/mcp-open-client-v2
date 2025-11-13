@@ -3,6 +3,9 @@ const { Typography, Divider, Tooltip, Button } = antd;
 const { Title, Text } = Typography;
 
 function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey }) {
+    // Get dev mode context
+    const { devMode, toggleDevMode } = useDevMode();
+
     // Custom trigger button
     const customTrigger = React.createElement(Tooltip, {
         title: collapsed ? 'Expand sidebar' : 'Collapse sidebar',
@@ -118,6 +121,48 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                         color: 'rgba(255, 255, 255, 0.85)'
                     }
                 }, 'Tools')
+            ),
+
+            // Hackerman Image with Button
+            activeConversation && React.createElement('div', {
+                style: {
+                    padding: '12px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }
+            },
+                React.createElement('img', {
+                    src: '/ui/images/hackerman.gif',
+                    alt: 'Hackerman',
+                    style: {
+                        width: '100%',
+                        maxWidth: '200px',
+                        borderRadius: '8px',
+                        border: '2px solid rgba(255, 255, 255, 0.1)'
+                    }
+                }),
+                React.createElement(Button, {
+                    type: 'primary',
+                    size: 'small',
+                    block: true,
+                    icon: React.createElement('i', {
+                        className: devMode ? 'fas fa-terminal' : 'fas fa-code',
+                        style: { marginRight: '6px' }
+                    }),
+                    onClick: toggleDevMode,
+                    style: {
+                        background: devMode ? '#0a1a1a' : '#52c41a',
+                        borderColor: devMode ? '#00aaaa' : '#52c41a',
+                        color: devMode ? '#99ffff' : 'white',
+                        marginTop: '4px',
+                        transition: 'all 0.3s ease',
+                        textShadow: devMode ? '0 0 10px rgba(0, 255, 255, 0.6)' : 'none',
+                        boxShadow: devMode ? '0 0 15px rgba(0, 221, 221, 0.3)' : 'none'
+                    }
+                }, devMode ? 'HACKER MODE ON' : 'Dev Mode')
             ),
 
             // Content

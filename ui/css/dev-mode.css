@@ -1,0 +1,528 @@
+/* ============================================
+   DEV MODE / TERMINAL THEME
+   Low contrast monochrome terminal theme
+   ============================================ */
+
+/* Transition for smooth theme change */
+body {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main theme colors for dev mode */
+body.dev-mode {
+    background: #000000 !important;
+}
+
+/* Nuclear option - force all divs to have transparent or black background */
+body.dev-mode div {
+    background-color: transparent;
+}
+
+body.dev-mode div[class*="layout"],
+body.dev-mode div[class*="container"],
+body.dev-mode div[class*="wrapper"] {
+    background-color: transparent;
+}
+
+/* Animated panel transitions - faster for sidebars */
+body.dev-mode .ant-layout-sider {
+    animation: sidebarSlide 0.3s ease-out;
+}
+
+body.dev-mode .ant-layout-content,
+body.dev-mode .ant-card,
+body.dev-mode .ant-collapse-item,
+body.dev-mode .ant-list-item {
+    animation: panelFlip 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes sidebarSlide {
+    0% {
+        transform: translateX(-10px);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes panelFlip {
+    0% {
+        transform: perspective(1000px) rotateY(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: perspective(1000px) rotateY(90deg);
+        opacity: 0.3;
+    }
+    100% {
+        transform: perspective(1000px) rotateY(0deg);
+        opacity: 1;
+    }
+}
+
+/* Terminal console colors - medium contrast cyan/teal */
+body.dev-mode .ant-layout {
+    background: #000000 !important;
+}
+
+body.dev-mode .ant-layout-sider {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 15px rgba(58, 172, 172, 0.15), inset 0 0 30px rgba(58, 172, 172, 0.05) !important;
+}
+
+body.dev-mode .ant-layout-content {
+    background: #000000 !important;
+    border: 1px solid #00aaaa !important;
+    border-radius: 0 !important;
+}
+
+/* Hard borders everywhere */
+body.dev-mode * {
+    border-radius: 0 !important;
+}
+
+/* Higher contrast text - bright cyan/teal */
+body.dev-mode,
+body.dev-mode .ant-typography,
+body.dev-mode .ant-list-item,
+body.dev-mode .ant-collapse-header,
+body.dev-mode h1, body.dev-mode h2, body.dev-mode h3,
+body.dev-mode h4, body.dev-mode h5, body.dev-mode h6,
+body.dev-mode p, body.dev-mode span, body.dev-mode div {
+    color: #99ffff !important;
+}
+
+/* Console-style buttons - cyan/teal theme */
+body.dev-mode .ant-btn {
+    background: #0a1a1a !important;
+    border: 1px solid #00aaaa !important;
+    color: #99ffff !important;
+    text-shadow: 0 0 5px rgba(187, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgba(58, 172, 172, 0.2) !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: normal !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.dev-mode .ant-btn:hover {
+    background: #0f2525 !important;
+    border-color: #00ffff !important;
+    box-shadow: 0 0 18px rgba(74, 200, 200, 0.4) !important;
+    transform: scale(1.02);
+    color: #ccffff !important;
+    text-shadow: 0 0 8px rgba(221, 255, 255, 0.6);
+}
+
+body.dev-mode .ant-btn-primary {
+    background: #0f2a2a !important;
+    border-color: #00dddd !important;
+    animation: btnPulse 2s infinite;
+}
+
+@keyframes btnPulse {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(58, 172, 172, 0.25);
+    }
+    50% {
+        box-shadow: 0 0 24px rgba(74, 200, 200, 0.5);
+    }
+}
+
+/* Input fields */
+body.dev-mode .ant-input,
+body.dev-mode .ant-input-affix-wrapper,
+body.dev-mode textarea {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    color: #99ffff !important;
+    font-family: 'Courier New', monospace !important;
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.02) !important;
+}
+
+body.dev-mode .ant-input::placeholder {
+    color: #00dddd !important;
+}
+
+/* Cards and panels */
+body.dev-mode .ant-card {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.03) !important;
+}
+
+body.dev-mode .ant-card-body {
+    background: #000000 !important;
+}
+
+/* Collapse panels */
+body.dev-mode .ant-collapse-header {
+    background: #151515 !important;
+    border: 1px solid #00aaaa !important;
+}
+
+body.dev-mode .ant-collapse-content {
+    background: #000000 !important;
+    border-color: #00aaaa !important;
+}
+
+body.dev-mode .ant-collapse-content-box {
+    background: #000000 !important;
+}
+
+/* Dividers */
+body.dev-mode .ant-divider {
+    border-color: #00aaaa !important;
+}
+
+/* Scrollbar */
+body.dev-mode ::-webkit-scrollbar-track {
+    background: #0a0a0a !important;
+}
+
+body.dev-mode ::-webkit-scrollbar-thumb {
+    background: #00dddd !important;
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* Fix gray backgrounds - aggressive approach */
+body.dev-mode .ant-layout-header {
+    background: #0a0a0a !important;
+}
+
+body.dev-mode .ant-space {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-space-item {
+    background: transparent !important;
+}
+
+/* Chat and message containers */
+body.dev-mode [class*="chat"],
+body.dev-mode [class*="message"],
+body.dev-mode [class*="content"] {
+    background: transparent !important;
+}
+
+/* Chat message bubbles - override inline styles */
+body.dev-mode div[style*="background: rgb(42, 42, 42)"],
+body.dev-mode div[style*="background: rgb(31, 31, 31)"],
+body.dev-mode div[style*="background: rgb(26, 26, 26)"],
+body.dev-mode div[style*="background:rgb(42, 42, 42)"],
+body.dev-mode div[style*="background:rgb(31, 31, 31)"],
+body.dev-mode div[style*="background:rgb(26, 26, 26)"] {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.03) !important;
+}
+
+/* All message containers with inline styles */
+body.dev-mode div[style*="max-width: 90%"] {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+}
+
+/* Message content divs */
+body.dev-mode div[style*="margin-bottom: 16px"] > div {
+    background: #0a0a0a !important;
+}
+
+/* Generic flex containers */
+body.dev-mode .flex,
+body.dev-mode [style*="flex"] {
+    background: transparent !important;
+}
+
+/* Dropdown and overlay containers */
+body.dev-mode .ant-dropdown,
+body.dev-mode .ant-dropdown-menu {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+}
+
+body.dev-mode .ant-dropdown-menu-item {
+    color: #99ffff !important;
+}
+
+body.dev-mode .ant-dropdown-menu-item:hover {
+    background: #1a1a1a !important;
+}
+
+/* Tooltip */
+body.dev-mode .ant-tooltip-inner {
+    background: #1a1a1a !important;
+    border: 1px solid #00dddd !important;
+    color: #99ffff !important;
+}
+
+body.dev-mode .ant-tooltip-arrow-content {
+    background: #1a1a1a !important;
+}
+
+/* Popover */
+body.dev-mode .ant-popover-inner {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+}
+
+body.dev-mode .ant-popover-inner-content {
+    color: #99ffff !important;
+}
+
+/* Message/Notification */
+body.dev-mode .ant-message,
+body.dev-mode .ant-notification {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-message-notice-content,
+body.dev-mode .ant-notification-notice {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    color: #99ffff !important;
+}
+
+/* Empty state */
+body.dev-mode .ant-empty-description {
+    color: #66dddd !important;
+}
+
+/* Spin/Loading */
+body.dev-mode .ant-spin-dot-item {
+    background: #66dddd !important;
+}
+
+/* Form items */
+body.dev-mode .ant-form-item {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-form-item-label {
+    color: #99ffff !important;
+}
+
+/* Checkbox and Radio */
+body.dev-mode .ant-checkbox-inner,
+body.dev-mode .ant-radio-inner {
+    background: #000000 !important;
+    border-color: #00dddd !important;
+}
+
+body.dev-mode .ant-checkbox-checked .ant-checkbox-inner {
+    background: #00dddd !important;
+}
+
+/* Switch */
+body.dev-mode .ant-switch {
+    background: #2a2a2a !important;
+}
+
+body.dev-mode .ant-switch-checked {
+    background: #00dddd !important;
+}
+
+/* Scanline effect */
+body.dev-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    z-index: 9999;
+    animation: scanlines 10s linear infinite;
+}
+
+@keyframes scanlines {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(10px); }
+}
+
+/* Text glow effect - enhanced */
+body.dev-mode h1, body.dev-mode h2, body.dev-mode h3 {
+    text-shadow: 0 0 8px rgba(187, 255, 255, 0.4), 0 0 15px rgba(74, 200, 200, 0.2) !important;
+    color: #ccffff !important;
+}
+
+/* Modal/Modal */
+body.dev-mode .ant-modal-content {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dev-mode .ant-modal-header {
+    background: #151515 !important;
+    border-color: #00aaaa !important;
+}
+
+body.dev-mode .ant-modal-title {
+    color: #ccffff !important;
+    text-shadow: none;
+}
+
+body.dev-mode .ant-modal-body {
+    color: #99ffff !important;
+    background: #000000 !important;
+}
+
+body.dev-mode .ant-modal-footer {
+    background: #0a0a0a !important;
+    border-color: #00aaaa !important;
+}
+
+/* Tags */
+body.dev-mode .ant-tag {
+    background: #1a1a1a !important;
+    border: 1px solid #00dddd !important;
+    color: #99ffff !important;
+}
+
+/* Badges */
+body.dev-mode .ant-badge-count {
+    background: #00dddd !important;
+    color: #ffffff !important;
+    border: 1px solid #00dddd;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+/* Tabs */
+body.dev-mode .ant-tabs-nav {
+    background: #0a0a0a !important;
+    border-color: #00aaaa !important;
+}
+
+body.dev-mode .ant-tabs-nav-operations {
+    background: #0a0a0a !important;
+}
+
+body.dev-mode .ant-tabs-tab {
+    background: #000000 !important;
+    border-color: #00aaaa !important;
+    color: #99ffff !important;
+}
+
+body.dev-mode .ant-tabs-tab-active {
+    background: #1a1a1a !important;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.05) !important;
+    color: #ccffff !important;
+}
+
+body.dev-mode .ant-tabs-ink-bar {
+    background: #00ffff !important;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+body.dev-mode .ant-tabs-content-holder {
+    background: #000000 !important;
+}
+
+body.dev-mode .ant-tabs-tabpane {
+    background: #000000 !important;
+}
+
+/* List items */
+body.dev-mode .ant-list-item {
+    border-color: #00aaaa !important;
+    background: #0a0a0a !important;
+}
+
+body.dev-mode .ant-list-item:hover {
+    background: #151515 !important;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Select dropdown */
+body.dev-mode .ant-select-selector {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+    color: #99ffff !important;
+}
+
+body.dev-mode .ant-select-dropdown {
+    background: #0a0a0a !important;
+    border: 1px solid #00aaaa !important;
+}
+
+body.dev-mode .ant-select-item {
+    color: #99ffff !important;
+    background: #000000 !important;
+}
+
+body.dev-mode .ant-select-item:hover {
+    background: #1a1a1a !important;
+}
+
+body.dev-mode .ant-select-item-option-selected {
+    background: #1a1a1a !important;
+}
+
+/* Icon colors */
+body.dev-mode i,
+body.dev-mode .anticon {
+    color: #99ffff !important;
+}
+
+/* Glitch effect on hover for headings - very subtle */
+body.dev-mode h1:hover,
+body.dev-mode h2:hover,
+body.dev-mode h3:hover {
+    animation: glitch 0.5s ease-in-out;
+}
+
+@keyframes glitch {
+    0% {
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.1), -1px 0 rgba(255, 255, 255, 0.1);
+    }
+    25% {
+        text-shadow: -1px 0 rgba(255, 255, 255, 0.15), 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.1), -1px 0 rgba(255, 255, 255, 0.1);
+    }
+    75% {
+        text-shadow: -1px 0 rgba(255, 255, 255, 0.05), 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    100% {
+        text-shadow: 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Fade transition for entire page - subtle */
+body.dev-mode #root {
+    animation: fadeInMonochrome 0.6s ease-in-out;
+}
+
+@keyframes fadeInMonochrome {
+    0% {
+        opacity: 0;
+        filter: brightness(1.3);
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
+/* Console cursor effect */
+body.dev-mode .typing::after {
+    content: '▊';
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
