@@ -154,14 +154,14 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                     }),
                     onClick: toggleDevMode,
                     style: {
-                        background: devMode ? '#2a5555' : '#52c41a',
+                        background: devMode ? '#3a6666' : '#52c41a',
                         borderColor: devMode ? '#00ffff' : '#52c41a',
                         borderWidth: devMode ? '2px' : '1px',
                         color: devMode ? '#ffffff' : 'white',
                         marginTop: '4px',
                         transition: 'all 0.3s ease',
                         textShadow: devMode ? '0 0 12px rgba(255, 255, 255, 0.8)' : 'none',
-                        boxShadow: devMode ? '0 0 25px rgba(0, 255, 255, 0.5), inset 0 0 15px rgba(0, 255, 255, 0.15)' : 'none'
+                        boxShadow: devMode ? '0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.2)' : 'none'
                     }
                 }, devMode ? 'HACKER MODE ON' : 'Dev Mode')
             ),
