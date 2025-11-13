@@ -105,6 +105,18 @@ ui_path = Path(__file__).parent.parent.parent / "ui"
 if ui_path.exists():
     app.mount("/ui", StaticFiles(directory=str(ui_path), html=True), name="ui")
 
+# Mount MCP server using fastapi-mcp
+try:
+    from fastapi_mcp import FastApiMCP
+
+    logger.info("Initializing fastapi-mcp integration...")
+    mcp = FastApiMCP(app, name="MCP Open Client API")
+    mcp.mount_http()  # Mounts at /mcp by default
+    logger.info("MCP server mounted at /mcp endpoint")
+except Exception as e:
+    logger.warning(f"Failed to mount MCP server: {e}")
+    logger.warning("MCP tools will not be available via HTTP transport")
+
 
 @app.exception_handler(MCPError)
 async def mcp_error_handler(request, exc: MCPError):
