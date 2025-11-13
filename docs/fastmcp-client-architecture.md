@@ -1,3 +1,8 @@
+---
+layout: default
+title: FastMCP Client Architecture
+---
+
 # FastMCP Client Architecture
 
 ## Arquitectura Cliente-Transport

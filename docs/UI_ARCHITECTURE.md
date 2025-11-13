@@ -1,3 +1,8 @@
+---
+layout: default
+title: UI Architecture
+---
+
 # UI Architecture
 
 ## Overview

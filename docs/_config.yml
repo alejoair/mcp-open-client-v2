@@ -1,0 +1,42 @@
+# Jekyll Configuration for MCP Open Client Documentation
+
+# Site settings
+title: MCP Open Client
+description: A powerful Python client and REST API for the Model Context Protocol
+baseurl: "/mcp-open-client-v2"
+url: "https://alejoair.github.io"
+
+# Build settings
+theme: jekyll-theme-cayman
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Navigation
+nav_links:
+  - title: Home
+    url: /
+  - title: Architecture
+    url: /fastmcp-client-architecture
+  - title: Frontend Plan
+    url: /frontend-implementation-plan
+  - title: Storage Systems
+    url: /storage-systems
+  - title: Tool Calling
+    url: /tool-calling-system
+  - title: UI Architecture
+    url: /UI_ARCHITECTURE
+
+# GitHub metadata
+github:
+  repository_url: https://github.com/alejoair/mcp-open-client-v2
+  repository_name: mcp-open-client-v2

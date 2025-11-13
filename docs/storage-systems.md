@@ -1,3 +1,8 @@
+---
+layout: default
+title: Storage Systems
+---
+
 # MCP Open Client Storage Systems
 
 This document describes the current storage patterns used in the MCP Open Client for managing servers and conversations.

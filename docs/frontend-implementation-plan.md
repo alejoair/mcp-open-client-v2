@@ -1,3 +1,8 @@
+---
+layout: default
+title: Frontend Implementation Plan
+---
+
 # Frontend Implementation Plan - Chat UI
 
 ## Current Architecture
