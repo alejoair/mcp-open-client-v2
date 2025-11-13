@@ -98,11 +98,11 @@ body.dev-mode p, body.dev-mode span, body.dev-mode div {
 
 /* Console-style buttons - cyan/teal theme */
 body.dev-mode .ant-btn {
-    background: #0a1a1a !important;
-    border: 1px solid #00aaaa !important;
-    color: #99ffff !important;
-    text-shadow: 0 0 5px rgba(187, 255, 255, 0.5);
-    box-shadow: 0 0 10px rgba(58, 172, 172, 0.2) !important;
+    background: #1a3333 !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
+    text-shadow: 0 0 8px rgba(204, 255, 255, 0.6);
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.3), inset 0 0 10px rgba(0, 221, 221, 0.1) !important;
     font-family: 'Courier New', monospace !important;
     font-weight: normal !important;
     text-transform: uppercase;
@@ -110,26 +110,26 @@ body.dev-mode .ant-btn {
 }
 
 body.dev-mode .ant-btn:hover {
-    background: #0f2525 !important;
+    background: #2a4444 !important;
     border-color: #00ffff !important;
-    box-shadow: 0 0 18px rgba(74, 200, 200, 0.4) !important;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.5), inset 0 0 15px rgba(0, 255, 255, 0.15) !important;
     transform: scale(1.02);
-    color: #ccffff !important;
-    text-shadow: 0 0 8px rgba(221, 255, 255, 0.6);
+    color: #ffffff !important;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
 }
 
 body.dev-mode .ant-btn-primary {
-    background: #0f2a2a !important;
-    border-color: #00dddd !important;
+    background: #2a5555 !important;
+    border-color: #00ffff !important;
     animation: btnPulse 2s infinite;
 }
 
 @keyframes btnPulse {
     0%, 100% {
-        box-shadow: 0 0 12px rgba(58, 172, 172, 0.25);
+        box-shadow: 0 0 18px rgba(0, 221, 221, 0.4), inset 0 0 12px rgba(0, 221, 221, 0.15);
     }
     50% {
-        box-shadow: 0 0 24px rgba(74, 200, 200, 0.5);
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 18px rgba(0, 255, 255, 0.2);
     }
 }
 
@@ -137,46 +137,49 @@ body.dev-mode .ant-btn-primary {
 body.dev-mode .ant-input,
 body.dev-mode .ant-input-affix-wrapper,
 body.dev-mode textarea {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    color: #99ffff !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
     font-family: 'Courier New', monospace !important;
-    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.02) !important;
+    box-shadow: inset 0 0 10px rgba(0, 221, 221, 0.1), 0 0 10px rgba(0, 221, 221, 0.2) !important;
 }
 
 body.dev-mode .ant-input::placeholder {
-    color: #00dddd !important;
+    color: #66dddd !important;
 }
 
 /* Cards and panels */
 body.dev-mode .ant-card {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.03) !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.2), inset 0 0 10px rgba(0, 221, 221, 0.05) !important;
 }
 
 body.dev-mode .ant-card-body {
-    background: #000000 !important;
+    background: #0f1f1f !important;
 }
 
 /* Collapse panels */
 body.dev-mode .ant-collapse-header {
-    background: #151515 !important;
-    border: 1px solid #00aaaa !important;
+    background: #1a3333 !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 10px rgba(0, 221, 221, 0.2) !important;
 }
 
 body.dev-mode .ant-collapse-content {
-    background: #000000 !important;
-    border-color: #00aaaa !important;
+    background: #0a1a1a !important;
+    border-color: #00dddd !important;
+    border-width: 2px !important;
 }
 
 body.dev-mode .ant-collapse-content-box {
-    background: #000000 !important;
+    background: #0a1a1a !important;
 }
 
 /* Dividers */
 body.dev-mode .ant-divider {
-    border-color: #00aaaa !important;
+    border-color: #00dddd !important;
+    box-shadow: 0 0 5px rgba(0, 221, 221, 0.3) !important;
 }
 
 /* Scrollbar */
@@ -216,20 +219,20 @@ body.dev-mode div[style*="background: rgb(26, 26, 26)"],
 body.dev-mode div[style*="background:rgb(42, 42, 42)"],
 body.dev-mode div[style*="background:rgb(31, 31, 31)"],
 body.dev-mode div[style*="background:rgb(26, 26, 26)"] {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.03) !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 12px rgba(0, 221, 221, 0.25), inset 0 0 8px rgba(0, 221, 221, 0.08) !important;
 }
 
 /* All message containers with inline styles */
 body.dev-mode div[style*="max-width: 90%"] {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
 }
 
 /* Message content divs */
 body.dev-mode div[style*="margin-bottom: 16px"] > div {
-    background: #0a0a0a !important;
+    background: #1a2a2a !important;
 }
 
 /* Generic flex containers */
@@ -241,37 +244,41 @@ body.dev-mode [style*="flex"] {
 /* Dropdown and overlay containers */
 body.dev-mode .ant-dropdown,
 body.dev-mode .ant-dropdown-menu {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.3) !important;
 }
 
 body.dev-mode .ant-dropdown-menu-item {
-    color: #99ffff !important;
+    color: #ccffff !important;
 }
 
 body.dev-mode .ant-dropdown-menu-item:hover {
-    background: #1a1a1a !important;
+    background: #2a3a3a !important;
+    box-shadow: inset 0 0 8px rgba(0, 221, 221, 0.1) !important;
 }
 
 /* Tooltip */
 body.dev-mode .ant-tooltip-inner {
-    background: #1a1a1a !important;
-    border: 1px solid #00dddd !important;
-    color: #99ffff !important;
+    background: #2a3a3a !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
+    box-shadow: 0 0 12px rgba(0, 221, 221, 0.3) !important;
 }
 
 body.dev-mode .ant-tooltip-arrow-content {
-    background: #1a1a1a !important;
+    background: #2a3a3a !important;
 }
 
 /* Popover */
 body.dev-mode .ant-popover-inner {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.3) !important;
 }
 
 body.dev-mode .ant-popover-inner-content {
-    color: #99ffff !important;
+    color: #ccffff !important;
 }
 
 /* Message/Notification */
@@ -282,9 +289,10 @@ body.dev-mode .ant-notification {
 
 body.dev-mode .ant-message-notice-content,
 body.dev-mode .ant-notification-notice {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    color: #99ffff !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.3) !important;
 }
 
 /* Empty state */
@@ -359,36 +367,41 @@ body.dev-mode h1, body.dev-mode h2, body.dev-mode h3 {
 
 /* Modal/Modal */
 body.dev-mode .ant-modal-content {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05) !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 25px rgba(0, 221, 221, 0.3), inset 0 0 15px rgba(0, 221, 221, 0.05) !important;
 }
 
 body.dev-mode .ant-modal-header {
-    background: #151515 !important;
-    border-color: #00aaaa !important;
+    background: #2a3a3a !important;
+    border-color: #00dddd !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 10px rgba(0, 221, 221, 0.2) !important;
 }
 
 body.dev-mode .ant-modal-title {
-    color: #ccffff !important;
-    text-shadow: none;
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(204, 255, 255, 0.6);
 }
 
 body.dev-mode .ant-modal-body {
-    color: #99ffff !important;
-    background: #000000 !important;
+    color: #ccffff !important;
+    background: #0f1f1f !important;
 }
 
 body.dev-mode .ant-modal-footer {
-    background: #0a0a0a !important;
-    border-color: #00aaaa !important;
+    background: #1a2a2a !important;
+    border-color: #00dddd !important;
+    border-width: 2px !important;
 }
 
 /* Tags */
 body.dev-mode .ant-tag {
-    background: #1a1a1a !important;
-    border: 1px solid #00dddd !important;
-    color: #99ffff !important;
+    background: #1a3333 !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
+    box-shadow: 0 0 8px rgba(0, 221, 221, 0.2) !important;
+    text-shadow: 0 0 5px rgba(204, 255, 255, 0.5);
 }
 
 /* Badges */
@@ -436,38 +449,46 @@ body.dev-mode .ant-tabs-tabpane {
 
 /* List items */
 body.dev-mode .ant-list-item {
-    border-color: #00aaaa !important;
-    background: #0a0a0a !important;
+    border-color: #00dddd !important;
+    border-width: 2px !important;
+    background: #1a2a2a !important;
+    box-shadow: 0 0 8px rgba(0, 221, 221, 0.15) !important;
 }
 
 body.dev-mode .ant-list-item:hover {
-    background: #151515 !important;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.05) !important;
+    background: #2a3a3a !important;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+    transform: translateX(2px);
+    transition: all 0.2s ease;
 }
 
 /* Select dropdown */
 body.dev-mode .ant-select-selector {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
-    color: #99ffff !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    color: #ccffff !important;
+    box-shadow: 0 0 10px rgba(0, 221, 221, 0.2) !important;
 }
 
 body.dev-mode .ant-select-dropdown {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
+    background: #1a2a2a !important;
+    border: 2px solid #00dddd !important;
+    box-shadow: 0 0 15px rgba(0, 221, 221, 0.3) !important;
 }
 
 body.dev-mode .ant-select-item {
-    color: #99ffff !important;
-    background: #000000 !important;
+    color: #ccffff !important;
+    background: #0f1f1f !important;
 }
 
 body.dev-mode .ant-select-item:hover {
-    background: #1a1a1a !important;
+    background: #2a3a3a !important;
+    box-shadow: inset 0 0 8px rgba(0, 221, 221, 0.1) !important;
 }
 
 body.dev-mode .ant-select-item-option-selected {
-    background: #1a1a1a !important;
+    background: #2a4444 !important;
+    box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.15) !important;
 }
 
 /* Icon colors */
