@@ -93,18 +93,19 @@ body.dev-mode .ant-collapse-header,
 body.dev-mode h1, body.dev-mode h2, body.dev-mode h3,
 body.dev-mode h4, body.dev-mode h5, body.dev-mode h6,
 body.dev-mode p, body.dev-mode span, body.dev-mode div {
-    color: #99ffff !important;
+    color: #e0ffff !important;
+    text-shadow: 0 0 1px rgba(224, 255, 255, 0.3);
 }
 
 /* Console-style buttons - cyan/teal theme */
 body.dev-mode .ant-btn {
     background: #1a3333 !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
-    text-shadow: 0 0 8px rgba(204, 255, 255, 0.6);
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 15px rgba(0, 221, 221, 0.3), inset 0 0 10px rgba(0, 221, 221, 0.1) !important;
     font-family: 'Courier New', monospace !important;
-    font-weight: normal !important;
+    font-weight: 500 !important;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -139,13 +140,15 @@ body.dev-mode .ant-input-affix-wrapper,
 body.dev-mode textarea {
     background: #1a2a2a !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
+    color: #ffffff !important;
     font-family: 'Courier New', monospace !important;
     box-shadow: inset 0 0 10px rgba(0, 221, 221, 0.1), 0 0 10px rgba(0, 221, 221, 0.2) !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 body.dev-mode .ant-input::placeholder {
-    color: #66dddd !important;
+    color: #99dddd !important;
+    text-shadow: none;
 }
 
 /* Cards and panels */
@@ -250,7 +253,8 @@ body.dev-mode .ant-dropdown-menu {
 }
 
 body.dev-mode .ant-dropdown-menu-item {
-    color: #ccffff !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 body.dev-mode .ant-dropdown-menu-item:hover {
@@ -262,8 +266,9 @@ body.dev-mode .ant-dropdown-menu-item:hover {
 body.dev-mode .ant-tooltip-inner {
     background: #2a3a3a !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
+    color: #ffffff !important;
     box-shadow: 0 0 12px rgba(0, 221, 221, 0.3) !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 body.dev-mode .ant-tooltip-arrow-content {
@@ -278,7 +283,8 @@ body.dev-mode .ant-popover-inner {
 }
 
 body.dev-mode .ant-popover-inner-content {
-    color: #ccffff !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 /* Message/Notification */
@@ -291,8 +297,9 @@ body.dev-mode .ant-message-notice-content,
 body.dev-mode .ant-notification-notice {
     background: #1a2a2a !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
+    color: #ffffff !important;
     box-shadow: 0 0 15px rgba(0, 221, 221, 0.3) !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 /* Empty state */
@@ -361,8 +368,9 @@ body.dev-mode::before {
 
 /* Text glow effect - enhanced */
 body.dev-mode h1, body.dev-mode h2, body.dev-mode h3 {
-    text-shadow: 0 0 8px rgba(187, 255, 255, 0.4), 0 0 15px rgba(74, 200, 200, 0.2) !important;
-    color: #ccffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
 /* Modal/Modal */
@@ -385,8 +393,9 @@ body.dev-mode .ant-modal-title {
 }
 
 body.dev-mode .ant-modal-body {
-    color: #ccffff !important;
+    color: #ffffff !important;
     background: #0f1f1f !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 body.dev-mode .ant-modal-footer {
@@ -399,9 +408,10 @@ body.dev-mode .ant-modal-footer {
 body.dev-mode .ant-tag {
     background: #1a3333 !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
+    color: #ffffff !important;
     box-shadow: 0 0 8px rgba(0, 221, 221, 0.2) !important;
-    text-shadow: 0 0 5px rgba(204, 255, 255, 0.5);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.6);
+    font-weight: 500;
 }
 
 /* Badges */
@@ -466,8 +476,9 @@ body.dev-mode .ant-list-item:hover {
 body.dev-mode .ant-select-selector {
     background: #1a2a2a !important;
     border: 2px solid #00dddd !important;
-    color: #ccffff !important;
+    color: #ffffff !important;
     box-shadow: 0 0 10px rgba(0, 221, 221, 0.2) !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 body.dev-mode .ant-select-dropdown {
@@ -477,8 +488,9 @@ body.dev-mode .ant-select-dropdown {
 }
 
 body.dev-mode .ant-select-item {
-    color: #ccffff !important;
+    color: #ffffff !important;
     background: #0f1f1f !important;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 body.dev-mode .ant-select-item:hover {
@@ -494,7 +506,8 @@ body.dev-mode .ant-select-item-option-selected {
 /* Icon colors */
 body.dev-mode i,
 body.dev-mode .anticon {
-    color: #99ffff !important;
+    color: #e0ffff !important;
+    text-shadow: 0 0 2px rgba(224, 255, 255, 0.4);
 }
 
 /* Glitch effect on hover for headings - very subtle */
