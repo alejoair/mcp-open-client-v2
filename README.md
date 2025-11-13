@@ -1,35 +1,35 @@
 # MCP Open Client
 
-An open client implementation for the Model Context Protocol (MCP) with REST API server management capabilities.
+[![PyPI version](https://badge.fury.io/py/mcp-open-client.svg)](https://badge.fury.io/py/mcp-open-client)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A powerful Python client and REST API for the Model Context Protocol (MCP), enabling seamless integration with MCP servers and AI providers.
 
 ## Features
 
-- 🚀 **FastAPI-based REST API** for MCP server management
-- 🔧 **FastMCP integration** with multiple transport support (STDIO, WebSocket, HTTP)
-- ⚙️ **Process management** for MCP servers with automatic cleanup
-- 🎯 **Click-based CLI** with rich console output
-- 📁 **Filesystem support** for configuration and data persistence
-- 🛡️ **Type safety** with Pydantic models throughout
-- 🔄 **Async/await support** for high-performance operations
+- **FastAPI REST API** - Full-featured API server for managing MCP servers
+- **Rich CLI** - Beautiful command-line interface with colored output
+- **AI Provider Integration** - Support for OpenAI, Anthropic, and custom providers
+- **Process Management** - Automatic lifecycle management for MCP servers
+- **Tool Discovery** - Automatic detection and execution of MCP server tools
+- **Conversation Management** - Persistent conversation storage and retrieval
+- **Type Safe** - Full type hints with Pydantic v2
 
 ## Installation
 
-### Install from source (editable mode)
-
-Clone this repository and install the package in editable mode:
+### From PyPI (Recommended)
 
 ```bash
-git clone https://github.com/yourusername/mcp-open-client.git
-cd mcp-open-client
-pip install -e .
+pip install mcp-open-client
 ```
 
-### Install development dependencies
-
-For development, install the optional development dependencies:
+### From Source
 
 ```bash
-pip install -e ".[dev]"
+git clone https://github.com/alejoair/mcp-open-client-v2.git
+cd mcp-open-client-v2
+pip install -e .
 ```
 
 ## Quick Start
@@ -37,336 +37,285 @@ pip install -e ".[dev]"
 ### 1. Start the API Server
 
 ```bash
-# Start the MCP Open Client API server
-mcp-client api serve --port 8001
+mcp-open-client api serve --port 8001
 ```
+
+The API server will be available at:
+- **API**: http://localhost:8001
+- **Swagger Docs**: http://localhost:8001/docs
+- **ReDoc**: http://localhost:8001/redoc
 
 ### 2. Add an MCP Server
 
 ```bash
-# Add a filesystem MCP server
-mcp-client api add --name filesystem \
-    --command npm.cmd \
-    --args -x --args -y --args @modelcontextprotocol/server-filesystem --args .
+mcp-open-client api add \
+  --name "filesystem" \
+  --command "npx" \
+  --args "-y" \
+  --args "@modelcontextprotocol/server-filesystem" \
+  --args "."
 ```
 
-### 3. Start the MCP Server
+### 3. Start the Server
 
 ```bash
-# Start the configured server
-mcp-client api start <server-id>
+mcp-open-client api start <server-id>
 ```
 
 ### 4. List Available Tools
 
 ```bash
-# List tools from the running server
-mcp-client api tools <server-id>
+mcp-open-client api tools <server-id>
 ```
 
-## Usage
+## CLI Reference
 
-### REST API
+### Direct Connection Commands
 
-The MCP Open Client provides a REST API for managing MCP servers:
-
-#### Server Management Endpoints
+Connect directly to MCP servers without the API:
 
 ```bash
-# Add a new server configuration
-POST /servers/
-{
-  "server": {
-    "name": "filesystem",
-    "command": "npm.cmd",
-    "args": ["-x", "-y", "@modelcontextprotocol/server-filesystem", "."]
-  }
-}
+# Connect and test
+mcp-open-client connect http://localhost:3000
 
-# List all servers
-GET /servers/
+# List resources
+mcp-open-client list-resources http://localhost:3000
 
-# Start a server
-POST /servers/{server_id}/start
+# List tools
+mcp-open-client list-tools http://localhost:3000
 
-# Stop a server
-POST /servers/{server_id}/stop
-
-# Get server tools
-GET /servers/{server_id}/tools
+# Call custom method
+mcp-open-client call http://localhost:3000 method-name --params '{"key": "value"}'
 ```
 
-#### Example with curl
+### API Server Management
+
+Manage MCP servers through the REST API:
 
 ```bash
-# Add server
-curl -X POST "http://localhost:8001/servers/" \
-  -H "Content-Type: application/json" \
-  -d '{"server": {"name": "filesystem", "command": "npm.cmd", "args": ["-x", "-y", "@modelcontextprotocol/server-filesystem", "."]}}'
+# Start API server
+mcp-open-client api serve --port 8001 --host 127.0.0.1
 
-# Start server
-curl -X POST "http://localhost:8001/servers/{server-id}/start"
-
-# Get tools
-curl -X GET "http://localhost:8001/servers/{server-id}/tools"
+# Server operations
+mcp-open-client api add --name <name> --command <cmd> --args <arg>
+mcp-open-client api list [--format json|table]
+mcp-open-client api start <server-id>
+mcp-open-client api stop <server-id>
+mcp-open-client api tools <server-id> [--format json|table]
 ```
 
-### Command-line Interface
+### AI Provider Management
 
-#### API Management Commands
+Configure AI providers for chat completions:
 
 ```bash
-# Show API help
-mcp-client api --help
+# Add provider
+mcp-open-client api providers add \
+  --name "OpenAI" \
+  --type openai \
+  --base-url "https://api.openai.com/v1" \
+  --api-key "sk-..."
 
-# Start the API server
-mcp-client api serve --port 8001 --host 127.0.0.1
+# List providers
+mcp-open-client api providers list
 
-# Add a new server
-mcp-client api add --name my-server --command npm.cmd --args -x --args -y --args @modelcontextprotocol/server-name
+# Show provider details
+mcp-open-client api providers show <provider-id>
 
-# List all servers (table format)
-mcp-client api list
+# Update provider
+mcp-open-client api providers update <provider-id> \
+  --name "New Name" \
+  --api-key "new-key"
 
-# List servers in JSON format
-mcp-client api list --format json
+# Test connection
+mcp-open-client api providers test <provider-id>
 
-# Start a server
-mcp-client api start <server-id>
+# Set as default
+mcp-open-client api providers set-default <provider-id>
 
-# Stop a server
-mcp-client api stop <server-id>
-
-# Get tools from a server
-mcp-client api tools <server-id>
-
-# Get tools in JSON format
-mcp-client api tools <server-id> --format json
+# Enable/disable
+mcp-open-client api providers enable <provider-id>
+mcp-open-client api providers disable <provider-id>
 ```
 
-#### Direct MCP Client Commands
+### Model Configuration
+
+Configure small and main models for providers:
 
 ```bash
-# Connect to a server and test connection
-mcp-client --verbose connect http://localhost:8080
+# Set model
+mcp-open-client api providers models set <provider-id> small \
+  --name "gpt-3.5-turbo" \
+  --max-tokens 4096
 
-# List available resources
-mcp-client --timeout 60.0 list-resources http://localhost:8080
+# List models
+mcp-open-client api providers models list <provider-id>
 
-# List available tools
-mcp-client list-tools http://localhost:8080
-
-# Call a custom method
-mcp-client call http://localhost:8080 custom/method -p '{"param": "value"}'
+# Remove model
+mcp-open-client api providers models remove <provider-id> small
 ```
 
-### As a Python Library
+## REST API Endpoints
 
-```python
-import asyncio
-from mcp_open_client import MCPClient
-
-async def main():
-    # Create a client instance
-    client = MCPClient("http://localhost:8080")
-    
-    # Use the client as a context manager
-    async with client:
-        # Initialize the session
-        await client.initialize()
-        
-        # List available resources
-        resources = await client.list_resources()
-        print("Resources:", resources)
-        
-        # List available tools
-        tools = await client.list_tools()
-        print("Tools:", tools)
-
-# Run the async main function
-asyncio.run(main())
-```
-
-### Server Management API
-
-```python
-import asyncio
-from mcp_open_client.core.manager import MCPServerManager
-from mcp_open_client.api.models.server import ServerConfig
-
-async def main():
-    # Create server manager
-    manager = MCPServerManager()
-    
-    # Add a server configuration
-    config = ServerConfig(
-        name="filesystem",
-        command="npm.cmd",
-        args=["-x", "-y", "@modelcontextprotocol/server-filesystem", "."]
-    )
-    
-    server = await manager.add_server_from_config(config)
-    print(f"Added server: {server.id}")
-    
-    # Start the server
-    started_server = await manager.start_server(server.id)
-    print(f"Server status: {started_server.status}")
-    
-    # Get tools
-    tools = await manager.get_server_tools(server.id)
-    print(f"Available tools: {len(tools)}")
-    
-    # Shutdown all servers
-    await manager.shutdown_all()
-
-asyncio.run(main())
-```
-
-## Supported MCP Servers
-
-The client works with any MCP-compliant server. Here are some examples:
-
-### Filesystem Server
-
-```bash
-mcp-client api add --name filesystem \
-    --command npm.cmd \
-    --args -x --args -y --args @modelcontextprotocol/server-filesystem --args /path/to/directory
-```
-
-### Other Popular MCP Servers
-
-```bash
-# Sequential thinking server
-mcp-client api add --name thinking \
-    --command npm.cmd \
-    --args -x --args -y --args @modelcontextprotocol/server-sequential-thinking
-
-# Custom Python server
-mcp-client api add --name my-python-server \
-    --command python \
-    --args -m --args my_mcp_server
-```
-
-## Project Structure
+### Server Management
 
 ```
-mcp-open-client/
-├── pyproject.toml              # Project configuration
-├── README.md                   # This file
-├── servers.json               # Server configurations (auto-generated)
-└── mcp_open_client/           # Main package directory
-    ├── __init__.py            # Package initialization
-    ├── client.py              # Core MCP client
-    ├── exceptions.py          # Custom exceptions
-    ├── cli.py                 # Command-line interface
-    ├── api/                   # FastAPI REST API
-    │   ├── __init__.py
-    │   ├── main.py           # FastAPI application
-    │   ├── cli.py            # API CLI entry point
-    │   ├── models/           # Pydantic models
-    │   │   ├── __init__.py
-    │   │   └── server.py     # Server configuration models
-    │   └── endpoints/        # API endpoints
-    │       ├── __init__.py
-    │       └── servers.py    # Server management endpoints
-    └── core/                 # Core business logic
-        ├── __init__.py
-        ├── manager.py        # MCP server manager
-        └── process.py        # Process management
+POST   /servers/                    # Add server
+GET    /servers/                    # List servers
+POST   /servers/{id}/start          # Start server
+POST   /servers/{id}/stop           # Stop server
+GET    /servers/{id}/tools          # Get server tools
+DELETE /servers/{id}                # Remove server
 ```
 
-## Development
+### Provider Management
 
-### Code formatting
-
-This project uses several tools for code quality:
-
-- **black**: Code formatting
-- **isort**: Import sorting
-- **flake8**: Linting
-- **mypy**: Type checking
-
-Run these tools with:
-
-```bash
-# Format code
-black mcp_open_client/
-
-# Sort imports
-isort mcp_open_client/
-
-# Run linting
-flake8 mcp_open_client/
-
-# Run type checking
-mypy mcp_open_client/
+```
+POST   /providers/                  # Add provider
+GET    /providers/                  # List providers
+GET    /providers/{id}              # Get provider
+PUT    /providers/{id}              # Update provider
+PATCH  /providers/{id}              # Partial update
+DELETE /providers/{id}              # Delete provider
+POST   /providers/{id}/enable       # Enable provider
+POST   /providers/{id}/disable      # Disable provider
+POST   /providers/{id}/set-default  # Set as default
+POST   /providers/{id}/test         # Test connection
 ```
 
-### Running tests
+### Conversation Management
 
-```bash
-pytest
+```
+POST   /conversations               # Create conversation
+GET    /conversations               # List conversations
+GET    /conversations/{id}          # Get conversation
+PUT    /conversations/{id}          # Update conversation
+DELETE /conversations/{id}          # Delete conversation
+POST   /conversations/{id}/chat     # Send message
+GET    /conversations/{id}/messages # Get messages
+POST   /conversations/{id}/context  # Add context
+GET    /conversations/{id}/tools    # Get enabled tools
+```
+
+### Chat Completions (OpenAI-Compatible)
+
+```
+POST   /v1/chat/completions         # Create chat completion
+POST   /v1/chat/stream               # Stream completion
+GET    /v1/models                    # List models
 ```
 
 ## Configuration
 
-### Environment Variables
+Configuration files are stored in `~/.mcp-open-client/`:
 
-- `MCP_API_URL`: Default API URL (default: `http://localhost:8001`)
-- `MCP_API_HOST`: API server host (default: `127.0.0.1`)
-- `MCP_API_PORT`: API server port (default: `8001`)
+- `mcp_servers.json` - MCP server configurations
+- `ai_providers.json` - AI provider configurations
+- `conversations/` - Conversation storage directory
 
-### Server Configuration
+## Development
 
-Server configurations are stored in `servers.json` in the current working directory. The format is:
+### Install Development Dependencies
 
-```json
-{
-  "servers": [
-    {
-      "id": "unique-server-id",
-      "config": {
-        "name": "server-name",
-        "transport": "stdio",
-        "command": "npm.cmd",
-        "args": ["-x", "-y", "@modelcontextprotocol/server-name"],
-        "env": {"KEY": "VALUE"},
-        "cwd": "/working/directory"
-      },
-      "status": "running",
-      "created_at": "2025-01-01T00:00:00.000000",
-      "started_at": "2025-01-01T00:01:00.000000"
-    }
-  ]
-}
+```bash
+pip install -e ".[dev]"
 ```
 
-## License
+### Code Quality Tools
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+# Format code
+black mcp_open_client/
+isort mcp_open_client/
+
+# Lint
+flake8 mcp_open_client/
+
+# Type check
+mypy mcp_open_client/
+
+# Run tests
+pytest
+```
+
+### Pre-commit Hooks
+
+```bash
+# Install hooks
+pre-commit install
+
+# Run on all files
+pre-commit run --all-files
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│           mcp-open-client CLI               │
+├─────────────────────────────────────────────┤
+│                                             │
+│  Direct Commands      API Commands         │
+│  ├─ connect          ├─ api serve          │
+│  ├─ list-resources   ├─ api add            │
+│  ├─ list-tools       ├─ api start          │
+│  └─ call             └─ api providers      │
+│                                             │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+    ┌─────────────────────────┐
+    │   FastAPI REST API      │
+    │   (Port 8001)           │
+    └─────────────┬───────────┘
+                  │
+        ┌─────────┴─────────┐
+        ▼                   ▼
+┌───────────────┐   ┌──────────────┐
+│ MCP Servers   │   │ AI Providers │
+│ (FastMCP)     │   │ (OpenAI API) │
+└───────────────┘   └──────────────┘
+```
+
+## Chat Completion Example
+
+```python
+import requests
+
+response = requests.post("http://localhost:8001/v1/chat/completions", json={
+    "model": "gpt-4",
+    "messages": [
+        {"role": "user", "content": "List files in current directory"}
+    ],
+    "model_type": "main"
+})
+
+print(response.json())
+```
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Troubleshooting
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Common Issues
+## License
 
-1. **Server fails to start**: Check that the command and arguments are correct for your system
-2. **Connection refused**: Ensure the API server is running on the specified port
-3. **Permission denied**: Make sure the server process has permission to access required directories
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Debug Mode
+## Links
 
-Enable verbose output to troubleshoot issues:
+- **PyPI**: https://pypi.org/project/mcp-open-client/
+- **GitHub**: https://github.com/alejoair/mcp-open-client-v2
+- **Issues**: https://github.com/alejoair/mcp-open-client-v2/issues
 
-```bash
-mcp-client --verbose api list
-mcp-client --verbose api start <server-id>
-```
+## Acknowledgments
 
-### Logs
-
-The API server logs MCP server activity and errors to the console. Use `--verbose` flag for detailed logging.
+- Built with [FastAPI](https://fastapi.tiangolo.com/)
+- MCP integration via [FastMCP](https://github.com/jlowin/fastmcp)
+- CLI powered by [Click](https://click.palletsprojects.com/)
+- Beautiful output with [Rich](https://rich.readthedocs.io/)

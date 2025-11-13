@@ -19,6 +19,71 @@ from . import router
 from .dependencies import conversation_manager, provider_manager, server_manager
 
 
+def inject_required_context_arguments(input_schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Inject two additional required arguments to a tool's input schema.
+
+    These arguments force the LLM to explain:
+    1. Why it's using the tool
+    2. What to do in case of error
+
+    Args:
+        input_schema: Original tool input schema
+
+    Returns:
+        Modified schema with additional required arguments
+    """
+    # Create a copy to avoid modifying the original
+    modified_schema = (
+        input_schema.copy() if input_schema else {"type": "object", "properties": {}}
+    )
+
+    # Ensure properties exists
+    if "properties" not in modified_schema:
+        modified_schema["properties"] = {}
+
+    # Add the two required context arguments
+    modified_schema["properties"]["tool_usage_reason"] = {
+        "type": "string",
+        "description": "¿Para qué estás usando esta herramienta? Explica brevemente el propósito y contexto de uso.",
+    }
+
+    modified_schema["properties"]["error_handling_plan"] = {
+        "type": "string",
+        "description": "¿Qué debes hacer en caso de error? Describe tu plan de contingencia si la herramienta falla.",
+    }
+
+    # Update required fields
+    if "required" not in modified_schema:
+        modified_schema["required"] = []
+
+    # Add to required if not already present
+    if "tool_usage_reason" not in modified_schema["required"]:
+        modified_schema["required"].append("tool_usage_reason")
+    if "error_handling_plan" not in modified_schema["required"]:
+        modified_schema["required"].append("error_handling_plan")
+
+    return modified_schema
+
+
+def filter_context_arguments(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Remove context arguments before calling the actual MCP server.
+
+    The MCP server doesn't expect these arguments - they're only for the LLM.
+
+    Args:
+        arguments: Tool arguments including context arguments
+
+    Returns:
+        Filtered arguments without context arguments
+    """
+    filtered = arguments.copy()
+    filtered.pop("tool_usage_reason", None)
+    filtered.pop("error_handling_plan", None)
+    return filtered
+
+
 @router.post("/{conversation_id}/chat", response_model=ConversationChatResponse)
 async def conversation_chat(conversation_id: str, request: ConversationChatRequest):
     """
@@ -102,6 +167,11 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                 # Find the specific tool
                 for tool in server_tools:
                     if tool.name == enabled_tool.tool_name:
+                        # Inject required context arguments into the schema
+                        modified_schema = inject_required_context_arguments(
+                            tool.input_schema or {}
+                        )
+
                         # Convert to OpenAI function format
                         tools_for_llm.append(
                             {
@@ -109,7 +179,7 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                                 "function": {
                                     "name": tool.name,
                                     "description": tool.description or "",
-                                    "parameters": tool.input_schema or {},
+                                    "parameters": modified_schema,
                                 },
                             }
                         )
@@ -276,14 +346,17 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                             )
                     else:
                         try:
+                            # Filter out context arguments before sending to MCP server
+                            filtered_args = filter_context_arguments(tool_args)
+
                             print(
-                                f"[DEBUG] Calling tool '{tool_name}' on server '{server_id}' with args: {tool_args}"
+                                f"[DEBUG] Calling tool '{tool_name}' on server '{server_id}' with args: {filtered_args}"
                             )
-                            # Execute the tool
+                            # Execute the tool with filtered arguments
                             tool_result_raw = await server_manager.call_server_tool(
                                 server_id=server_id,
                                 tool_name=tool_name,
-                                arguments=tool_args,
+                                arguments=filtered_args,
                             )
 
                             # Convert MCP result to serializable format

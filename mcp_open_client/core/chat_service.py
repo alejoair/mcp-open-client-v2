@@ -226,6 +226,56 @@ class ChatService:
             print(f"Warning: Could not retrieve MCP tools: {str(e)}")
             return []
 
+    def _inject_required_context_arguments(
+        self, input_schema: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Inject two additional required arguments to a tool's input schema.
+
+        These arguments force the LLM to explain:
+        1. Why it's using the tool
+        2. What to do in case of error
+
+        Args:
+            input_schema: Original tool input schema
+
+        Returns:
+            Modified schema with additional required arguments
+        """
+        # Create a copy to avoid modifying the original
+        modified_schema = (
+            input_schema.copy()
+            if input_schema
+            else {"type": "object", "properties": {}}
+        )
+
+        # Ensure properties exists
+        if "properties" not in modified_schema:
+            modified_schema["properties"] = {}
+
+        # Add the two required context arguments
+        modified_schema["properties"]["tool_usage_reason"] = {
+            "type": "string",
+            "description": "¿Para qué estás usando esta herramienta? Explica brevemente el propósito y contexto de uso.",
+        }
+
+        modified_schema["properties"]["error_handling_plan"] = {
+            "type": "string",
+            "description": "¿Qué debes hacer en caso de error? Describe tu plan de contingencia si la herramienta falla.",
+        }
+
+        # Update required fields
+        if "required" not in modified_schema:
+            modified_schema["required"] = []
+
+        # Add to required if not already present
+        if "tool_usage_reason" not in modified_schema["required"]:
+            modified_schema["required"].append("tool_usage_reason")
+        if "error_handling_plan" not in modified_schema["required"]:
+            modified_schema["required"].append("error_handling_plan")
+
+        return modified_schema
+
     def _convert_tool_to_function(
         self, tool: ToolInfo, server_name: str
     ) -> Dict[str, Any]:
@@ -248,11 +298,14 @@ class ChatService:
         )
 
         # Use the tool's input schema or create a default one
-        parameters = tool.input_schema or {
+        base_schema = tool.input_schema or {
             "type": "object",
             "properties": {},
             "description": f"Parameters for {tool.name}",
         }
+
+        # Inject required context arguments
+        parameters = self._inject_required_context_arguments(base_schema)
 
         return {
             "name": function_name,
