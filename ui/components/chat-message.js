@@ -68,7 +68,7 @@ function ChatMessage({ message, toolResponses }) {
             React.createElement('div', {
                 style: {
                     maxWidth: '90%',
-                    background: '#2a2a2a',
+                    background: '#0d0d15',
                     padding: '10px 14px',
                     borderRadius: '12px',
                     borderBottomLeftRadius: '4px',

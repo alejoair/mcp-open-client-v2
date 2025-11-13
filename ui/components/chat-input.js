@@ -3,6 +3,7 @@ const { TextArea } = Input;
 
 function ChatInput({ onSend, disabled, onSendFailed }) {
     const [value, setValue] = React.useState('');
+    const textAreaRef = React.useRef(null);
 
     const handleSend = React.useCallback(function() {
         if (!value.trim() || disabled) return;
@@ -11,6 +12,13 @@ function ChatInput({ onSend, disabled, onSendFailed }) {
 
         // Call onSend and handle potential restoration on failure
         const result = onSend(messageContent);
+
+        // Refocus the textarea after sending
+        setTimeout(function() {
+            if (textAreaRef.current) {
+                textAreaRef.current.focus();
+            }
+        }, 0);
 
         // If onSend returns a promise that might fail, handle it
         if (result && result.catch) {
@@ -42,6 +50,7 @@ function ChatInput({ onSend, disabled, onSendFailed }) {
             style: { width: '100%' }
         },
             React.createElement(TextArea, {
+                ref: textAreaRef,
                 value: value,
                 onChange: function(e) { setValue(e.target.value); },
                 onKeyPress: handleKeyPress,

@@ -154,16 +154,18 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                     }),
                     onClick: toggleDevMode,
                     style: {
-                        background: devMode ? '#2a4a4a' : '#52c41a',
-                        borderColor: devMode ? '#00ffff' : '#52c41a',
-                        borderWidth: devMode ? '2px' : '1px',
-                        color: devMode ? '#ffffff' : 'white',
+                        background: devMode ? '#bd93f9' : '#52c41a',
+                        border: 'none',
+                        color: devMode ? '#16161e' : 'white',
                         marginTop: '4px',
                         transition: 'all 0.3s ease',
-                        textShadow: devMode ? '0 0 12px rgba(255, 255, 255, 0.8)' : 'none',
-                        boxShadow: devMode ? '0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.2)' : 'none'
+                        textShadow: 'none',
+                        boxShadow: devMode ? '0 0 20px rgba(189, 147, 249, 0.5), inset 0 0 12px rgba(189, 147, 249, 0.15)' : 'none',
+                        fontFamily: devMode ? "'Fira Code', 'Consolas', 'Monaco', monospace" : 'inherit',
+                        fontWeight: devMode ? '700' : 'normal',
+                        letterSpacing: devMode ? '1px' : 'normal'
                     }
-                }, devMode ? 'HACKER MODE ON' : 'Dev Mode')
+                }, devMode ? 'DRACULA MODE' : 'Dev Mode')
             ),
 
             // Content

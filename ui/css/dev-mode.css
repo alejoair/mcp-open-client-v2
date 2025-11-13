@@ -8,9 +8,9 @@ body {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Main theme colors for dev mode */
+/* Main theme colors for dev mode - DRACULA THEME */
 body.dev-mode {
-    background: #000000 !important;
+    background: #1a1b26 !important;
 }
 
 /* Nuclear option - force all divs to have transparent or black background */
@@ -62,21 +62,21 @@ body.dev-mode .ant-list-item {
     }
 }
 
-/* Terminal console colors - medium contrast cyan/teal */
+/* Terminal console colors - DRACULA */
 body.dev-mode .ant-layout {
-    background: #000000 !important;
+    background: #1a1b26 !important;
 }
 
 body.dev-mode .ant-layout-sider {
-    background: #0a0a0a !important;
-    border: 1px solid #00aaaa !important;
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
     border-radius: 0 !important;
-    box-shadow: 0 0 15px rgba(58, 172, 172, 0.15), inset 0 0 30px rgba(58, 172, 172, 0.05) !important;
+    box-shadow: 0 0 15px rgba(139, 233, 253, 0.1), inset 0 0 30px rgba(139, 233, 253, 0.03) !important;
 }
 
 body.dev-mode .ant-layout-content {
-    background: #000000 !important;
-    border: 1px solid #00aaaa !important;
+    background: #16161e !important;
+    border: 1px solid #6272a4 !important;
     border-radius: 0 !important;
 }
 
@@ -85,7 +85,7 @@ body.dev-mode * {
     border-radius: 0 !important;
 }
 
-/* Higher contrast text - bright cyan/teal */
+/* Higher contrast text - DRACULA with Fira Code */
 body.dev-mode,
 body.dev-mode .ant-typography,
 body.dev-mode .ant-list-item,
@@ -93,44 +93,45 @@ body.dev-mode .ant-collapse-header,
 body.dev-mode h1, body.dev-mode h2, body.dev-mode h3,
 body.dev-mode h4, body.dev-mode h5, body.dev-mode h6,
 body.dev-mode p, body.dev-mode span, body.dev-mode div {
-    color: #e0ffff !important;
-    text-shadow: 0 0 1px rgba(224, 255, 255, 0.3);
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
 }
 
-/* Console-style buttons - cyan/teal theme */
+/* Console-style buttons - DRACULA */
 body.dev-mode .ant-btn {
-    background: #1a3a3a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 15px rgba(0, 255, 255, 0.15) !important;
-    font-family: 'Courier New', monospace !important;
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2), inset 0 0 8px rgba(139, 233, 253, 0.08) !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
     font-weight: 500 !important;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 body.dev-mode .ant-btn:hover {
-    background: #2a4a4a !important;
-    border-color: #00ffff !important;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.2) !important;
+    background: #6272a4 !important;
+    box-shadow: 0 0 20px rgba(139, 233, 253, 0.3), inset 0 0 12px rgba(139, 233, 253, 0.1) !important;
     transform: scale(1.02);
-    color: #ffffff !important;
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+    color: #8be9fd !important;
+    text-shadow: none !important;
 }
 
 body.dev-mode .ant-btn-primary {
-    background: #2a4a4a !important;
-    border-color: #00ffff !important;
+    background: #bd93f9 !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
     animation: btnPulse 2s infinite;
 }
 
 @keyframes btnPulse {
     0%, 100% {
-        box-shadow: 0 0 18px rgba(0, 221, 221, 0.4), inset 0 0 12px rgba(0, 221, 221, 0.15);
+        box-shadow: 0 0 15px rgba(189, 147, 249, 0.4), inset 0 0 10px rgba(189, 147, 249, 0.15);
     }
     50% {
-        box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 18px rgba(0, 255, 255, 0.2);
+        box-shadow: 0 0 25px rgba(189, 147, 249, 0.6), inset 0 0 15px rgba(189, 147, 249, 0.2);
     }
 }
 
@@ -138,66 +139,68 @@ body.dev-mode .ant-btn-primary {
 body.dev-mode .ant-input,
 body.dev-mode .ant-input-affix-wrapper,
 body.dev-mode textarea {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    font-family: 'Courier New', monospace !important;
-    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.15), 0 0 15px rgba(0, 255, 255, 0.3) !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    font-size: 14px !important;
+    box-shadow: inset 0 0 8px rgba(139, 233, 253, 0.08), 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
 }
 
 body.dev-mode .ant-input::placeholder {
-    color: #99dddd !important;
+    color: #6272a4 !important;
     text-shadow: none;
 }
 
 /* Cards and panels */
 body.dev-mode .ant-card {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 15px rgba(0, 255, 255, 0.1) !important;
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 15px rgba(139, 233, 253, 0.2), inset 0 0 10px rgba(139, 233, 253, 0.05) !important;
 }
 
 body.dev-mode .ant-card-body {
-    background: #0f1f1f !important;
+    background: #16161e !important;
 }
 
 /* Collapse panels */
 body.dev-mode .ant-collapse-header {
-    background: #1a3a3a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
 }
 
 body.dev-mode .ant-collapse-content {
-    background: #0f1f1f !important;
-    border-color: #00ffff !important;
-    border-width: 2px !important;
+    background: #16161e !important;
+    border: none !important;
 }
 
 body.dev-mode .ant-collapse-content-box {
-    background: #0f1f1f !important;
+    background: #16161e !important;
 }
 
 /* Dividers */
 body.dev-mode .ant-divider {
-    border-color: #00dddd !important;
-    box-shadow: 0 0 5px rgba(0, 221, 221, 0.3) !important;
+    border-color: #8be9fd !important;
+    border-width: 1px !important;
+    box-shadow: none !important;
 }
 
 /* Scrollbar */
 body.dev-mode ::-webkit-scrollbar-track {
-    background: #0a0a0a !important;
+    background: #21222c !important;
 }
 
 body.dev-mode ::-webkit-scrollbar-thumb {
-    background: #00dddd !important;
-    box-shadow: 0 0 3px rgba(255, 255, 255, 0.1);
+    background: #bd93f9 !important;
+    box-shadow: none;
 }
 
 /* Fix gray backgrounds - aggressive approach */
 body.dev-mode .ant-layout-header {
-    background: #0a0a0a !important;
+    background: #21222c !important;
 }
 
 body.dev-mode .ant-space {
@@ -222,20 +225,49 @@ body.dev-mode div[style*="background: rgb(26, 26, 26)"],
 body.dev-mode div[style*="background:rgb(42, 42, 42)"],
 body.dev-mode div[style*="background:rgb(31, 31, 31)"],
 body.dev-mode div[style*="background:rgb(26, 26, 26)"] {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 18px rgba(0, 255, 255, 0.35), inset 0 0 12px rgba(0, 255, 255, 0.12) !important;
+    background: #0d0d15 !important;
+    border: none !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2), inset 0 0 6px rgba(139, 233, 253, 0.05) !important;
 }
 
-/* All message containers with inline styles */
+/* User messages - override gradient */
+body.dev-mode div[style*="background: linear-gradient(135deg, rgb(102, 126, 234)"] {
+    background: #0d0d15 !important;
+    border: none !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2), inset 0 0 6px rgba(139, 233, 253, 0.05) !important;
+}
+
+/* Assistant message containers */
 body.dev-mode div[style*="max-width: 90%"] {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
+    background: #0d0d15 !important;
+    border: none !important;
 }
 
-/* Message content divs */
+/* All message divs with margin-bottom */
 body.dev-mode div[style*="margin-bottom: 16px"] > div {
-    background: #1a2a2a !important;
+    background: #0d0d15 !important;
+}
+
+/* Input area at bottom */
+body.dev-mode div[style*="padding: 16px"][style*="border-top"] {
+    background: #0d0d15 !important;
+}
+
+/* Loading/Thinking indicator */
+body.dev-mode div[style*="background: rgb(42, 42, 42)"][style*="padding: 12px 16px"],
+body.dev-mode div[style*="background: rgb(42, 42, 42)"][style*="padding: 10px 14px"] {
+    background: #0d0d15 !important;
+}
+
+/* Tool response messages */
+body.dev-mode div[style*="max-width: calc(70% - 20px)"] {
+    background: #0d0d15 !important;
+}
+
+/* Code blocks inside messages */
+body.dev-mode pre[style*="background: rgb(26, 26, 26)"],
+body.dev-mode pre[style*="background:#1a1a1a"] {
+    background: #0a0a0f !important;
 }
 
 /* Generic flex containers */
@@ -247,44 +279,49 @@ body.dev-mode [style*="flex"] {
 /* Dropdown and overlay containers */
 body.dev-mode .ant-dropdown,
 body.dev-mode .ant-dropdown-menu {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
 }
 
 body.dev-mode .ant-dropdown-menu-item {
-    color: #ffffff !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    border: none !important;
 }
 
 body.dev-mode .ant-dropdown-menu-item:hover {
-    background: #2a3a3a !important;
-    box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.15) !important;
+    background: #6272a4 !important;
+    color: #8be9fd !important;
+    box-shadow: inset 0 0 8px rgba(139, 233, 253, 0.08) !important;
 }
 
 /* Tooltip */
 body.dev-mode .ant-tooltip-inner {
-    background: #2a3a3a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 18px rgba(0, 255, 255, 0.4) !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
 }
 
 body.dev-mode .ant-tooltip-arrow-content {
-    background: #2a3a3a !important;
+    background: #44475a !important;
 }
 
 /* Popover */
 body.dev-mode .ant-popover-inner {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
 }
 
 body.dev-mode .ant-popover-inner-content {
-    color: #ffffff !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
 }
 
 /* Message/Notification */
@@ -295,21 +332,22 @@ body.dev-mode .ant-notification {
 
 body.dev-mode .ant-message-notice-content,
 body.dev-mode .ant-notification-notice {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
 }
 
 /* Empty state */
 body.dev-mode .ant-empty-description {
-    color: #66dddd !important;
+    color: #6272a4 !important;
 }
 
 /* Spin/Loading */
 body.dev-mode .ant-spin-dot-item {
-    background: #66dddd !important;
+    background: #bd93f9 !important;
 }
 
 /* Form items */
@@ -318,31 +356,32 @@ body.dev-mode .ant-form-item {
 }
 
 body.dev-mode .ant-form-item-label {
-    color: #99ffff !important;
+    color: #8be9fd !important;
 }
 
 /* Checkbox and Radio */
 body.dev-mode .ant-checkbox-inner,
 body.dev-mode .ant-radio-inner {
-    background: #000000 !important;
-    border-color: #00dddd !important;
+    background: #16161e !important;
+    border-color: #8be9fd !important;
 }
 
 body.dev-mode .ant-checkbox-checked .ant-checkbox-inner {
-    background: #00dddd !important;
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
 }
 
 /* Switch */
 body.dev-mode .ant-switch {
-    background: #2a2a2a !important;
+    background: #6272a4 !important;
 }
 
 body.dev-mode .ant-switch-checked {
-    background: #00dddd !important;
+    background: #50fa7b !important;
 }
 
-/* Scanline effect */
-body.dev-mode::before {
+/* Scanline effect - DISABLED */
+/* body.dev-mode::before {
     content: '';
     position: fixed;
     top: 0;
@@ -364,150 +403,168 @@ body.dev-mode::before {
 @keyframes scanlines {
     0% { transform: translateY(0); }
     100% { transform: translateY(10px); }
-}
+} */
 
-/* Text glow effect - enhanced */
+/* Text headings - DRACULA */
 body.dev-mode h1, body.dev-mode h2, body.dev-mode h3 {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
+    text-shadow: none !important;
+    color: #bd93f9 !important;
+    font-weight: 700 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 1px !important;
 }
 
 /* Modal/Modal */
 body.dev-mode .ant-modal-content {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0, 255, 255, 0.1) !important;
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 20px rgba(139, 233, 253, 0.25), inset 0 0 12px rgba(139, 233, 253, 0.05) !important;
 }
 
 body.dev-mode .ant-modal-header {
-    background: #2a3a3a !important;
-    border-color: #00ffff !important;
-    border-width: 2px !important;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+    background: #6272a4 !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    box-shadow: none !important;
 }
 
 body.dev-mode .ant-modal-title {
-    color: #ffffff !important;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 1px !important;
 }
 
 body.dev-mode .ant-modal-body {
-    color: #ffffff !important;
-    background: #0f1f1f !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+    color: #f8f8f2 !important;
+    background: #16161e !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
 }
 
 body.dev-mode .ant-modal-footer {
-    background: #1a2a2a !important;
-    border-color: #00ffff !important;
-    border-width: 2px !important;
+    background: #44475a !important;
+    border: none !important;
+    border-top: 1px solid rgba(139, 233, 253, 0.3) !important;
 }
 
 /* Tags */
 body.dev-mode .ant-tag {
-    background: #1a3a3a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3) !important;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.6);
+    background: #44475a !important;
+    border: 1px solid #8be9fd !important;
+    color: #8be9fd !important;
+    box-shadow: 0 0 6px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
     font-weight: 500;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 0.5px;
 }
 
 /* Badges */
 body.dev-mode .ant-badge-count {
-    background: #00dddd !important;
-    color: #ffffff !important;
-    border: 1px solid #00dddd;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+    background: #ff79c6 !important;
+    color: #f8f8f2 !important;
+    border: none;
+    box-shadow: 0 0 8px rgba(255, 121, 198, 0.3);
+    font-family: 'Fira Code', monospace !important;
 }
 
 /* Tabs */
 body.dev-mode .ant-tabs-nav {
-    background: #0a0a0a !important;
-    border-color: #00aaaa !important;
+    background: #21222c !important;
+    border-color: #6272a4 !important;
+    border-width: 1px !important;
 }
 
 body.dev-mode .ant-tabs-nav-operations {
-    background: #0a0a0a !important;
+    background: #21222c !important;
 }
 
 body.dev-mode .ant-tabs-tab {
-    background: #000000 !important;
-    border-color: #00aaaa !important;
-    color: #99ffff !important;
+    background: #1a1b26 !important;
+    border: none !important;
+    color: #6272a4 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
 }
 
 body.dev-mode .ant-tabs-tab-active {
-    background: #1a1a1a !important;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.05) !important;
-    color: #ccffff !important;
+    background: #44475a !important;
+    box-shadow: none !important;
+    color: #8be9fd !important;
+    text-shadow: none !important;
 }
 
 body.dev-mode .ant-tabs-ink-bar {
-    background: #00ffff !important;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+    background: #bd93f9 !important;
+    box-shadow: none !important;
+    height: 3px !important;
 }
 
 body.dev-mode .ant-tabs-content-holder {
-    background: #000000 !important;
+    background: #16161e !important;
 }
 
 body.dev-mode .ant-tabs-tabpane {
-    background: #000000 !important;
+    background: #16161e !important;
 }
 
 /* List items */
 body.dev-mode .ant-list-item {
-    border-color: #00ffff !important;
-    border-width: 2px !important;
-    background: #1a2a2a !important;
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.25) !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.2) !important;
+    background: #44475a !important;
+    box-shadow: none !important;
 }
 
 body.dev-mode .ant-list-item:hover {
-    background: #2a3a3a !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
     transform: translateX(2px);
     transition: all 0.2s ease;
 }
 
 /* Select dropdown */
 body.dev-mode .ant-select-selector {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
 }
 
 body.dev-mode .ant-select-dropdown {
-    background: #1a2a2a !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
 }
 
 body.dev-mode .ant-select-item {
-    color: #ffffff !important;
-    background: #0f1f1f !important;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+    color: #f8f8f2 !important;
+    background: #44475a !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    border: none !important;
 }
 
 body.dev-mode .ant-select-item:hover {
-    background: #2a3a3a !important;
-    box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.15) !important;
+    background: #6272a4 !important;
+    color: #8be9fd !important;
+    box-shadow: inset 0 0 6px rgba(139, 233, 253, 0.08) !important;
 }
 
 body.dev-mode .ant-select-item-option-selected {
-    background: #2a3a3a !important;
-    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.2) !important;
+    background: #6272a4 !important;
+    color: #50fa7b !important;
+    box-shadow: inset 0 0 8px rgba(80, 250, 123, 0.1) !important;
 }
 
 /* Icon colors */
 body.dev-mode i,
 body.dev-mode .anticon {
-    color: #e0ffff !important;
-    text-shadow: 0 0 2px rgba(224, 255, 255, 0.4);
+    color: #8be9fd !important;
+    text-shadow: none !important;
 }
 
 /* Glitch effect on hover for headings - very subtle */

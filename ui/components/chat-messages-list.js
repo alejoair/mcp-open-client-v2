@@ -67,7 +67,7 @@ function ChatMessagesList({ messages, loading }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#1a1a1a'
+                background: '#0a0a0f'
             }
         },
             React.createElement(Empty, {
@@ -86,7 +86,7 @@ function ChatMessagesList({ messages, loading }) {
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100%',
-            background: '#1a1a1a'
+            background: '#0a0a0f'
         }
     },
         // Render grouped messages
