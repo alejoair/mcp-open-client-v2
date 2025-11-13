@@ -303,6 +303,9 @@
         }
     </style>
 
+    <!-- Dev Mode Theme -->
+    <link rel="stylesheet" href="css/dev-mode.css">
+
 </head>
 <body>
     <div id="root"></div>
@@ -315,6 +318,7 @@
     <script src="services/conversationsService.js"></script>
 
     <!-- Import contexts -->
+    <script type="text/babel" src="contexts/DevModeContext.js"></script>
     <script type="text/babel" src="contexts/ProvidersContext.js"></script>
     <script type="text/babel" src="contexts/ServersContext.js"></script>
     <script type="text/babel" src="contexts/ConversationsContext.js"></script>
@@ -357,13 +361,15 @@
     <script type="text/babel">
         function App() {
             return (
-                <ProvidersProvider>
-                    <ServersProvider>
-                        <ConversationsProvider>
-                            <MainLayout />
-                        </ConversationsProvider>
-                    </ServersProvider>
-                </ProvidersProvider>
+                <DevModeProvider>
+                    <ProvidersProvider>
+                        <ServersProvider>
+                            <ConversationsProvider>
+                                <MainLayout />
+                            </ConversationsProvider>
+                        </ServersProvider>
+                    </ProvidersProvider>
+                </DevModeProvider>
             );
         }
 
