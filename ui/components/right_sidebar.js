@@ -154,7 +154,7 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                     }),
                     onClick: toggleDevMode,
                     style: {
-                        background: devMode ? '#3a6666' : '#52c41a',
+                        background: devMode ? '#2a4a4a' : '#52c41a',
                         borderColor: devMode ? '#00ffff' : '#52c41a',
                         borderWidth: devMode ? '2px' : '1px',
                         color: devMode ? '#ffffff' : 'white',
