@@ -232,12 +232,61 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
 
     try:
         # Tool calling loop - continue until we get a final response
-        max_iterations = 10  # Prevent infinite loops
+        max_iterations = 50  # Prevent infinite loops
         iteration = 0
         assistant_message = None
 
         while iteration < max_iterations:
             iteration += 1
+
+            # 🔥 FIX: Apply token counting and rolling window BEFORE each LLM call
+            print(
+                f"[DEBUG] Applying token counting and rolling window for iteration {iteration}"
+            )
+
+            # Use the conversation manager's token counter to apply rolling window
+            from mcp_open_client.core.conversations.storage import ConversationStorage
+            from mcp_open_client.core.conversations.token_counter import TokenCounter
+
+            # Create temporary instances for token counting
+            storage = ConversationStorage()
+            token_counter = TokenCounter()
+
+            # Load conversation to get current limits
+            conversation = storage.load(conversation_id)
+            if conversation:
+                # Apply rolling window with the current messages_for_llm
+                if conversation.max_tokens or conversation.max_messages:
+                    messages_for_llm, token_count = token_counter.apply_rolling_window(
+                        messages_for_llm,
+                        max_tokens=conversation.max_tokens,
+                        max_messages=conversation.max_messages,
+                        model=model_name,
+                    )
+                    print(
+                        f"[DEBUG] Rolling window applied: {len(messages_for_llm)} messages, {token_count} tokens"
+                    )
+                else:
+                    # Just count tokens without applying window
+                    token_count = token_counter.count_message_tokens(
+                        messages_for_llm
+                        + [{"role": "system", "content": system_prompt}],
+                        model_name,
+                    )
+                    print(f"[DEBUG] Token count: {token_count} tokens")
+
+                messages_in_context = len(messages_for_llm)
+            else:
+                print(
+                    f"[WARNING] Could not load conversation for token counting, using original messages"
+                )
+                token_count = len(messages_for_llm) * 50  # Rough estimate
+                messages_in_context = len(messages_for_llm)
+
+            # Update request_params with the potentially trimmed messages
+            request_params["messages"] = [
+                {"role": "system", "content": system_prompt}
+            ] + messages_for_llm
 
             # Call the LLM
             response = client.chat.completions.create(**request_params)
@@ -483,22 +532,37 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
 
             else:
                 # Final response without tool calls
+                content = response_message.content or ""
+                content_length = len(content.strip()) if content else 0
+
                 print(
-                    f"[DEBUG] Final assistant response (length={len(response_message.content or '')})"
-                )
-                assistant_msg_id = f"msg-{uuid.uuid4().hex[:16]}"
-                timestamp = datetime.utcnow().isoformat() + "Z"
-
-                assistant_message = conversation_manager.add_message(
-                    conversation_id=conversation_id,
-                    role="assistant",
-                    content=response_message.content or "",
-                    message_id=assistant_msg_id,
-                    timestamp=timestamp,
+                    f"[DEBUG] Response without tool_calls (content_length={content_length})"
                 )
 
-                # Break the loop - we have a final response
-                break
+                # Only accept as final response if there's actual content
+                # Empty responses should not terminate the loop
+                if content_length > 0:
+                    assistant_msg_id = f"msg-{uuid.uuid4().hex[:16]}"
+                    timestamp = datetime.utcnow().isoformat() + "Z"
+
+                    assistant_message = conversation_manager.add_message(
+                        conversation_id=conversation_id,
+                        role="assistant",
+                        content=content,
+                        message_id=assistant_msg_id,
+                        timestamp=timestamp,
+                    )
+
+                    # Break the loop - we have a final response with content
+                    print(f"[DEBUG] Final assistant response accepted")
+                    break
+                else:
+                    # Empty response - continue loop to get actual content
+                    print(
+                        f"[DEBUG] WARNING: LLM returned empty response without tool_calls, continuing loop..."
+                    )
+                    # Add empty message to history to maintain conversation flow
+                    messages_for_llm.append({"role": "assistant", "content": ""})
 
         if not assistant_message:
             raise HTTPException(

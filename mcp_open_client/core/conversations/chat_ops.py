@@ -269,6 +269,7 @@ class ChatOperations:
             context_section = "\n\n## Context Information\n\n"
             for ctx_id, ctx_item in conversation.context.items():
                 context_section += f"### {ctx_item.descriptive_name}\n"
+                context_section += f"**Context ID:** `{ctx_id}`\n\n"
                 if ctx_item.related_keywords:
                     context_section += (
                         f"Keywords: {', '.join(ctx_item.related_keywords)}\n"
