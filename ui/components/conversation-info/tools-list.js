@@ -141,12 +141,12 @@ function ToolsList({ conversationId }) {
                         }),
                         tool.tool_name
                     ),
-                    React.createElement('div', {
+                    serverMap[tool.server_id] && serverMap[tool.server_id] !== tool.server_id && React.createElement('div', {
                         style: {
                             fontSize: '10px',
                             color: 'rgba(255, 255, 255, 0.5)'
                         }
-                    }, `Server: ${serverMap[tool.server_id] || tool.server_id}`)
+                    }, `Server: ${serverMap[tool.server_id]}`)
                 );
             })
         )

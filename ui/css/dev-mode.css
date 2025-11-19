@@ -448,6 +448,249 @@ body.dev-mode .ant-modal-footer {
     border-top: 1px solid rgba(139, 233, 253, 0.3) !important;
 }
 
+/* Conversation Tools Modal - Dark Theme Overrides */
+body.dev-mode .ant-modal-wrap .ant-modal {
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 25px rgba(139, 233, 253, 0.3), inset 0 0 15px rgba(139, 233, 253, 0.08) !important;
+}
+
+/* Modal content wrapper */
+body.dev-mode .ant-modal-content {
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Modal header */
+body.dev-mode .ant-modal-header {
+    background: #6272a4 !important;
+    border: none !important;
+    border-bottom: 2px solid #8be9fd !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2) !important;
+}
+
+/* Modal title */
+body.dev-mode .ant-modal-title {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+}
+
+/* Modal body */
+body.dev-mode .ant-modal-body {
+    background: #16161e !important;
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
+    padding: 24px !important;
+}
+
+/* Server status section */
+body.dev-mode .ant-modal-body .ant-list,
+body.dev-mode .ant-modal-body div[style*="padding: 16px"][style*="background: #f5f5f5"] {
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+}
+
+/* Server status items */
+body.dev-mode .ant-modal-body .ant-list-item {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.15) !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+/* Server status icons */
+body.dev-mode .ant-modal-body i.fa-server {
+    color: #8be9fd !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-check-circle {
+    color: #50fa7b !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-circle-notch {
+    color: #8be9fd !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-times-circle {
+    color: #ff79c6 !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-circle {
+    color: #6272a4 !important;
+}
+
+/* Server status text */
+body.dev-mode .ant-modal-body .ant-typography {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+/* Server status tags */
+body.dev-mode .ant-modal-body .ant-tag {
+    background: #44475a !important;
+    border: 1px solid #8be9fd !important;
+    color: #8be9fd !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 11px !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #52c41a"] {
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #1890ff"] {
+    background: #8be9fd !important;
+    border-color: #8be9fd !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #ff4d4f"] {
+    background: #ff79c6 !important;
+    border-color: #ff79c6 !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+/* Collapse panels for server tools */
+body.dev-mode .ant-modal-body .ant-collapse {
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-item {
+    border: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-header {
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    padding: 12px 16px !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-header:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.2) !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-content {
+    background: #16161e !important;
+    border: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-content-box {
+    background: #16161e !important;
+    padding: 16px !important;
+}
+
+/* Tool list items */
+body.dev-mode .ant-modal-body .ant-list-item[style*="padding: 8px 0"] {
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.2) !important;
+    margin-bottom: 8px !important;
+    padding: 12px 8px !important;
+    border-radius: 0 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-list-item[style*="padding: 8px 0"]:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    transform: translateX(2px);
+    transition: all 0.2s ease !important;
+}
+
+/* Tool names and descriptions */
+body.dev-mode .ant-modal-body .ant-typography {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-typography[style*="font-size: 13px"] {
+    color: #bd93f9 !important;
+    font-weight: 600 !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+body.dev-mode .ant-modal-body .ant-typography[style*="font-size: 11px"] {
+    color: #8be9fd !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Switch components */
+body.dev-mode .ant-modal-body .ant-switch {
+    background: #6272a4 !important;
+    border: 1px solid #8be9fd !important;
+    box-shadow: 0 0 4px rgba(139, 233, 253, 0.1) !important;
+}
+
+body.dev-mode .ant-modal-body .ant-switch-checked {
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
+    box-shadow: 0 0 8px rgba(80, 250, 123, 0.3) !important;
+}
+
+/* Loading spin indicator */
+body.dev-mode .ant-modal-body .ant-spin-dot-item {
+    background: #bd93f9 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-spin-text {
+    color: #8be9fd !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Empty state */
+body.dev-mode .ant-modal-body .ant-empty {
+    background: #16161e !important;
+}
+
+body.dev-mode .ant-modal-body .ant-empty-description {
+    color: #6272a4 !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Override any remaining light backgrounds */
+body.dev-mode .ant-modal-body div[style*="background: transparent"] {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-modal-body div[style*="background: #fff"] {
+    background: #16161e !important;
+    color: #f8f8f2 !important;
+}
+
+/* Modal close button */
+body.dev-mode .ant-modal-close {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-modal-close:hover {
+    color: #ff79c6 !important;
+    background: rgba(255, 121, 198, 0.1) !important;
+}
+
 /* Tags */
 body.dev-mode .ant-tag {
     background: #44475a !important;

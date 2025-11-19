@@ -130,7 +130,7 @@ function ContextItems({ conversationId }) {
                         border: '1px solid rgba(255, 255, 255, 0.05)'
                     }
                 },
-                    React.createElement('div', {
+                    context.type && React.createElement('div', {
                         style: {
                             fontSize: '11px',
                             color: 'rgba(255, 255, 255, 0.5)',
@@ -138,7 +138,7 @@ function ContextItems({ conversationId }) {
                             textTransform: 'uppercase',
                             fontWeight: 600
                         }
-                    }, context.type || 'text'),
+                    }, context.type),
                     React.createElement('div', {
                         style: {
                             fontSize: '12px',

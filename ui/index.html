@@ -301,13 +301,85 @@
         .ant-tabs-tabpane {
             height: 100%;
         }
+
+        /* MODAL STYLES - HIGHEST SPECIFICITY */
+        body.dev-mode .ant-modal,
+        body.dev-mode .ant-modal-wrap .ant-modal,
+        body.dev-mode div[class*="ant-modal"] {
+            background: #44475a !important;
+            border: 2px solid #8be9fd !important;
+            box-shadow: 0 0 25px rgba(139, 233, 253, 0.3), inset 0 0 15px rgba(139, 233, 253, 0.08) !important;
+        }
+
+        body.dev-mode .ant-modal-content,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-content {
+            background: #44475a !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        body.dev-mode .ant-modal-header,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-header {
+            background: #6272a4 !important;
+            border: none !important;
+            border-bottom: 2px solid #8be9fd !important;
+        }
+
+        body.dev-mode .ant-modal-title,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-title {
+            color: #f8f8f2 !important;
+            text-shadow: none !important;
+        }
+
+        body.dev-mode .ant-modal-body,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-body {
+            background: #16161e !important;
+            color: #f8f8f2 !important;
+        }
+
+        /* Override all backgrounds */
+        body.dev-mode .ant-modal-body div[style*="background"],
+        body.dev-mode .ant-modal .ant-list,
+        body.dev-mode .ant-modal .ant-list-item,
+        body.dev-mode .ant-modal .ant-collapse,
+        body.dev-mode .ant-modal .ant-collapse-item,
+        body.dev-mode .ant-modal .ant-collapse-header,
+        body.dev-mode .ant-modal .ant-collapse-content {
+            background: #16161e !important;
+            color: #f8f8f2 !important;
+            border-color: #6272a4 !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-list-item {
+            background: #44475a !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-collapse-header {
+            background: #44475a !important;
+        }
+
+        /* Text colors */
+        body.dev-mode .ant-modal-body .ant-typography,
+        body.dev-mode .ant-modal-body span,
+        body.dev-mode .ant-modal-body p {
+            color: #f8f8f2 !important;
+        }
+
+        /* Switches */
+        body.dev-mode .ant-modal-body .ant-switch {
+            background: #6272a4 !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-switch-checked {
+            background: #50fa7b !important;
+        }
     </style>
 
     <!-- Dev Mode Theme -->
     <link rel="stylesheet" href="css/dev-mode.css">
 
 </head>
-<body>
+<body class="dev-mode">
     <div id="root"></div>
 
     <!-- Import services -->

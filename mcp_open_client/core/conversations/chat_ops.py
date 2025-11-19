@@ -327,12 +327,45 @@ class ChatOperations:
 
         # Apply rolling window if configured
         if conversation.max_tokens or conversation.max_messages:
+            print(
+                f"[ROLLING_WINDOW] Before applying limits: {len(messages_for_llm)} messages"
+            )
+            original_count = len(messages_for_llm)
+
             messages_for_llm, token_count = self.token_counter.apply_rolling_window(
                 messages_for_llm,
                 max_tokens=conversation.max_tokens,
                 max_messages=conversation.max_messages,
                 model=model,
             )
+
+            # Save the truncated messages permanently
+            if len(messages_for_llm) < original_count:
+                kept_count = len(messages_for_llm)
+                removed_count = original_count - kept_count
+                print(
+                    f"[ROLLING_WINDOW] Truncated: removed {removed_count}, kept {kept_count} messages"
+                )
+
+                # Convert messages_for_llm back to Message objects
+                from mcp_open_client.api.models.conversation import Message
+
+                new_messages = []
+                for msg_dict in messages_for_llm[:-1]:  # Exclude the new user message
+                    # Find the original message (excluding the new user message)
+                    for original_msg in conversation.messages:
+                        if original_msg.role == msg_dict[
+                            "role"
+                        ] and original_msg.content == (msg_dict.get("content") or ""):
+                            new_messages.append(original_msg)
+                            break
+
+                # Update conversation with truncated messages
+                conversation.messages = new_messages
+                self.storage.save(conversation)
+                print(
+                    f"[ROLLING_WINDOW] Saved truncated conversation with {len(new_messages)} messages"
+                )
         else:
             # Just count tokens without applying window
             token_count = self.token_counter.count_message_tokens(
