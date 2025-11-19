@@ -93,33 +93,100 @@ class TokenCounter:
         self, messages: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        Remove orphaned tool responses that don't have corresponding tool calls.
-        A tool response is orphaned if there's no assistant message with a matching tool_call_id.
-        """
-        # First pass: collect all valid tool_call_ids from assistant messages
-        valid_tool_call_ids = set()
-        for message in messages:
-            if message.get("role") == "assistant" and message.get("tool_calls"):
-                for tool_call in message.get("tool_calls", []):
-                    if isinstance(tool_call, dict) and "id" in tool_call:
-                        valid_tool_call_ids.add(tool_call["id"])
+        Remove orphaned tool responses and assistant messages with incomplete tool calls.
 
-        # Second pass: filter messages, keeping only tool responses with valid tool_call_ids
+        Rules:
+        1. Tool response is orphaned if there's no PRECEDING assistant message with matching tool_call_id
+        2. Assistant message with tool_calls is incomplete if not ALL tool calls have responses
+        """
         verified = []
+        active_tool_call_ids = set()  # Tool calls waiting for responses
+
         for message in messages:
-            if message.get("role") == "tool":
-                tool_call_id = message.get("tool_call_id")
-                if tool_call_id and tool_call_id in valid_tool_call_ids:
-                    # Valid tool response, keep it
+            role = message.get("role")
+
+            if role == "assistant":
+                tool_calls = message.get("tool_calls")
+                if tool_calls:
+                    # This assistant message expects tool responses
+                    # Clear previous active tool calls and set new ones
+                    active_tool_call_ids = set()
+                    for tool_call in tool_calls:
+                        if isinstance(tool_call, dict) and "id" in tool_call:
+                            active_tool_call_ids.add(tool_call["id"])
                     verified.append(message)
                 else:
-                    # Orphaned tool response, skip it
+                    # Regular assistant message without tool calls
+                    # If there are active tool calls, they're now orphaned (missing responses)
+                    if active_tool_call_ids:
+                        print(
+                            f"[DEBUG] WARNING: Found assistant message without completing {len(active_tool_call_ids)} tool calls"
+                        )
+                        # Remove the previous assistant message with incomplete tool calls
+                        # by popping messages until we find and remove it
+                        for i in range(len(verified) - 1, -1, -1):
+                            if verified[i].get("role") == "assistant" and verified[
+                                i
+                            ].get("tool_calls"):
+                                print(
+                                    f"[DEBUG] Removed incomplete assistant message with tool_calls"
+                                )
+                                verified.pop(i)
+                                break
+                        active_tool_call_ids = set()
+                    verified.append(message)
+
+            elif role == "tool":
+                tool_call_id = message.get("tool_call_id")
+                if tool_call_id and tool_call_id in active_tool_call_ids:
+                    # Valid tool response for an active tool call
+                    verified.append(message)
+                    active_tool_call_ids.remove(tool_call_id)
+                else:
+                    # Orphaned tool response (no preceding assistant with this tool_call_id)
                     print(
                         f"[DEBUG] Removed orphaned tool response: {message.get('name', 'unknown')} (tool_call_id: {tool_call_id})"
                     )
-            else:
-                # Not a tool response, keep it
+
+            elif role == "user":
+                # User message encountered
+                # If there are active tool calls, they're now orphaned (missing responses)
+                if active_tool_call_ids:
+                    print(
+                        f"[DEBUG] WARNING: Found user message without completing {len(active_tool_call_ids)} tool calls"
+                    )
+                    # Remove the previous assistant message with incomplete tool calls
+                    for i in range(len(verified) - 1, -1, -1):
+                        if verified[i].get("role") == "assistant" and verified[i].get(
+                            "tool_calls"
+                        ):
+                            print(
+                                f"[DEBUG] Removed incomplete assistant message with tool_calls"
+                            )
+                            verified.pop(i)
+                            break
+                    active_tool_call_ids = set()
                 verified.append(message)
+
+            else:
+                # Other message types (system, etc.)
+                verified.append(message)
+
+        # At the end, if there are still active tool calls without responses,
+        # remove the last assistant message with tool_calls
+        if active_tool_call_ids:
+            print(
+                f"[DEBUG] WARNING: Conversation ended with {len(active_tool_call_ids)} incomplete tool calls"
+            )
+            for i in range(len(verified) - 1, -1, -1):
+                if verified[i].get("role") == "assistant" and verified[i].get(
+                    "tool_calls"
+                ):
+                    print(
+                        f"[DEBUG] Removed incomplete assistant message with tool_calls at end"
+                    )
+                    verified.pop(i)
+                    break
 
         return verified
 
@@ -158,7 +225,13 @@ class TokenCounter:
             msg_tokens = tokens_per_message
             for key, value in message.items():
                 if value is not None:
-                    text = str(value) if not isinstance(value, str) else value
+                    # Handle complex structures (tool_calls, etc.) same as count_message_tokens
+                    if isinstance(value, (list, dict)):
+                        text = json.dumps(value)
+                    elif isinstance(value, str):
+                        text = value
+                    else:
+                        text = str(value)
                     msg_tokens += len(encoding.encode(text))
                     if key == "name":
                         msg_tokens += tokens_per_name
