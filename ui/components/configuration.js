@@ -217,7 +217,14 @@ function Configuration() {
                             name="main_model"
                             rules={[{ required: true, message: 'Please select main model' }]}
                         >
-                            <Select placeholder="Select main model">
+                            <Select
+                                placeholder="Select main model"
+                                showSearch
+                                filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                optionFilterProp="children"
+                            >
                                 {availableModels.map(model => (
                                     <Select.Option key={model} value={model}>
                                         {model}
@@ -244,7 +251,14 @@ function Configuration() {
                             name="small_model"
                             rules={[{ required: true, message: 'Please select small model' }]}
                         >
-                            <Select placeholder="Select small model">
+                            <Select
+                                placeholder="Select small model"
+                                showSearch
+                                filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                optionFilterProp="children"
+                            >
                                 {availableModels.map(model => (
                                     <Select.Option key={model} value={model}>
                                         {model}

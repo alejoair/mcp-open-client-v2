@@ -13,7 +13,7 @@ from . import router
 from .dependencies import conversation_manager, server_manager
 
 
-@router.get("/{conversation_id}/tools")
+@router.get("/{conversation_id}/tools", operation_id="conversation_get_enabled_tools")
 async def get_enabled_tools(conversation_id: str):
     """
     Get all enabled tools for a conversation.
@@ -30,7 +30,11 @@ async def get_enabled_tools(conversation_id: str):
     return {"success": True, "enabled_tools": tools, "count": len(tools)}
 
 
-@router.post("/{conversation_id}/tools", response_model=EnabledToolResponse)
+@router.post(
+    "/{conversation_id}/tools",
+    response_model=EnabledToolResponse,
+    operation_id="conversation_enable_tool",
+)
 async def enable_tool(conversation_id: str, request: EnabledToolCreateRequest):
     """
     Enable a tool for a conversation.
@@ -96,7 +100,11 @@ async def enable_tool(conversation_id: str, request: EnabledToolCreateRequest):
     )
 
 
-@router.delete("/{conversation_id}/tools", response_model=EnabledToolResponse)
+@router.delete(
+    "/{conversation_id}/tools",
+    response_model=EnabledToolResponse,
+    operation_id="conversation_disable_tool",
+)
 async def disable_tool(
     conversation_id: str,
     server_id: str = Query(..., description="Server UUID or slug"),
@@ -126,7 +134,11 @@ async def disable_tool(
     )
 
 
-@router.get("/{conversation_id}/tools/available", response_model=AvailableToolsResponse)
+@router.get(
+    "/{conversation_id}/tools/available",
+    response_model=AvailableToolsResponse,
+    operation_id="conversation_get_available_tools",
+)
 async def get_available_tools(conversation_id: str):
     """
     Get all available tools from running servers.

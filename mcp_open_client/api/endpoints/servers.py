@@ -27,7 +27,10 @@ router = APIRouter(prefix="/servers", tags=["MCP Servers"])
 
 
 @router.post(
-    "/", response_model=ServerCreateResponse, status_code=status.HTTP_201_CREATED
+    "/",
+    response_model=ServerCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+    operation_id="mcp_create_server",
 )
 async def create_server(request: ServerCreateRequest):
     """
@@ -54,7 +57,7 @@ async def create_server(request: ServerCreateRequest):
         )
 
 
-@router.get("/", response_model=ServerListResponse)
+@router.get("/", response_model=ServerListResponse, operation_id="mcp_list_servers")
 async def list_servers():
     """
     List all configured MCP servers.
@@ -74,7 +77,11 @@ async def list_servers():
         )
 
 
-@router.post("/{server_id}/start", response_model=ServerStartResponse)
+@router.post(
+    "/{server_id}/start",
+    response_model=ServerStartResponse,
+    operation_id="mcp_start_server",
+)
 async def start_server(server_id: str):
     """
     Start an MCP server process.
@@ -100,7 +107,11 @@ async def start_server(server_id: str):
         )
 
 
-@router.post("/{server_id}/stop", response_model=ServerStopResponse)
+@router.post(
+    "/{server_id}/stop",
+    response_model=ServerStopResponse,
+    operation_id="mcp_stop_server",
+)
 async def stop_server(server_id: str):
     """
     Stop a running MCP server process.
@@ -127,7 +138,11 @@ async def stop_server(server_id: str):
         )
 
 
-@router.get("/{server_id}/tools", response_model=ServerToolsResponse)
+@router.get(
+    "/{server_id}/tools",
+    response_model=ServerToolsResponse,
+    operation_id="mcp_get_server_tools",
+)
 async def get_server_tools(server_id: str):
     """
     Get tools available from a running MCP server.
@@ -170,7 +185,11 @@ async def get_server_tools(server_id: str):
         )
 
 
-@router.post("/{server_id}/tools/call", response_model=ToolCallResponse)
+@router.post(
+    "/{server_id}/tools/call",
+    response_model=ToolCallResponse,
+    operation_id="mcp_call_server_tool",
+)
 async def call_tool(server_id: str, request: ToolCallRequest):
     """
     Execute a tool on a running MCP server.
@@ -219,7 +238,7 @@ async def call_tool(server_id: str, request: ToolCallRequest):
         )
 
 
-@router.delete("/{server_id}", response_model=dict)
+@router.delete("/{server_id}", response_model=dict, operation_id="mcp_delete_server")
 async def remove_server(server_id: str):
     """
     Remove a server configuration.
@@ -252,7 +271,7 @@ async def remove_server(server_id: str):
         )
 
 
-@router.get("/{server_id}", response_model=dict)
+@router.get("/{server_id}", response_model=dict, operation_id="mcp_get_server_details")
 async def get_server(server_id: str):
     """
     Get detailed information about a specific server.

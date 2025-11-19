@@ -1,4 +1,4 @@
-const { List, Button, Space, Typography, Tag, Popconfirm, message, Tooltip, Modal, Form, Input, InputNumber, Collapse } = antd;
+const { List, Button, Space, Typography, Tag, Popconfirm, message, Tooltip, Modal, Form, Input, InputNumber, Collapse, Radio } = antd;
 const { Text } = Typography;
 
 function MCPServers() {
@@ -9,6 +9,7 @@ function MCPServers() {
     const [creating, setCreating] = React.useState(false);
     const [serverTools, setServerTools] = React.useState({});
     const [loadingTools, setLoadingTools] = React.useState({});
+    const [transportType, setTransportType] = React.useState('stdio');
 
     const getStatusColor = function(status) {
         const colors = {
@@ -91,28 +92,45 @@ function MCPServers() {
     const handleCreate = async function(values) {
         setCreating(true);
         try {
-            // Prepare server configuration
-            const serverConfig = {
+            // Prepare server configuration based on transport type
+            let serverConfig = {
                 name: values.name,
                 slug: values.slug || undefined,
-                transport: "stdio",
-                command: values.command,
-                args: values.args ? values.args.split(' ').filter(arg => arg.trim()) : [],
-                env: values.env ? values.env.split(',').map(pair => {
+                transport: values.transport || 'stdio'
+            };
+
+            if (values.transport === 'http') {
+                // HTTP transport configuration
+                serverConfig.url = values.url;
+                serverConfig.headers = values.headers ? values.headers.split(',').reduce((acc, pair) => {
+                    const [key, value] = pair.split('=');
+                    if (key && value) {
+                        acc[key.trim()] = value.trim();
+                    }
+                    return acc;
+                }, {}) : null;
+                serverConfig.auth_type = values.auth_type || null;
+                serverConfig.auth_token = values.auth_token || null;
+            } else {
+                // STDIO transport configuration
+                serverConfig.command = values.command;
+                serverConfig.args = values.args ? values.args.split(' ').filter(arg => arg.trim()) : [];
+                serverConfig.env = values.env ? values.env.split(',').map(pair => {
                     const [key, value] = pair.split('=');
                     return key.trim() + '=' + (value || '').trim();
                 }).reduce((acc, pair) => {
                     const [key, value] = pair.split('=');
                     acc[key] = value;
                     return acc;
-                }, {}) : null,
-                cwd: values.cwd || null
-            };
+                }, {}) : null;
+                serverConfig.cwd = values.cwd || null;
+            }
 
             await createServer({ server: serverConfig });
             message.success('Server created successfully');
             setCreateModalVisible(false);
             form.resetFields();
+            setTransportType('stdio'); // Reset to default
         } catch (error) {
             message.error('Failed to create server: ' + error.message);
         } finally {
@@ -123,6 +141,7 @@ function MCPServers() {
     const handleCancelCreate = function() {
         setCreateModalVisible(false);
         form.resetFields();
+        setTransportType('stdio'); // Reset to default
     };
 
     return (
@@ -269,6 +288,7 @@ function MCPServers() {
                     form={form}
                     layout="vertical"
                     onFinish={handleCreate}
+                    initialValues={{ transport: 'stdio' }}
                 >
                     <Form.Item
                         label="Server Name"
@@ -287,39 +307,101 @@ function MCPServers() {
                     </Form.Item>
 
                     <Form.Item
-                        label="Command"
-                        name="command"
-                        rules={[{ required: true, message: 'Please enter command' }]}
-                        extra="The command to execute (e.g., npx.cmd)"
+                        label="Transport Type"
+                        name="transport"
+                        rules={[{ required: true, message: 'Please select transport type' }]}
                     >
-                        <Input placeholder="e.g., npx.cmd" />
+                        <Radio.Group
+                            onChange={function(e) { setTransportType(e.target.value); }}
+                            buttonStyle="solid"
+                        >
+                            <Radio.Button value="stdio">STDIO (Local)</Radio.Button>
+                            <Radio.Button value="http">Streamable HTTP (Remote)</Radio.Button>
+                        </Radio.Group>
                     </Form.Item>
 
-                    <Form.Item
-                        label="Arguments"
-                        name="args"
-                        help="Space-separated arguments"
-                        extra="Example: -y @modelcontextprotocol/server-filesystem ."
-                    >
-                        <Input placeholder="-y @modelcontextprotocol/server-filesystem ." />
-                    </Form.Item>
+                    {transportType === 'stdio' && (
+                        <>
+                            <Form.Item
+                                label="Command"
+                                name="command"
+                                rules={[{ required: true, message: 'Please enter command' }]}
+                                extra="The command to execute (e.g., npx.cmd)"
+                            >
+                                <Input placeholder="e.g., npx.cmd" />
+                            </Form.Item>
 
-                    <Form.Item
-                        label="Working Directory (optional)"
-                        name="cwd"
-                        extra="Directory where the command will be executed"
-                    >
-                        <Input placeholder="e.g., c:/path/to/project" />
-                    </Form.Item>
+                            <Form.Item
+                                label="Arguments"
+                                name="args"
+                                help="Space-separated arguments"
+                                extra="Example: -y @modelcontextprotocol/server-filesystem ."
+                            >
+                                <Input placeholder="-y @modelcontextprotocol/server-filesystem ." />
+                            </Form.Item>
 
-                    <Form.Item
-                        label="Environment Variables (optional)"
-                        name="env"
-                        help="Comma-separated key=value pairs"
-                        extra="Example: API_KEY=123,TYPE=dev"
-                    >
-                        <Input placeholder="KEY1=value1,KEY2=value2" />
-                    </Form.Item>
+                            <Form.Item
+                                label="Working Directory (optional)"
+                                name="cwd"
+                                extra="Directory where the command will be executed"
+                            >
+                                <Input placeholder="e.g., c:/path/to/project" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Environment Variables (optional)"
+                                name="env"
+                                help="Comma-separated key=value pairs"
+                                extra="Example: API_KEY=123,TYPE=dev"
+                            >
+                                <Input placeholder="KEY1=value1,KEY2=value2" />
+                            </Form.Item>
+                        </>
+                    )}
+
+                    {transportType === 'http' && (
+                        <>
+                            <Form.Item
+                                label="Server URL"
+                                name="url"
+                                rules={[
+                                    { required: true, message: 'Please enter server URL' },
+                                    { type: 'url', message: 'Please enter a valid URL' }
+                                ]}
+                                extra="HTTP(S) URL for the MCP server endpoint"
+                            >
+                                <Input placeholder="e.g., http://127.0.0.1:8001/mcp" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Authentication Type (optional)"
+                                name="auth_type"
+                            >
+                                <Radio.Group>
+                                    <Radio value={null}>None</Radio>
+                                    <Radio value="bearer">Bearer Token</Radio>
+                                    <Radio value="oauth">OAuth</Radio>
+                                </Radio.Group>
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Auth Token (optional)"
+                                name="auth_token"
+                                help="Required if authentication type is Bearer Token"
+                            >
+                                <Input.Password placeholder="Enter bearer token" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="HTTP Headers (optional)"
+                                name="headers"
+                                help="Comma-separated key=value pairs"
+                                extra="Example: X-API-Key=abc123,Content-Type=application/json"
+                            >
+                                <Input placeholder="Header1=value1,Header2=value2" />
+                            </Form.Item>
+                        </>
+                    )}
                 </Form>
             </Modal>
         </div>

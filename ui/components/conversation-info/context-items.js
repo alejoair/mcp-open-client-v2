@@ -5,29 +5,56 @@ function ContextItems({ conversationId }) {
     const [contexts, setContexts] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
 
-    React.useEffect(function() {
+    // Memoize loadContexts to maintain stable reference
+    const loadContexts = React.useCallback(async function() {
         if (!conversationId) {
             setContexts([]);
             return;
         }
 
-        async function loadContexts() {
-            setLoading(true);
-            try {
-                const response = await fetch(`/conversations/${conversationId}/context`);
-                const data = await response.json();
-                const contextArray = Array.isArray(data.context) ? data.context : [];
-                setContexts(contextArray);
-            } catch (err) {
-                console.error('Failed to load contexts:', err);
-                setContexts([]);
-            } finally {
-                setLoading(false);
-            }
-        }
+        setLoading(true);
+        try {
+            const response = await fetch(`/conversations/${conversationId}/context`);
+            const data = await response.json();
 
-        loadContexts();
+            // Convert context object to array
+            let contextArray = [];
+            if (Array.isArray(data.context)) {
+                contextArray = data.context;
+            } else if (data.context && typeof data.context === 'object') {
+                // Convert object to array of context items with their IDs
+                contextArray = Object.entries(data.context).map(function([id, ctx]) {
+                    return { ...ctx, id: id };
+                });
+            }
+
+            setContexts(contextArray);
+        } catch (err) {
+            console.error('Failed to load contexts:', err);
+            setContexts([]);
+        } finally {
+            setLoading(false);
+        }
     }, [conversationId]);
+
+    // Handle SSE events for real-time context updates
+    const handleContextEvent = React.useCallback(function(eventType, event) {
+        console.log('[Context Event]', eventType, event);
+
+        if (eventType === 'context_added' || eventType === 'context_updated' || eventType === 'context_deleted') {
+            // Reload contexts when any context event is received
+            loadContexts();
+        }
+    }, [loadContexts]);
+
+    // NOTE: SSE connection is now handled by chat-container to avoid duplicate connections
+    // Context updates will come through normal data reloading
+    // useSSEConnection(conversationId, handleContextEvent);
+
+    // Initial load
+    React.useEffect(function() {
+        loadContexts();
+    }, [loadContexts]);
 
     if (!conversationId) {
         return null;

@@ -8,9 +8,16 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
     const [conversation, setConversation] = React.useState(null);
     const { sendMessage, getConversation } = useConversations();
 
-    // SSE connection for real-time tool events
-    const handleToolEvent = React.useCallback(function(eventType, event) {
-        const data = event.data;
+    // SSE connection for real-time tool and context events
+    const handleToolEvent = React.useCallback(function(eventType, eventData) {
+        const data = eventData.data;
+
+        // Handle context events (pass through - other components may listen)
+        if (eventType === 'context_added' || eventType === 'context_updated' || eventType === 'context_deleted') {
+            // Just log for now, context-items will be updated via props
+            console.log('[SSE] Context event received:', eventType);
+            return;
+        }
 
         if (eventType === 'tool_call') {
             console.log('[Tool Event] Tool call started:', data.tool_name, data.tool_call_id);
@@ -45,6 +52,7 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                         _status: 'pending',
                         _isTemporary: true
                     });
+                    console.log('[Tool Event] Created temporary assistant message');
                 }
 
                 // Add temporary tool message (pending)
@@ -60,6 +68,8 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                     _isTemporary: true
                 });
 
+                console.log('[Tool Event] Total messages after adding temp:', newMessages.length);
+                console.log('[Tool Event] Temporary messages in new array:', newMessages.filter(m => m._isTemporary).length);
                 return newMessages;
             });
         }
@@ -213,18 +223,26 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
 
     // Filter messages based on max_messages setting
     React.useEffect(function() {
+        console.log('[Filter Effect] Running with', messages.length, 'messages, conversation:', conversation ? 'exists' : 'null');
+        console.log('[Filter Effect] Temporary messages in input:', messages.filter(m => m._isTemporary).length);
+
         if (!conversation || !messages.length) {
+            console.log('[Filter Effect] No conversation or no messages, setting all messages');
             setFilteredMessages(messages);
             return;
         }
 
         const maxMessages = conversation.max_messages;
         if (!maxMessages || maxMessages >= messages.length) {
+            console.log('[Filter Effect] No limit or within limit, setting all messages');
             setFilteredMessages(messages);
         } else {
             // Show only the last maxMessages messages
             const startIndex = messages.length - maxMessages;
-            setFilteredMessages(messages.slice(startIndex));
+            console.log('[Filter Effect] Applying limit, slicing from', startIndex, 'to', messages.length);
+            const sliced = messages.slice(startIndex);
+            console.log('[Filter Effect] After slice, temp messages:', sliced.filter(m => m._isTemporary).length);
+            setFilteredMessages(sliced);
         }
     }, [messages, conversation]);
 
@@ -338,7 +356,8 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         },
             React.createElement(ChatMessagesList, {
                 messages: filteredMessages,
-                loading: loading
+                loading: loading,
+                conversationId: conversationId
             })
         ),
         // Input at bottom (fixed)

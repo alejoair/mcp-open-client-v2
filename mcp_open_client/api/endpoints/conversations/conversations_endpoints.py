@@ -16,7 +16,10 @@ from .dependencies import conversation_manager
 
 
 @router.post(
-    "", response_model=ConversationResponse, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=ConversationResponse,
+    status_code=status.HTTP_201_CREATED,
+    operation_id="conversation_create",
 )
 async def create_conversation(request: ConversationCreateRequest):
     """
@@ -46,7 +49,9 @@ async def create_conversation(request: ConversationCreateRequest):
         )
 
 
-@router.get("", response_model=ConversationListResponse)
+@router.get(
+    "", response_model=ConversationListResponse, operation_id="conversation_list_all"
+)
 async def list_conversations():
     """
     List all conversations ordered by last update.
@@ -63,7 +68,11 @@ async def list_conversations():
         )
 
 
-@router.get("/search", response_model=ConversationSearchResponse)
+@router.get(
+    "/search",
+    response_model=ConversationSearchResponse,
+    operation_id="conversation_search",
+)
 async def search_conversations(
     q: str = Query(..., description="Search query for title, description, or keywords")
 ):
@@ -87,7 +96,11 @@ async def search_conversations(
         )
 
 
-@router.get("/{conversation_id}", response_model=ConversationResponse)
+@router.get(
+    "/{conversation_id}",
+    response_model=ConversationResponse,
+    operation_id="conversation_get",
+)
 async def get_conversation(conversation_id: str):
     """
     Get a specific conversation by ID.
@@ -108,7 +121,11 @@ async def get_conversation(conversation_id: str):
     )
 
 
-@router.put("/{conversation_id}", response_model=ConversationResponse)
+@router.put(
+    "/{conversation_id}",
+    response_model=ConversationResponse,
+    operation_id="conversation_update",
+)
 async def update_conversation(conversation_id: str, request: ConversationUpdateRequest):
     """
     Update conversation metadata.
@@ -140,7 +157,7 @@ async def update_conversation(conversation_id: str, request: ConversationUpdateR
     )
 
 
-@router.delete("/{conversation_id}")
+@router.delete("/{conversation_id}", operation_id="conversation_delete")
 async def delete_conversation(conversation_id: str):
     """
     Delete a conversation.

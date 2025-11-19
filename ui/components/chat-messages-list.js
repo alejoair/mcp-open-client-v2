@@ -1,11 +1,19 @@
 const { Spin, Empty } = antd;
 
-function ChatMessagesList({ messages, loading }) {
+function ChatMessagesList({ messages, loading, conversationId }) {
     const messagesEndRef = React.useRef(null);
+
+    // Debug: log when messages change
+    React.useEffect(function() {
+        console.log('[ChatMessagesList] Messages updated, count:', messages.length);
+        console.log('[ChatMessagesList] Temporary messages:', messages.filter(m => m._isTemporary).length);
+    }, [messages]);
 
     // Group assistant messages with their tool responses
     // IMPORTANT: Must be called before any conditional returns (Rules of Hooks)
     const groupedMessages = React.useMemo(function() {
+        console.log('[ChatMessagesList] useMemo grouping', messages.length, 'messages');
+
         if (!messages || !Array.isArray(messages)) {
             return [];
         }

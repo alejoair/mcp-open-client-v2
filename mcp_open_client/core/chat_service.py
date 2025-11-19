@@ -19,7 +19,7 @@ from mcp_open_client.api.models.chat import (
     Usage,
 )
 from mcp_open_client.api.models.server import ToolInfo
-from mcp_open_client.core.provider_manager import AIProviderManager
+from mcp_open_client.core.providers import AIProviderManager
 
 
 class ChatService:
@@ -42,37 +42,36 @@ class ChatService:
         """
         # Determine which provider to use
         if request.provider:
-            provider_name = request.provider
+            provider_id = request.provider
+            provider_config = self.provider_manager.get_provider(provider_id)
+            if not provider_config:
+                raise ValueError(f"Provider '{provider_id}' not found.")
         else:
             # Use default provider
-            provider_name = self.provider_manager.get_default_provider()
-            if not provider_name:
+            provider_config = self.provider_manager.get_default_provider()
+            if not provider_config:
                 raise ValueError(
                     "No default provider configured. Please set a default provider or specify one in the request."
                 )
+            provider_id = provider_config.id
 
-        # Get provider configuration
-        provider_config = self.provider_manager.get_provider(provider_name)
-        if not provider_config:
-            raise ValueError(f"Provider '{provider_name}' not found.")
-
-        if not provider_config.enabled:
-            raise ValueError(f"Provider '{provider_name}' is disabled.")
+        if not provider_config.config.enabled:
+            raise ValueError(f"Provider '{provider_id}' is disabled.")
 
         # Determine which model to use
         model_type = request.model_type or ModelType.SMALL
         actual_model_name = request.model
 
         if model_type == ModelType.SMALL:
-            if provider_config.models.small:
-                actual_model_name = provider_config.models.small.name
+            if provider_config.config.models.small:
+                actual_model_name = provider_config.config.models.small.model_name
             # If no small model configured, fall back to the provided model name
         elif model_type == ModelType.MAIN:
-            if provider_config.models.main:
-                actual_model_name = provider_config.models.main.name
+            if provider_config.config.models.main:
+                actual_model_name = provider_config.config.models.main.model_name
             # If no main model configured, fall back to the provided model name
 
-        return provider_name, actual_model_name, model_type.value
+        return provider_id, actual_model_name, model_type.value
 
     def _get_openai_client(
         self,
@@ -96,8 +95,8 @@ class ChatService:
             raise ValueError(f"Provider '{provider_name}' not found.")
 
         # Use overrides if provided, otherwise use provider config
-        final_api_key = api_key or provider_config.api_key
-        final_base_url = base_url or provider_config.base_url
+        final_api_key = api_key or provider_config.config.api_key
+        final_base_url = base_url or provider_config.config.base_url
 
         if not final_api_key:
             raise ValueError(f"No API key found for provider '{provider_name}'.")

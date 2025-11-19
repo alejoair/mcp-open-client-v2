@@ -52,6 +52,24 @@ class LocalSSEService:
     ):
         await self.emit_tool_event(conversation_id, "tool_error", tool_error_data)
 
+    async def emit_context_added(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context added event."""
+        await self.emit_tool_event(conversation_id, "context_added", context_data)
+
+    async def emit_context_updated(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context updated event."""
+        await self.emit_tool_event(conversation_id, "context_updated", context_data)
+
+    async def emit_context_deleted(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context deleted event."""
+        await self.emit_tool_event(conversation_id, "context_deleted", context_data)
+
 
 # Global SSE service instance
 _local_sse_service: Optional[LocalSSEService] = None
@@ -67,7 +85,7 @@ def get_local_sse_service():
 router = APIRouter(prefix="/sse", tags=["sse"])
 
 
-@router.get("/conversations/{conversation_id}")
+@router.get("/conversations/{conversation_id}", operation_id="conversation_sse_stream")
 async def sse_conversation_stream(conversation_id: str, request: Request):
     """
     Server-Sent Events endpoint for real-time conversation updates.

@@ -9,7 +9,11 @@ from . import router
 from .dependencies import conversation_manager
 
 
-@router.post("/{conversation_id}/messages", response_model=MessageResponse)
+@router.post(
+    "/{conversation_id}/messages",
+    response_model=MessageResponse,
+    operation_id="conversation_add_message",
+)
 async def add_message(conversation_id: str, request: MessageCreateRequest):
     """
     Add a message to a conversation.
@@ -33,7 +37,7 @@ async def add_message(conversation_id: str, request: MessageCreateRequest):
     )
 
 
-@router.get("/{conversation_id}/messages")
+@router.get("/{conversation_id}/messages", operation_id="conversation_get_messages")
 async def get_messages(conversation_id: str):
     """
     Get all messages from a conversation.
@@ -50,7 +54,10 @@ async def get_messages(conversation_id: str):
     return {"success": True, "messages": messages, "count": len(messages)}
 
 
-@router.delete("/{conversation_id}/messages/{message_id}")
+@router.delete(
+    "/{conversation_id}/messages/{message_id}",
+    operation_id="conversation_delete_message",
+)
 async def delete_message(conversation_id: str, message_id: str):
     """
     Delete a specific message from a conversation.

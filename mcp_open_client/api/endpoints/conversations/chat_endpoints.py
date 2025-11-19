@@ -84,7 +84,11 @@ def filter_context_arguments(arguments: Dict[str, Any]) -> Dict[str, Any]:
     return filtered
 
 
-@router.post("/{conversation_id}/chat", response_model=ConversationChatResponse)
+@router.post(
+    "/{conversation_id}/chat",
+    response_model=ConversationChatResponse,
+    operation_id="conversation_chat",
+)
 async def conversation_chat(conversation_id: str, request: ConversationChatRequest):
     """
     Send a message in a conversation and get LLM response.
@@ -206,8 +210,8 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
         timestamp=timestamp,
     )
 
-    # Add user message to conversation history
-    messages_for_llm.append({"role": "user", "content": request.content})
+    # NOTE: User message already added to messages_for_llm by prepare_chat_messages
+    # Do NOT add it again here
 
     # Build initial request parameters
     request_params = {
@@ -219,8 +223,6 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
     if tools_for_llm:
         request_params["tools"] = tools_for_llm
         print(f"[DEBUG] Sending {len(tools_for_llm)} tools to LLM:")
-        import json
-
         for tool in tools_for_llm:
             print(f"  - {tool['function']['name']}")
         print(f"[DEBUG] Full tools JSON:\n{json.dumps(tools_for_llm, indent=2)}")
@@ -371,6 +373,21 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                                     else:
                                         result_text += str(item)
                                 tool_result = result_text
+                            elif hasattr(tool_result_raw, "content"):
+                                # Handle CallToolResult object with content attribute
+                                content = tool_result_raw.content
+                                if isinstance(content, list):
+                                    result_text = ""
+                                    for item in content:
+                                        if hasattr(item, "text"):
+                                            result_text += item.text
+                                        elif isinstance(item, dict) and "text" in item:
+                                            result_text += item["text"]
+                                        else:
+                                            result_text += str(item)
+                                    tool_result = result_text
+                                else:
+                                    tool_result = str(content)
                             elif hasattr(tool_result_raw, "text"):
                                 # Single TextContent object
                                 tool_result = tool_result_raw.text
