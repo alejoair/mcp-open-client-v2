@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-open-client"
-version = "0.9.11"
+version = "0.9.12"
 description = "An open MCP client implementation"
 readme = "README.md"
 requires-python = ">=3.10"
