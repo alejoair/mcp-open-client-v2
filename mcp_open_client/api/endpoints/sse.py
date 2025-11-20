@@ -36,6 +36,11 @@ class LocalSSEService:
                 "data": data,
             }
             await self.active_connections[conversation_id].put(event)
+            print(f"[SSE] Emitted {event_type} event to {conversation_id}")
+        else:
+            print(
+                f"[SSE] WARNING: No active connection for {conversation_id}, event {event_type} lost!"
+            )
 
     async def emit_tool_call(
         self, conversation_id: str, tool_call_data: Dict[str, Any]

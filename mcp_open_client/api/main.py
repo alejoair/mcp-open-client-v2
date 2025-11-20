@@ -22,6 +22,7 @@ from .endpoints.providers import router as providers_router
 from .endpoints.registry import router as registry_router
 from .endpoints.servers import get_server_manager, router
 from .endpoints.sse import router as sse_router
+from .endpoints.terminal import router as terminal_router
 
 # Configure UTF-8 encoding for stdout/stderr to handle Unicode characters (emojis, arrows, etc.)
 # This fixes 'charmap' codec errors on Windows when printing Unicode characters
@@ -108,6 +109,7 @@ app.include_router(chat_router)
 app.include_router(registry_router)
 app.include_router(conversations_router)
 app.include_router(sse_router)
+app.include_router(terminal_router)
 
 # Mount static files for UI
 ui_path = Path(__file__).parent.parent.parent / "ui"

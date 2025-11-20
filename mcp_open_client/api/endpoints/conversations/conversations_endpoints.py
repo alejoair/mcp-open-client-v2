@@ -5,7 +5,7 @@ Basic CRUD endpoints for conversations.
 from fastapi import HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from ...core.conversations.token_counter import TokenCounter
+from ....core.conversations.token_counter import TokenCounter
 from ...models.conversation import (
     ConversationCreateRequest,
     ConversationListResponse,

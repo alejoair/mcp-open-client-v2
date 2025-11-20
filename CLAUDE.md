@@ -284,3 +284,80 @@ The system auto-detects and uses appropriate FastMCP transports:
 - API uses lifespan events for graceful shutdown
 - Always use `await manager.shutdown_all()` when manually managing
 - siempre mata el servidor, valida con curl que no esta corriendo y solo alli lanzalo de nuevo
+- ## Release Process
+
+  ### Prerequisites
+  - Version updated in `pyproject.toml`
+  - Changes committed and pushed to GitHub
+  - `PYPI_API_TOKEN` configured in GitHub Secrets
+
+  ### Steps
+
+  1. **Create and push version tag:**
+     ```bash
+     git tag v0.9.8
+     git push origin v0.9.8
+
+  2. Automatic workflow triggers:
+    - Runs tests (Python 3.10, 3.11, 3.12)
+    - Runs linting (black, isort)
+    - Builds package
+    - Publishes to PyPI
+    - Creates GitHub Release
+  3. Verify:
+    - Check workflow: https://github.com/alejoair/mcp-open-client-v2/actions
+    - Confirm PyPI: https://pypi.org/project/mcp-open-client/
+- mcp_open_client/api/endpoints/
+  ├── __init__.py
+  │
+  ├── Endpoints principales:
+  │   ├── chat.py                    # Chat OpenAI-compatible
+  │   ├── servers.py                 # Gestión de servidores MCP
+  │   ├── providers.py               # Gestión de proveedores de AI
+  │   ├── registry.py                # Descubrimiento de servidores MCP
+  │   └── sse.py                     # Server-Sent Events
+  │
+  └── conversations/
+      ├── __init__.py
+      │
+      ├── Endpoints:
+      │   ├── conversations_endpoints.py  # CRUD de conversaciones
+      │   ├── chat_endpoints.py          # Chat en conversaciones
+      │   ├── messages_endpoints.py      # Gestión de mensajes
+      │   ├── context_endpoints.py       # Gestión de contexto
+      │   ├── tools_endpoints.py         # Gestión de herramientas
+      │   └── editors_endpoints.py       # Gestión de editores abiertos
+      │
+      └── Funciones auxiliares:
+          ├── dependencies.py            # Dependencias compartidas (inyección)
+          ├── tool_execution.py          # Utilidades de ejecución de herramientas
+          └── token_management.py        # Gestión y conteo de tokens
+
+  Las funciones auxiliares en conversations/ son:
+  - dependencies.py: Funciones de inyección de dependencias (FastAPI Depends())
+  - tool_execution.py: Lógica reutilizable para ejecutar herramientas MCP
+  - token_management.py: Funciones para contar y gestionar tokens en mensajes
+- FastAPI-MCP en MCP Open Client v2
+
+  Implementación (main.py:117-127):
+
+  from fastapi_mcp import FastApiMCP
+
+  mcp = FastApiMCP(app, name="MCP Open Client API")
+  mcp.mount_http()  # Expone en /mcp
+
+  Resultado: Todos los endpoints REST de FastAPI se convierten automáticamente en herramientas MCP:
+
+  - API REST: http://localhost:8001/servers/, /providers/, /conversations/
+  - MCP Tools: http://localhost:8001/mcp → mcp_list_servers, mcp_provider_create, mcp_conversation_chat, etc.
+
+  Arquitectura en capas:
+  LLM (Claude/GPT)
+      ↓
+  MCP Protocol (/mcp endpoint) ← FastAPI-MCP
+      ↓
+  FastAPI Endpoints (50+ endpoints)
+      ↓
+  Managers (MCPServerManager, ConversationManager, etc.)
+      ↓
+  JSON Storage
