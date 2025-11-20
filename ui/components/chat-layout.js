@@ -81,16 +81,25 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         // Find the tab data for the new active conversation
         const activeTab = items.find(function(item) { return item.key === key; });
         if (activeTab) {
-            // Load fresh conversation data from API
+            // Load fresh conversation data and stats from API
             try {
-                const response = await api.get('/conversations/' + key);
-                const freshConversation = response.conversation;
-                const messageCount = freshConversation.messages ? freshConversation.messages.length : 0;
+                const [conversationResponse, statsResponse] = await Promise.all([
+                    api.get('/conversations/' + key),
+                    api.get('/conversations/' + key + '/stats')
+                ]);
+
+                const freshConversation = conversationResponse.conversation;
+
+                // Build tokenInfo from stats response
+                const tokenInfo = {
+                    tokenCount: statsResponse.token_count,
+                    messagesInContext: statsResponse.messages_in_context
+                };
 
                 handleConversationUpdate({
                     conversation: freshConversation,
-                    tokenInfo: null,  // Will be populated on next message
-                    messageCount: messageCount,
+                    tokenInfo: tokenInfo,
+                    messageCount: statsResponse.message_count,
                     onOpenSettings: activeTab.onOpenSettings,
                     onOpenTools: activeTab.onOpenTools,
                     toolsRefreshKey: toolsRefreshKey,
@@ -98,7 +107,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                 });
             } catch (err) {
                 console.error('Failed to load conversation data:', err);
-                // Fallback to tab data
+                // Fallback to tab data without stats
                 handleConversationUpdate({
                     conversation: activeTab.conversation,
                     tokenInfo: null,
