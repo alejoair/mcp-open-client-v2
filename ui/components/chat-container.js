@@ -1,6 +1,6 @@
 const { message: antMessage, Button } = antd;
 
-function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversationUpdate }) {
+function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversationUpdate, onContextRefresh }) {
     const [messages, setMessages] = React.useState([]);
     const [filteredMessages, setFilteredMessages] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -12,10 +12,23 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
     const handleToolEvent = React.useCallback(function(eventType, eventData) {
         const data = eventData.data;
 
-        // Handle context events (pass through - other components may listen)
+        // Handle context events - trigger refresh in context component
         if (eventType === 'context_added' || eventType === 'context_updated' || eventType === 'context_deleted') {
-            // Just log for now, context-items will be updated via props
-            console.log('[SSE] Context event received:', eventType);
+            console.log('[SSE] Context event received:', eventType, '- triggering refresh');
+            if (onContextRefresh) {
+                onContextRefresh();
+            }
+            return;
+        }
+
+        // Handle token update events
+        if (eventType === 'token_update') {
+            console.log('[SSE] Token update received:', data.token_count, 'tokens');
+            setTokenInfo({
+                tokenCount: data.token_count,
+                tokensSent: data.token_count,
+                messagesInContext: data.messages_in_context
+            });
             return;
         }
 

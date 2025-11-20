@@ -11,6 +11,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
     const [activeConversationData, setActiveConversationData] = React.useState(null);
     const [isRestored, setIsRestored] = React.useState(false);
     const [toolsRefreshKey, setToolsRefreshKey] = React.useState(0);
+    const [contextRefreshKey, setContextRefreshKey] = React.useState(0);
 
     const newTabIndex = React.useRef(0);
 
@@ -47,8 +48,12 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                             ...data,
                             onOpenSettings: handleOpenSettings,
                             onOpenTools: handleOpenTools,
-                            toolsRefreshKey: toolsRefreshKey
+                            toolsRefreshKey: toolsRefreshKey,
+                            contextRefreshKey: contextRefreshKey
                         });
+                    },
+                    onContextRefresh: function() {
+                        setContextRefreshKey(function(prev) { return prev + 1; });
                     }
                 }),
                 conversation: conversation,
@@ -96,6 +101,64 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
             });
         }
     }, [toolsRefreshKey]);
+
+    // Auto-start MCP servers when a conversation is opened
+    React.useEffect(function() {
+        if (!activeKey) return;
+
+        let cancelled = false;
+
+        async function startConversationServers() {
+            try {
+                // Get the conversation's enabled tools
+                const response = await api.get('/conversations/' + activeKey + '/tools');
+                if (cancelled) return;
+
+                const enabledTools = response.enabled_tools || [];
+                if (enabledTools.length === 0) return;
+
+                // Extract unique server IDs
+                const serverIds = [...new Set(enabledTools.map(function(tool) {
+                    return tool.server_id;
+                }))];
+
+                // Get current server status
+                const serversResponse = await api.get('/servers/');
+                if (cancelled) return;
+
+                const servers = serversResponse.servers || [];
+
+                // Start servers that are not running
+                const serversToStart = servers.filter(function(server) {
+                    return serverIds.includes(server.id) && server.status !== 'running';
+                });
+
+                if (serversToStart.length > 0) {
+                    console.log('[AutoStart] Starting ' + serversToStart.length + ' MCP servers for conversation');
+
+                    // Start all servers in parallel
+                    await Promise.all(serversToStart.map(async function(server) {
+                        try {
+                            await api.post('/servers/' + server.id + '/start');
+                            console.log('[AutoStart] Started server: ' + server.config.name);
+                        } catch (err) {
+                            console.error('[AutoStart] Failed to start server ' + server.config.name + ':', err);
+                        }
+                    }));
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    console.error('[AutoStart] Failed to start conversation servers:', err);
+                }
+            }
+        }
+
+        startConversationServers();
+
+        return function() {
+            cancelled = true;
+        };
+    }, [activeKey]);
 
     // Restore tabs from localStorage on mount
     React.useEffect(function() {
@@ -159,8 +222,12 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                             ...data,
                             onOpenSettings: handleOpenSettings,
                             onOpenTools: handleOpenTools,
-                            toolsRefreshKey: toolsRefreshKey
+                            toolsRefreshKey: toolsRefreshKey,
+                            contextRefreshKey: contextRefreshKey
                         });
+                    },
+                    onContextRefresh: function() {
+                        setContextRefreshKey(function(prev) { return prev + 1; });
                     }
                 }),
                 conversation: conversation,

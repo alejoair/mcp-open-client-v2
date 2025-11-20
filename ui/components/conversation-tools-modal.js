@@ -295,7 +295,6 @@ function ConversationToolsModal({ visible, onClose, conversationId }) {
             style: { padding: '40px 0' }
         }) :
         React.createElement('div', null,
-            Object.keys(serverStatus).length > 0 && renderServerStatus(),
             React.createElement(Collapse, {
                 defaultActiveKey: [],
                 style: { background: '#fff' }

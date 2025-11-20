@@ -2,7 +2,7 @@ const { Sider } = antd.Layout;
 const { Typography, Divider, Tooltip, Button } = antd;
 const { Title, Text } = Typography;
 
-function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey }) {
+function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey, contextRefreshKey }) {
     // Get dev mode context
     const { devMode, toggleDevMode } = useDevMode();
 
@@ -211,6 +211,7 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                         conversationId: activeConversation ? activeConversation.id : null
                     }),
                     React.createElement(ContextItems, {
+                        key: contextRefreshKey,
                         conversationId: activeConversation ? activeConversation.id : null
                     }),
                     React.createElement(OpenEditors, {

@@ -70,6 +70,10 @@ class LocalSSEService:
         """Emit a context deleted event."""
         await self.emit_tool_event(conversation_id, "context_deleted", context_data)
 
+    async def emit_token_update(self, conversation_id: str, token_data: Dict[str, Any]):
+        """Emit a token count update event."""
+        await self.emit_tool_event(conversation_id, "token_update", token_data)
+
 
 # Global SSE service instance
 _local_sse_service: Optional[LocalSSEService] = None

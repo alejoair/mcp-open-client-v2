@@ -31,9 +31,10 @@ function useSSEConnection(conversationId, onToolEvent) {
                 const data = JSON.parse(event.data);
                 console.log('[SSE] Event received:', data);
 
-                // Filter tool and context events
+                // Filter tool, context, and token events
                 if (data.type === 'tool_call' || data.type === 'tool_response' || data.type === 'tool_error' ||
-                    data.type === 'context_added' || data.type === 'context_updated' || data.type === 'context_deleted') {
+                    data.type === 'context_added' || data.type === 'context_updated' || data.type === 'context_deleted' ||
+                    data.type === 'token_update') {
                     if (onToolEvent) {
                         onToolEvent(data.type, data);
                     }

@@ -525,6 +525,31 @@ async def conversation_chat(conversation_id: str, request: ConversationChatReque
                         f"[DEBUG] Message {i}: {msg['role']} - {msg.get('tool_call_id', 'no tool_id')}"
                     )
 
+                # Emit token update after tool execution
+                try:
+                    from ...core.conversations.token_counter import TokenCounter
+
+                    token_counter = TokenCounter()
+                    current_tokens = token_counter.count_message_tokens(
+                        messages_for_llm, model_name
+                    )
+
+                    sse_service = get_local_sse_service()
+                    await sse_service.emit_token_update(
+                        conversation_id,
+                        {
+                            "token_count": current_tokens,
+                            "messages_in_context": len(messages_for_llm),
+                            "iteration": iteration,
+                            "timestamp": datetime.utcnow().isoformat() + "Z",
+                        },
+                    )
+                    print(f"[DEBUG] Emitted token update: {current_tokens} tokens")
+                except Exception as sse_error:
+                    print(
+                        f"[DEBUG] SSE emit_token_update failed (non-critical): {sse_error}"
+                    )
+
                 # Update request params for next iteration
                 request_params["messages"] = [
                     {"role": "system", "content": system_prompt}

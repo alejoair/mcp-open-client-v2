@@ -39,6 +39,7 @@ function MainLayout() {
                 onOpenSettings={activeConversationData ? activeConversationData.onOpenSettings : null}
                 onOpenTools={activeConversationData ? activeConversationData.onOpenTools : null}
                 toolsRefreshKey={activeConversationData ? activeConversationData.toolsRefreshKey : 0}
+                contextRefreshKey={activeConversationData ? activeConversationData.contextRefreshKey : 0}
             />
         </Layout>
     );
