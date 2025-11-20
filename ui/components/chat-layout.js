@@ -75,9 +75,45 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         }
     }, [openConversation, onOpenConversationChange]);
 
-    const onChange = function(key) {
+    const onChange = React.useCallback(async function(key) {
         setActiveKey(key);
-    };
+
+        // Find the tab data for the new active conversation
+        const activeTab = items.find(function(item) { return item.key === key; });
+        if (activeTab) {
+            // Load fresh conversation data from API
+            try {
+                const response = await api.get('/conversations/' + key);
+                const freshConversation = response.conversation;
+                const messageCount = freshConversation.messages ? freshConversation.messages.length : 0;
+
+                handleConversationUpdate({
+                    conversation: freshConversation,
+                    tokenInfo: null,  // Will be populated on next message
+                    messageCount: messageCount,
+                    onOpenSettings: activeTab.onOpenSettings,
+                    onOpenTools: activeTab.onOpenTools,
+                    toolsRefreshKey: toolsRefreshKey,
+                    contextRefreshKey: contextRefreshKey
+                });
+            } catch (err) {
+                console.error('Failed to load conversation data:', err);
+                // Fallback to tab data
+                handleConversationUpdate({
+                    conversation: activeTab.conversation,
+                    tokenInfo: null,
+                    messageCount: null,
+                    onOpenSettings: activeTab.onOpenSettings,
+                    onOpenTools: activeTab.onOpenTools,
+                    toolsRefreshKey: toolsRefreshKey,
+                    contextRefreshKey: contextRefreshKey
+                });
+            }
+        } else {
+            // No active tab, clear all data
+            setActiveConversationData(null);
+        }
+    }, [items, toolsRefreshKey, contextRefreshKey, handleConversationUpdate]);
 
     // Notify parent when active conversation changes
     React.useEffect(function() {
@@ -249,6 +285,26 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         return React.createElement('span', null, conversation.title);
     };
 
+    // Close tab without deleting conversation
+    const closeTab = function(targetKey) {
+        const targetIndex = items.findIndex(function(pane) {
+            return pane.key === targetKey;
+        });
+        const newPanes = items.filter(function(pane) {
+            return pane.key !== targetKey;
+        });
+
+        if (newPanes.length && targetKey === activeKey) {
+            const newActiveKey = newPanes[targetIndex === newPanes.length ? targetIndex - 1 : targetIndex].key;
+            setActiveKey(newActiveKey);
+        } else if (newPanes.length === 0) {
+            setActiveKey(null);
+        }
+
+        setItems(newPanes);
+    };
+
+    // Delete conversation and remove tab
     const remove = async function(targetKey) {
         try {
             await deleteConversation(targetKey);
@@ -278,7 +334,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         if (action === 'add') {
             add();
         } else {
-            remove(targetKey);
+            closeTab(targetKey);
         }
     };
 
@@ -336,7 +392,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
 
     const handleMenuClick = function(info, tabKey) {
         if (info.key === 'close') {
-            remove(tabKey);
+            closeTab(tabKey);
         } else if (info.key === 'close-others') {
             const newPanes = items.filter(function(pane) {
                 return pane.key === tabKey;
