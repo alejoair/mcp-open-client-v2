@@ -1,6 +1,6 @@
 const { message: antMessage, Button } = antd;
 
-function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversationUpdate }) {
+function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversationUpdate, onContextRefresh }) {
     const [messages, setMessages] = React.useState([]);
     const [filteredMessages, setFilteredMessages] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -8,9 +8,29 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
     const [conversation, setConversation] = React.useState(null);
     const { sendMessage, getConversation } = useConversations();
 
-    // SSE connection for real-time tool events
-    const handleToolEvent = React.useCallback(function(eventType, event) {
-        const data = event.data;
+    // SSE connection for real-time tool and context events
+    const handleToolEvent = React.useCallback(function(eventType, eventData) {
+        const data = eventData.data;
+
+        // Handle context events - trigger refresh in context component
+        if (eventType === 'context_added' || eventType === 'context_updated' || eventType === 'context_deleted') {
+            console.log('[SSE] Context event received:', eventType, '- triggering refresh');
+            if (onContextRefresh) {
+                onContextRefresh();
+            }
+            return;
+        }
+
+        // Handle token update events
+        if (eventType === 'token_update') {
+            console.log('[SSE] Token update received:', data.token_count, 'tokens');
+            setTokenInfo({
+                tokenCount: data.token_count,
+                tokensSent: data.token_count,
+                messagesInContext: data.messages_in_context
+            });
+            return;
+        }
 
         if (eventType === 'tool_call') {
             console.log('[Tool Event] Tool call started:', data.tool_name, data.tool_call_id);
@@ -45,6 +65,7 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                         _status: 'pending',
                         _isTemporary: true
                     });
+                    console.log('[Tool Event] Created temporary assistant message');
                 }
 
                 // Add temporary tool message (pending)
@@ -60,6 +81,8 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
                     _isTemporary: true
                 });
 
+                console.log('[Tool Event] Total messages after adding temp:', newMessages.length);
+                console.log('[Tool Event] Temporary messages in new array:', newMessages.filter(m => m._isTemporary).length);
                 return newMessages;
             });
         }
@@ -213,18 +236,26 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
 
     // Filter messages based on max_messages setting
     React.useEffect(function() {
+        console.log('[Filter Effect] Running with', messages.length, 'messages, conversation:', conversation ? 'exists' : 'null');
+        console.log('[Filter Effect] Temporary messages in input:', messages.filter(m => m._isTemporary).length);
+
         if (!conversation || !messages.length) {
+            console.log('[Filter Effect] No conversation or no messages, setting all messages');
             setFilteredMessages(messages);
             return;
         }
 
         const maxMessages = conversation.max_messages;
         if (!maxMessages || maxMessages >= messages.length) {
+            console.log('[Filter Effect] No limit or within limit, setting all messages');
             setFilteredMessages(messages);
         } else {
             // Show only the last maxMessages messages
             const startIndex = messages.length - maxMessages;
-            setFilteredMessages(messages.slice(startIndex));
+            console.log('[Filter Effect] Applying limit, slicing from', startIndex, 'to', messages.length);
+            const sliced = messages.slice(startIndex);
+            console.log('[Filter Effect] After slice, temp messages:', sliced.filter(m => m._isTemporary).length);
+            setFilteredMessages(sliced);
         }
     }, [messages, conversation]);
 
@@ -338,7 +369,8 @@ function ChatContainer({ conversationId, onOpenSettings, onOpenTools, onConversa
         },
             React.createElement(ChatMessagesList, {
                 messages: filteredMessages,
-                loading: loading
+                loading: loading,
+                conversationId: conversationId
             })
         ),
         // Input at bottom (fixed)

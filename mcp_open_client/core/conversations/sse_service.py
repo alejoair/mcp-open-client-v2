@@ -65,6 +65,24 @@ class SSEService:
         """Emit a tool error event."""
         await self.emit_tool_event(conversation_id, "tool_error", tool_error_data)
 
+    async def emit_context_added(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context added event."""
+        await self.emit_tool_event(conversation_id, "context_added", context_data)
+
+    async def emit_context_updated(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context updated event."""
+        await self.emit_tool_event(conversation_id, "context_updated", context_data)
+
+    async def emit_context_deleted(
+        self, conversation_id: str, context_data: Dict[str, Any]
+    ):
+        """Emit a context deleted event."""
+        await self.emit_tool_event(conversation_id, "context_deleted", context_data)
+
 
 # Global SSE service instance
 _sse_service: Optional[SSEService] = None

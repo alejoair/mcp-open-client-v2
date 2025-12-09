@@ -59,7 +59,11 @@ def _parse_server_data(server_entry: dict) -> RegistryServerInfo:
     )
 
 
-@router.get("/search", response_model=RegistrySearchResponse)
+@router.get(
+    "/search",
+    response_model=RegistrySearchResponse,
+    operation_id="registry_search_servers",
+)
 async def search_servers(
     q: Optional[str] = Query(
         None, description="Search query to filter server names", alias="q"
@@ -100,7 +104,11 @@ async def search_servers(
         )
 
 
-@router.get("/servers", response_model=RegistrySearchResponse)
+@router.get(
+    "/servers",
+    response_model=RegistrySearchResponse,
+    operation_id="registry_list_servers",
+)
 async def list_servers(
     limit: Optional[int] = Query(
         50, description="Maximum number of results", ge=1, le=100
@@ -135,7 +143,11 @@ async def list_servers(
         )
 
 
-@router.get("/servers/{server_name:path}", response_model=RegistryServerDetailResponse)
+@router.get(
+    "/servers/{server_name:path}",
+    response_model=RegistryServerDetailResponse,
+    operation_id="registry_get_server",
+)
 async def get_server(server_name: str):
     """
     Get detailed information about a specific server.
@@ -168,7 +180,11 @@ async def get_server(server_name: str):
         )
 
 
-@router.get("/categories", response_model=RegistryCategoriesResponse)
+@router.get(
+    "/categories",
+    response_model=RegistryCategoriesResponse,
+    operation_id="registry_get_categories",
+)
 async def get_categories():
     """
     Get servers grouped by category/namespace.
@@ -192,7 +208,11 @@ async def get_categories():
         )
 
 
-@router.get("/health", response_model=RegistryHealthResponse)
+@router.get(
+    "/health",
+    response_model=RegistryHealthResponse,
+    operation_id="registry_health_check",
+)
 async def check_registry_health():
     """
     Check if the MCP registry is accessible and healthy.

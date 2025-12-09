@@ -2,7 +2,9 @@
 FastAPI main application for MCP Open Client.
 """
 
+import io
 import logging
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict
@@ -20,6 +22,15 @@ from .endpoints.providers import router as providers_router
 from .endpoints.registry import router as registry_router
 from .endpoints.servers import get_server_manager, router
 from .endpoints.sse import router as sse_router
+
+# from .endpoints.terminal import router as terminal_router  # TODO: Re-enable when terminal module is complete
+
+# Configure UTF-8 encoding for stdout/stderr to handle Unicode characters (emojis, arrows, etc.)
+# This fixes 'charmap' codec errors on Windows when printing Unicode characters
+if sys.stdout.encoding != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+if sys.stderr.encoding != "utf-8":
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -99,6 +110,7 @@ app.include_router(chat_router)
 app.include_router(registry_router)
 app.include_router(conversations_router)
 app.include_router(sse_router)
+# app.include_router(terminal_router)  # TODO: Re-enable when terminal module is complete
 
 # Mount static files for UI
 ui_path = Path(__file__).parent.parent.parent / "ui"

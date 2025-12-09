@@ -1,0 +1,975 @@
+/* ============================================
+   DEV MODE / TERMINAL THEME
+   Low contrast monochrome terminal theme
+   ============================================ */
+
+/* Transition for smooth theme change */
+body {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main theme colors for dev mode - DRACULA THEME */
+body.dev-mode {
+    background: #1a1b26 !important;
+}
+
+/* Nuclear option - force all divs to have transparent or black background */
+body.dev-mode div {
+    background-color: transparent;
+}
+
+body.dev-mode div[class*="layout"],
+body.dev-mode div[class*="container"],
+body.dev-mode div[class*="wrapper"] {
+    background-color: transparent;
+}
+
+/* Animated panel transitions - faster for sidebars */
+body.dev-mode .ant-layout-sider {
+    animation: sidebarSlide 0.3s ease-out;
+}
+
+body.dev-mode .ant-layout-content,
+body.dev-mode .ant-card,
+body.dev-mode .ant-collapse-item,
+body.dev-mode .ant-list-item {
+    animation: panelFlip 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes sidebarSlide {
+    0% {
+        transform: translateX(-10px);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes panelFlip {
+    0% {
+        transform: perspective(1000px) rotateY(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: perspective(1000px) rotateY(90deg);
+        opacity: 0.3;
+    }
+    100% {
+        transform: perspective(1000px) rotateY(0deg);
+        opacity: 1;
+    }
+}
+
+/* Terminal console colors - DRACULA */
+body.dev-mode .ant-layout {
+    background: #1a1b26 !important;
+}
+
+body.dev-mode .ant-layout-sider {
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 15px rgba(139, 233, 253, 0.1), inset 0 0 30px rgba(139, 233, 253, 0.03) !important;
+}
+
+body.dev-mode .ant-layout-content {
+    background: #16161e !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+}
+
+/* Hard borders everywhere */
+body.dev-mode * {
+    border-radius: 0 !important;
+}
+
+/* Higher contrast text - DRACULA with Fira Code */
+body.dev-mode,
+body.dev-mode .ant-typography,
+body.dev-mode .ant-list-item,
+body.dev-mode .ant-collapse-header,
+body.dev-mode h1, body.dev-mode h2, body.dev-mode h3,
+body.dev-mode h4, body.dev-mode h5, body.dev-mode h6,
+body.dev-mode p, body.dev-mode span, body.dev-mode div {
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
+}
+
+/* Console-style buttons - DRACULA */
+body.dev-mode .ant-btn {
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2), inset 0 0 8px rgba(139, 233, 253, 0.08) !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    font-weight: 500 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.dev-mode .ant-btn:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 20px rgba(139, 233, 253, 0.3), inset 0 0 12px rgba(139, 233, 253, 0.1) !important;
+    transform: scale(1.02);
+    color: #8be9fd !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-btn-primary {
+    background: #bd93f9 !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+    animation: btnPulse 2s infinite;
+}
+
+@keyframes btnPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(189, 147, 249, 0.4), inset 0 0 10px rgba(189, 147, 249, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(189, 147, 249, 0.6), inset 0 0 15px rgba(189, 147, 249, 0.2);
+    }
+}
+
+/* Input fields */
+body.dev-mode .ant-input,
+body.dev-mode .ant-input-affix-wrapper,
+body.dev-mode textarea {
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    font-size: 14px !important;
+    box-shadow: inset 0 0 8px rgba(139, 233, 253, 0.08), 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-input::placeholder {
+    color: #6272a4 !important;
+    text-shadow: none;
+}
+
+/* Cards and panels */
+body.dev-mode .ant-card {
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 15px rgba(139, 233, 253, 0.2), inset 0 0 10px rgba(139, 233, 253, 0.05) !important;
+}
+
+body.dev-mode .ant-card-body {
+    background: #16161e !important;
+}
+
+/* Collapse panels */
+body.dev-mode .ant-collapse-header {
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+}
+
+body.dev-mode .ant-collapse-content {
+    background: #16161e !important;
+    border: none !important;
+}
+
+body.dev-mode .ant-collapse-content-box {
+    background: #16161e !important;
+}
+
+/* Dividers */
+body.dev-mode .ant-divider {
+    border-color: #8be9fd !important;
+    border-width: 1px !important;
+    box-shadow: none !important;
+}
+
+/* Scrollbar */
+body.dev-mode ::-webkit-scrollbar-track {
+    background: #21222c !important;
+}
+
+body.dev-mode ::-webkit-scrollbar-thumb {
+    background: #bd93f9 !important;
+    box-shadow: none;
+}
+
+/* Fix gray backgrounds - aggressive approach */
+body.dev-mode .ant-layout-header {
+    background: #21222c !important;
+}
+
+body.dev-mode .ant-space {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-space-item {
+    background: transparent !important;
+}
+
+/* Chat and message containers */
+body.dev-mode [class*="chat"],
+body.dev-mode [class*="message"],
+body.dev-mode [class*="content"] {
+    background: transparent !important;
+}
+
+/* Chat message bubbles - override inline styles */
+body.dev-mode div[style*="background: rgb(42, 42, 42)"],
+body.dev-mode div[style*="background: rgb(31, 31, 31)"],
+body.dev-mode div[style*="background: rgb(26, 26, 26)"],
+body.dev-mode div[style*="background:rgb(42, 42, 42)"],
+body.dev-mode div[style*="background:rgb(31, 31, 31)"],
+body.dev-mode div[style*="background:rgb(26, 26, 26)"] {
+    background: #0d0d15 !important;
+    border: none !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2), inset 0 0 6px rgba(139, 233, 253, 0.05) !important;
+}
+
+/* User messages - override gradient */
+body.dev-mode div[style*="background: linear-gradient(135deg, rgb(102, 126, 234)"] {
+    background: #0d0d15 !important;
+    border: none !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2), inset 0 0 6px rgba(139, 233, 253, 0.05) !important;
+}
+
+/* Assistant message containers */
+body.dev-mode div[style*="max-width: 90%"] {
+    background: #0d0d15 !important;
+    border: none !important;
+}
+
+/* All message divs with margin-bottom */
+body.dev-mode div[style*="margin-bottom: 16px"] > div {
+    background: #0d0d15 !important;
+}
+
+/* Input area at bottom */
+body.dev-mode div[style*="padding: 16px"][style*="border-top"] {
+    background: #0d0d15 !important;
+}
+
+/* Loading/Thinking indicator */
+body.dev-mode div[style*="background: rgb(42, 42, 42)"][style*="padding: 12px 16px"],
+body.dev-mode div[style*="background: rgb(42, 42, 42)"][style*="padding: 10px 14px"] {
+    background: #0d0d15 !important;
+}
+
+/* Tool response messages */
+body.dev-mode div[style*="max-width: calc(70% - 20px)"] {
+    background: #0d0d15 !important;
+}
+
+/* Code blocks inside messages */
+body.dev-mode pre[style*="background: rgb(26, 26, 26)"],
+body.dev-mode pre[style*="background:#1a1a1a"] {
+    background: #0a0a0f !important;
+}
+
+/* Generic flex containers */
+body.dev-mode .flex,
+body.dev-mode [style*="flex"] {
+    background: transparent !important;
+}
+
+/* Dropdown and overlay containers */
+body.dev-mode .ant-dropdown,
+body.dev-mode .ant-dropdown-menu {
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
+}
+
+body.dev-mode .ant-dropdown-menu-item {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    border: none !important;
+}
+
+body.dev-mode .ant-dropdown-menu-item:hover {
+    background: #6272a4 !important;
+    color: #8be9fd !important;
+    box-shadow: inset 0 0 8px rgba(139, 233, 253, 0.08) !important;
+}
+
+/* Tooltip */
+body.dev-mode .ant-tooltip-inner {
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+body.dev-mode .ant-tooltip-arrow-content {
+    background: #44475a !important;
+}
+
+/* Popover */
+body.dev-mode .ant-popover-inner {
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
+}
+
+body.dev-mode .ant-popover-inner-content {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+/* Message/Notification */
+body.dev-mode .ant-message,
+body.dev-mode .ant-notification {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-message-notice-content,
+body.dev-mode .ant-notification-notice {
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+/* Empty state */
+body.dev-mode .ant-empty-description {
+    color: #6272a4 !important;
+}
+
+/* Spin/Loading */
+body.dev-mode .ant-spin-dot-item {
+    background: #bd93f9 !important;
+}
+
+/* Form items */
+body.dev-mode .ant-form-item {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-form-item-label {
+    color: #8be9fd !important;
+}
+
+/* Checkbox and Radio */
+body.dev-mode .ant-checkbox-inner,
+body.dev-mode .ant-radio-inner {
+    background: #16161e !important;
+    border-color: #8be9fd !important;
+}
+
+body.dev-mode .ant-checkbox-checked .ant-checkbox-inner {
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
+}
+
+/* Switch */
+body.dev-mode .ant-switch {
+    background: #6272a4 !important;
+}
+
+body.dev-mode .ant-switch-checked {
+    background: #50fa7b !important;
+}
+
+/* Scanline effect - DISABLED */
+/* body.dev-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    z-index: 9999;
+    animation: scanlines 10s linear infinite;
+}
+
+@keyframes scanlines {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(10px); }
+} */
+
+/* Text headings - DRACULA */
+body.dev-mode h1, body.dev-mode h2, body.dev-mode h3 {
+    text-shadow: none !important;
+    color: #bd93f9 !important;
+    font-weight: 700 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 1px !important;
+}
+
+/* Modal/Modal */
+body.dev-mode .ant-modal-content {
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 20px rgba(139, 233, 253, 0.25), inset 0 0 12px rgba(139, 233, 253, 0.05) !important;
+}
+
+body.dev-mode .ant-modal-header {
+    background: #6272a4 !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    box-shadow: none !important;
+}
+
+body.dev-mode .ant-modal-title {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 1px !important;
+}
+
+body.dev-mode .ant-modal-body {
+    color: #f8f8f2 !important;
+    background: #16161e !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+body.dev-mode .ant-modal-footer {
+    background: #44475a !important;
+    border: none !important;
+    border-top: 1px solid rgba(139, 233, 253, 0.3) !important;
+}
+
+/* Conversation Tools Modal - Dark Theme Overrides */
+body.dev-mode .ant-modal-wrap .ant-modal {
+    background: #44475a !important;
+    border: 2px solid #8be9fd !important;
+    box-shadow: 0 0 25px rgba(139, 233, 253, 0.3), inset 0 0 15px rgba(139, 233, 253, 0.08) !important;
+}
+
+/* Modal content wrapper */
+body.dev-mode .ant-modal-content {
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Modal header */
+body.dev-mode .ant-modal-header {
+    background: #6272a4 !important;
+    border: none !important;
+    border-bottom: 2px solid #8be9fd !important;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.2) !important;
+}
+
+/* Modal title */
+body.dev-mode .ant-modal-title {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+}
+
+/* Modal body */
+body.dev-mode .ant-modal-body {
+    background: #16161e !important;
+    color: #f8f8f2 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
+    padding: 24px !important;
+}
+
+/* Server status section */
+body.dev-mode .ant-modal-body .ant-list,
+body.dev-mode .ant-modal-body div[style*="padding: 16px"][style*="background: #f5f5f5"] {
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+}
+
+/* Server status items */
+body.dev-mode .ant-modal-body .ant-list-item {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.15) !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+/* Server status icons */
+body.dev-mode .ant-modal-body i.fa-server {
+    color: #8be9fd !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-check-circle {
+    color: #50fa7b !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-circle-notch {
+    color: #8be9fd !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-times-circle {
+    color: #ff79c6 !important;
+}
+
+body.dev-mode .ant-modal-body i.fa-circle {
+    color: #6272a4 !important;
+}
+
+/* Server status text */
+body.dev-mode .ant-modal-body .ant-typography {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+/* Server status tags */
+body.dev-mode .ant-modal-body .ant-tag {
+    background: #44475a !important;
+    border: 1px solid #8be9fd !important;
+    color: #8be9fd !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 11px !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #52c41a"] {
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #1890ff"] {
+    background: #8be9fd !important;
+    border-color: #8be9fd !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-tag[style*="color: #ff4d4f"] {
+    background: #ff79c6 !important;
+    border-color: #ff79c6 !important;
+    color: #16161e !important;
+    font-weight: 600 !important;
+}
+
+/* Collapse panels for server tools */
+body.dev-mode .ant-modal-body .ant-collapse {
+    background: #21222c !important;
+    border: 1px solid #6272a4 !important;
+    border-radius: 0 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-item {
+    border: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-header {
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid #8be9fd !important;
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    padding: 12px 16px !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-header:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.2) !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-content {
+    background: #16161e !important;
+    border: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-collapse-content-box {
+    background: #16161e !important;
+    padding: 16px !important;
+}
+
+/* Tool list items */
+body.dev-mode .ant-modal-body .ant-list-item[style*="padding: 8px 0"] {
+    background: #44475a !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.2) !important;
+    margin-bottom: 8px !important;
+    padding: 12px 8px !important;
+    border-radius: 0 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-list-item[style*="padding: 8px 0"]:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    transform: translateX(2px);
+    transition: all 0.2s ease !important;
+}
+
+/* Tool names and descriptions */
+body.dev-mode .ant-modal-body .ant-typography {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-modal-body .ant-typography[style*="font-size: 13px"] {
+    color: #bd93f9 !important;
+    font-weight: 600 !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+body.dev-mode .ant-modal-body .ant-typography[style*="font-size: 11px"] {
+    color: #8be9fd !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Switch components */
+body.dev-mode .ant-modal-body .ant-switch {
+    background: #6272a4 !important;
+    border: 1px solid #8be9fd !important;
+    box-shadow: 0 0 4px rgba(139, 233, 253, 0.1) !important;
+}
+
+body.dev-mode .ant-modal-body .ant-switch-checked {
+    background: #50fa7b !important;
+    border-color: #50fa7b !important;
+    box-shadow: 0 0 8px rgba(80, 250, 123, 0.3) !important;
+}
+
+/* Loading spin indicator */
+body.dev-mode .ant-modal-body .ant-spin-dot-item {
+    background: #bd93f9 !important;
+}
+
+body.dev-mode .ant-modal-body .ant-spin-text {
+    color: #8be9fd !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Empty state */
+body.dev-mode .ant-modal-body .ant-empty {
+    background: #16161e !important;
+}
+
+body.dev-mode .ant-modal-body .ant-empty-description {
+    color: #6272a4 !important;
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Override any remaining light backgrounds */
+body.dev-mode .ant-modal-body div[style*="background: transparent"] {
+    background: transparent !important;
+}
+
+body.dev-mode .ant-modal-body div[style*="background: #fff"] {
+    background: #16161e !important;
+    color: #f8f8f2 !important;
+}
+
+/* Modal close button */
+body.dev-mode .ant-modal-close {
+    color: #f8f8f2 !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-modal-close:hover {
+    color: #ff79c6 !important;
+    background: rgba(255, 121, 198, 0.1) !important;
+}
+
+/* Tags */
+body.dev-mode .ant-tag {
+    background: #44475a !important;
+    border: 1px solid #8be9fd !important;
+    color: #8be9fd !important;
+    box-shadow: 0 0 6px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
+    font-weight: 500;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 0.5px;
+}
+
+/* Badges */
+body.dev-mode .ant-badge-count {
+    background: #ff79c6 !important;
+    color: #f8f8f2 !important;
+    border: none;
+    box-shadow: 0 0 8px rgba(255, 121, 198, 0.3);
+    font-family: 'Fira Code', monospace !important;
+}
+
+/* Tabs */
+body.dev-mode .ant-tabs-nav {
+    background: #21222c !important;
+    border-color: #6272a4 !important;
+    border-width: 1px !important;
+}
+
+body.dev-mode .ant-tabs-nav-operations {
+    background: #21222c !important;
+}
+
+body.dev-mode .ant-tabs-tab {
+    background: #1a1b26 !important;
+    border: none !important;
+    color: #6272a4 !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-tabs-tab-active {
+    background: #44475a !important;
+    box-shadow: none !important;
+    color: #8be9fd !important;
+    text-shadow: none !important;
+}
+
+body.dev-mode .ant-tabs-ink-bar {
+    background: #bd93f9 !important;
+    box-shadow: none !important;
+    height: 3px !important;
+}
+
+body.dev-mode .ant-tabs-content-holder {
+    background: #16161e !important;
+}
+
+body.dev-mode .ant-tabs-tabpane {
+    background: #16161e !important;
+}
+
+/* List items */
+body.dev-mode .ant-list-item {
+    border: none !important;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.2) !important;
+    background: #44475a !important;
+    box-shadow: none !important;
+}
+
+body.dev-mode .ant-list-item:hover {
+    background: #6272a4 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    transform: translateX(2px);
+    transition: all 0.2s ease;
+}
+
+/* Select dropdown */
+body.dev-mode .ant-select-selector {
+    background: #44475a !important;
+    border: none !important;
+    color: #f8f8f2 !important;
+    box-shadow: 0 0 8px rgba(139, 233, 253, 0.15) !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+}
+
+body.dev-mode .ant-select-dropdown {
+    background: #44475a !important;
+    border: none !important;
+    box-shadow: 0 0 12px rgba(139, 233, 253, 0.2) !important;
+}
+
+body.dev-mode .ant-select-item {
+    color: #f8f8f2 !important;
+    background: #44475a !important;
+    text-shadow: none !important;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    border: none !important;
+}
+
+body.dev-mode .ant-select-item:hover {
+    background: #6272a4 !important;
+    color: #8be9fd !important;
+    box-shadow: inset 0 0 6px rgba(139, 233, 253, 0.08) !important;
+}
+
+body.dev-mode .ant-select-item-option-selected {
+    background: #6272a4 !important;
+    color: #50fa7b !important;
+    box-shadow: inset 0 0 8px rgba(80, 250, 123, 0.1) !important;
+}
+
+/* Icon colors */
+body.dev-mode i,
+body.dev-mode .anticon {
+    color: #8be9fd !important;
+    text-shadow: none !important;
+}
+
+/* Glitch effect on hover for headings - very subtle */
+body.dev-mode h1:hover,
+body.dev-mode h2:hover,
+body.dev-mode h3:hover {
+    animation: glitch 0.5s ease-in-out;
+}
+
+@keyframes glitch {
+    0% {
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.1), -1px 0 rgba(255, 255, 255, 0.1);
+    }
+    25% {
+        text-shadow: -1px 0 rgba(255, 255, 255, 0.15), 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.1), -1px 0 rgba(255, 255, 255, 0.1);
+    }
+    75% {
+        text-shadow: -1px 0 rgba(255, 255, 255, 0.05), 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    100% {
+        text-shadow: 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Fade transition for entire page - subtle */
+body.dev-mode #root {
+    animation: fadeInMonochrome 0.6s ease-in-out;
+}
+
+@keyframes fadeInMonochrome {
+    0% {
+        opacity: 0;
+        filter: brightness(1.3);
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
+/* Console cursor effect */
+body.dev-mode .typing::after {
+    content: '▊';
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE
+   ============================================ */
+
+/* Mobile breakpoint - tablets and phones */
+@media (max-width: 768px) {
+    /* Reduce font sizes for mobile */
+    body.dev-mode h1 { font-size: 20px !important; }
+    body.dev-mode h2 { font-size: 18px !important; }
+    body.dev-mode h3 { font-size: 16px !important; }
+    body.dev-mode h4, body.dev-mode h5, body.dev-mode h6 { font-size: 14px !important; }
+    body.dev-mode p, body.dev-mode span, body.dev-mode div { font-size: 13px !important; }
+
+    /* Adjust button sizes */
+    body.dev-mode .ant-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    /* Adjust input sizes */
+    body.dev-mode .ant-input,
+    body.dev-mode .ant-input-affix-wrapper,
+    body.dev-mode textarea {
+        font-size: 13px !important;
+        padding: 8px !important;
+    }
+
+    /* Reduce card padding */
+    body.dev-mode .ant-card-body {
+        padding: 12px !important;
+    }
+
+    /* Adjust collapse header */
+    body.dev-mode .ant-collapse-header {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+
+    /* Reduce modal sizes */
+    body.dev-mode .ant-modal {
+        max-width: 95vw !important;
+        margin: 10px !important;
+    }
+
+    /* Adjust sidebar trigger buttons */
+    body.dev-mode .ant-layout-sider-trigger {
+        height: 40px !important;
+    }
+
+    /* Make chat messages more compact */
+    body.dev-mode .ant-list-item {
+        padding: 8px !important;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    /* Further reduce font sizes */
+    body.dev-mode { font-size: 12px !important; }
+    body.dev-mode h1 { font-size: 18px !important; }
+    body.dev-mode h2 { font-size: 16px !important; }
+    body.dev-mode h3 { font-size: 14px !important; }
+
+    /* Smaller buttons */
+    body.dev-mode .ant-btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+
+    /* Reduce all padding */
+    body.dev-mode .ant-card-body,
+    body.dev-mode .ant-collapse-content-box,
+    body.dev-mode .ant-modal-body {
+        padding: 8px !important;
+    }
+}
+
+/* Chat-specific mobile optimizations */
+@media (max-width: 768px) {
+    /* Chat input area */
+    body.dev-mode div[style*="padding: 16px"][style*="background: #2a2a2a"] {
+        padding: 12px !important;
+    }
+
+    /* Chat message list */
+    body.dev-mode .ant-list-item {
+        padding: 12px 8px !important;
+    }
+
+    /* Chat textarea */
+    body.dev-mode textarea {
+        min-height: 40px !important;
+    }
+
+    /* Send button */
+    body.dev-mode button[style*="minHeight: '32px'"] {
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Even more compact on small phones */
+    body.dev-mode div[style*="padding: 16px"][style*="background: #2a2a2a"] {
+        padding: 8px !important;
+    }
+
+    /* Reduce placeholder text */
+    body.dev-mode textarea::placeholder {
+        font-size: 12px !important;
+    }
+}

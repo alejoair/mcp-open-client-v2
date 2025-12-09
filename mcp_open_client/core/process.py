@@ -137,6 +137,11 @@ class ProcessManager:
                         "args": server.config.args,
                         "env": server.config.env,
                         "cwd": server.config.cwd,
+                        # HTTP transport fields
+                        "url": server.config.url,
+                        "headers": server.config.headers,
+                        "auth_type": server.config.auth_type,
+                        "auth_token": server.config.auth_token,
                     },
                     "status": "configured",  # Always save as configured
                     "created_at": server.created_at,

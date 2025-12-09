@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-open-client"
-version = "0.9.0"
+version = "0.9.13"
 description = "An open MCP client implementation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,8 +27,9 @@ dependencies = [
     "rich>=12.0.0",
     "requests>=2.25.0",
     "fastapi>=0.104.0",
+    "fastapi-mcp>=0.1.0",
     "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.0.0",
+    "pydantic>=2.11.0,<2.12.0",
     "fastmcp>=0.1.0",
     "aiohttp>=3.8.0",
     "openai>=1.0.0",

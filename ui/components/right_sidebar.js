@@ -2,7 +2,10 @@ const { Sider } = antd.Layout;
 const { Typography, Divider, Tooltip, Button } = antd;
 const { Title, Text } = Typography;
 
-function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey }) {
+function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, messageCount, onOpenSettings, onOpenTools, toolsRefreshKey, contextRefreshKey }) {
+    // Get dev mode context
+    const { devMode, toggleDevMode } = useDevMode();
+
     // Custom trigger button
     const customTrigger = React.createElement(Tooltip, {
         title: collapsed ? 'Expand sidebar' : 'Collapse sidebar',
@@ -120,6 +123,51 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                 }, 'Tools')
             ),
 
+            // Hackerman Image with Button
+            activeConversation && React.createElement('div', {
+                style: {
+                    padding: '12px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }
+            },
+                React.createElement('img', {
+                    src: '/ui/images/hackerman.gif',
+                    alt: 'Hackerman',
+                    style: {
+                        width: '100%',
+                        maxWidth: '200px',
+                        borderRadius: '8px',
+                        border: '2px solid rgba(255, 255, 255, 0.1)'
+                    }
+                }),
+                React.createElement(Button, {
+                    type: 'primary',
+                    size: 'small',
+                    block: true,
+                    icon: React.createElement('i', {
+                        className: devMode ? 'fas fa-terminal' : 'fas fa-code',
+                        style: { marginRight: '6px' }
+                    }),
+                    onClick: toggleDevMode,
+                    style: {
+                        background: devMode ? '#bd93f9' : '#52c41a',
+                        border: 'none',
+                        color: devMode ? '#16161e' : 'white',
+                        marginTop: '4px',
+                        transition: 'all 0.3s ease',
+                        textShadow: 'none',
+                        boxShadow: devMode ? '0 0 20px rgba(189, 147, 249, 0.5), inset 0 0 12px rgba(189, 147, 249, 0.15)' : 'none',
+                        fontFamily: devMode ? "'Fira Code', 'Consolas', 'Monaco', monospace" : 'inherit',
+                        fontWeight: devMode ? '700' : 'normal',
+                        letterSpacing: devMode ? '1px' : 'normal'
+                    }
+                }, devMode ? 'DRACULA MODE' : 'Dev Mode')
+            ),
+
             // Content
             React.createElement('div', {
                 style: {
@@ -163,6 +211,7 @@ function RightSidebar({ collapsed, onCollapse, activeConversation, tokenInfo, me
                         conversationId: activeConversation ? activeConversation.id : null
                     }),
                     React.createElement(ContextItems, {
+                        key: contextRefreshKey,
                         conversationId: activeConversation ? activeConversation.id : null
                     }),
                     React.createElement(OpenEditors, {

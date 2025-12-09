@@ -28,16 +28,49 @@ class ServerConfig(BaseModel):
         description="Human-readable identifier (auto-generated from name if not provided)",
     )
     transport: str = Field(
-        default="stdio", description="Transport type (currently only 'stdio' supported)"
+        default="stdio",
+        description="Transport type: 'stdio' for subprocess, 'http' for HTTP streamable",
     )
-    command: str = Field(..., description="Command to execute for the server")
+    # STDIO transport fields
+    command: Optional[str] = Field(
+        None, description="Command to execute (required for stdio transport)"
+    )
     args: List[str] = Field(default_factory=list, description="Command line arguments")
     env: Optional[Dict[str, str]] = Field(
         default=None, description="Environment variables"
     )
     cwd: Optional[str] = Field(default=None, description="Working directory")
+    # HTTP transport fields
+    url: Optional[str] = Field(
+        None, description="HTTP(S) URL for the server (required for http transport)"
+    )
+    headers: Optional[Dict[str, str]] = Field(
+        None, description="HTTP headers for requests"
+    )
+    auth_type: Optional[str] = Field(
+        None, description="Authentication type: 'bearer', 'oauth', or None"
+    )
+    auth_token: Optional[str] = Field(
+        None, description="Authentication token (for bearer auth)"
+    )
 
     model_config = ConfigDict(extra="forbid")
+
+    def model_post_init(self, __context):
+        """Validate transport-specific requirements."""
+        # Skip validation for legacy data (will be validated when used/updated)
+        if self.transport == "stdio":
+            if self.command is not None and not self.command:
+                raise ValueError("'command' cannot be empty for stdio transport")
+        elif self.transport == "http":
+            # Only validate if url is provided (allow None for legacy data)
+            if self.url is not None:
+                if not self.url:
+                    raise ValueError("'url' cannot be empty for http transport")
+                if not self.url.startswith(("http://", "https://")):
+                    raise ValueError("'url' must start with http:// or https://")
+        elif self.transport not in ["stdio", "http"]:
+            raise ValueError(f"Unsupported transport type: {self.transport}")
 
 
 class ServerInfo(BaseModel):

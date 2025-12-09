@@ -39,7 +39,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -301,10 +301,178 @@
         .ant-tabs-tabpane {
             height: 100%;
         }
+
+        /* MODAL STYLES - HIGHEST SPECIFICITY */
+        body.dev-mode .ant-modal,
+        body.dev-mode .ant-modal-wrap .ant-modal,
+        body.dev-mode div[class*="ant-modal"] {
+            background: #44475a !important;
+            border: 2px solid #8be9fd !important;
+            box-shadow: 0 0 25px rgba(139, 233, 253, 0.3), inset 0 0 15px rgba(139, 233, 253, 0.08) !important;
+        }
+
+        body.dev-mode .ant-modal-content,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-content {
+            background: #44475a !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        body.dev-mode .ant-modal-header,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-header {
+            background: #6272a4 !important;
+            border: none !important;
+            border-bottom: 2px solid #8be9fd !important;
+        }
+
+        body.dev-mode .ant-modal-title,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-title {
+            color: #f8f8f2 !important;
+            text-shadow: none !important;
+        }
+
+        body.dev-mode .ant-modal-body,
+        body.dev-mode .ant-modal-wrap .ant-modal .ant-modal-body {
+            background: #16161e !important;
+            color: #f8f8f2 !important;
+        }
+
+        /* Override all backgrounds */
+        body.dev-mode .ant-modal-body div[style*="background"],
+        body.dev-mode .ant-modal .ant-list,
+        body.dev-mode .ant-modal .ant-list-item,
+        body.dev-mode .ant-modal .ant-collapse,
+        body.dev-mode .ant-modal .ant-collapse-item,
+        body.dev-mode .ant-modal .ant-collapse-header,
+        body.dev-mode .ant-modal .ant-collapse-content {
+            background: #16161e !important;
+            color: #f8f8f2 !important;
+            border-color: #6272a4 !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-list-item {
+            background: #44475a !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-collapse-header {
+            background: #44475a !important;
+        }
+
+        /* Text colors */
+        body.dev-mode .ant-modal-body .ant-typography,
+        body.dev-mode .ant-modal-body span,
+        body.dev-mode .ant-modal-body p {
+            color: #f8f8f2 !important;
+        }
+
+        /* Switches */
+        body.dev-mode .ant-modal-body .ant-switch {
+            background: #6272a4 !important;
+        }
+
+        body.dev-mode .ant-modal-body .ant-switch-checked {
+            background: #50fa7b !important;
+        }
+
+        /* ============================================
+           RESPONSIVE DESIGN - MOBILE
+           ============================================ */
+
+        /* Tablets and smaller devices */
+        @media (max-width: 768px) {
+            /* Mobile-optimized scrollbar */
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+
+            /* Reduce sidebar widths */
+            .ant-layout-sider {
+                max-width: 280px !important;
+            }
+
+            /* Adjust font sizes */
+            body { font-size: 14px; }
+            h1 { font-size: 22px !important; }
+            h2 { font-size: 20px !important; }
+            h3 { font-size: 18px !important; }
+
+            /* Compact buttons */
+            .ant-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            /* Compact inputs */
+            .ant-input,
+            .ant-input-affix-wrapper {
+                padding: 8px 11px;
+                font-size: 14px;
+            }
+
+            /* Reduce card padding */
+            .ant-card-body {
+                padding: 16px;
+            }
+
+            /* Adjust modals for mobile */
+            .ant-modal {
+                max-width: 95vw !important;
+                margin: 10px auto !important;
+            }
+
+            .ant-modal-body {
+                padding: 16px;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+            /* Further reduce font sizes */
+            body { font-size: 13px; }
+            h1 { font-size: 20px !important; }
+            h2 { font-size: 18px !important; }
+            h3 { font-size: 16px !important; }
+
+            /* Smaller buttons */
+            .ant-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            /* Compact everything */
+            .ant-card-body,
+            .ant-modal-body {
+                padding: 12px;
+            }
+
+            /* Hide decorative elements on small screens */
+            .ant-card:hover {
+                transform: none;
+            }
+        }
+
+        /* Touch-friendly adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets */
+            .ant-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* Remove hover effects on touch devices */
+            .ant-card:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                transform: none;
+            }
+        }
     </style>
 
+    <!-- Dev Mode Theme -->
+    <link rel="stylesheet" href="css/dev-mode.css">
+
 </head>
-<body>
+<body class="dev-mode">
     <div id="root"></div>
 
     <!-- Import services -->
@@ -315,6 +483,7 @@
     <script src="services/conversationsService.js"></script>
 
     <!-- Import contexts -->
+    <script type="text/babel" src="contexts/DevModeContext.js"></script>
     <script type="text/babel" src="contexts/ProvidersContext.js"></script>
     <script type="text/babel" src="contexts/ServersContext.js"></script>
     <script type="text/babel" src="contexts/ConversationsContext.js"></script>
@@ -334,6 +503,7 @@
 
     <!-- Chat components -->
     <script type="text/babel" src="components/markdown-renderer.js"></script>
+    <script type="text/babel" src="components/tool-calls-inline.js"></script>
     <script type="text/babel" src="components/chat-message.js"></script>
     <script type="text/babel" src="components/chat-messages-list.js"></script>
     <script type="text/babel" src="components/chat-input.js"></script>
@@ -357,13 +527,15 @@
     <script type="text/babel">
         function App() {
             return (
-                <ProvidersProvider>
-                    <ServersProvider>
-                        <ConversationsProvider>
-                            <MainLayout />
-                        </ConversationsProvider>
-                    </ServersProvider>
-                </ProvidersProvider>
+                <DevModeProvider>
+                    <ProvidersProvider>
+                        <ServersProvider>
+                            <ConversationsProvider>
+                                <MainLayout />
+                            </ConversationsProvider>
+                        </ServersProvider>
+                    </ProvidersProvider>
+                </DevModeProvider>
             );
         }
 

@@ -9,7 +9,7 @@ from . import router
 from .dependencies import conversation_manager
 
 
-@router.get("/{conversation_id}/editors")
+@router.get("/{conversation_id}/editors", operation_id="conversation_get_open_editors")
 async def get_open_editors(conversation_id: str):
     """
     Get all open editors for a conversation.
@@ -26,7 +26,11 @@ async def get_open_editors(conversation_id: str):
     return {"success": True, "open_editors": editors, "count": len(editors)}
 
 
-@router.post("/{conversation_id}/editors", response_model=OpenEditorResponse)
+@router.post(
+    "/{conversation_id}/editors",
+    response_model=OpenEditorResponse,
+    operation_id="conversation_add_open_editor",
+)
 async def add_open_editor(conversation_id: str, request: OpenEditorCreateRequest):
     """
     Add an open editor to a conversation.
@@ -59,7 +63,11 @@ async def add_open_editor(conversation_id: str, request: OpenEditorCreateRequest
     )
 
 
-@router.delete("/{conversation_id}/editors", response_model=OpenEditorResponse)
+@router.delete(
+    "/{conversation_id}/editors",
+    response_model=OpenEditorResponse,
+    operation_id="conversation_remove_open_editor",
+)
 async def remove_open_editor(
     conversation_id: str,
     file_path: str = Query(..., description="Path to the open file"),

@@ -43,7 +43,8 @@ function ConversationSettingsModal({ visible, onClose, conversation, onSave }) {
         onCancel: onClose,
         onOk: handleSave,
         confirmLoading: saving,
-        width: 600
+        width: 600,
+        zIndex: 2000
     },
         React.createElement(Form, {
             form: form,

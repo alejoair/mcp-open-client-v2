@@ -1,0 +1,259 @@
+﻿Listado de rutas de carpetas
+El n·mero de serie del volumen es B626-7FEE
+C:.
+|   .gitignore
+|   .pre-commit-config.yaml
+|   ai_providers.json
+|   CLAUDE.md
+|   CONTRIBUTING.md
+|   files_list.txt
+|   files_list_ps.txt
+|   LICENSE
+|   mcp_servers.json
+|   pyproject.toml
+|   README.md
+|   test_server.json
+|   tree_complete.txt
+|   tree_output.txt
+|   uiimageshackerman.gif
+|   
++---.github
+|   \---workflows
+|           ci.yml
+|           publish-to-pypi.yml
+|           
++---docs
+|   |   fastmcp-client-architecture.md
+|   |   frontend-implementation-plan.md
+|   |   index.md
+|   |   storage-systems.md
+|   |   tool-calling-system.md
+|   |   UI_ARCHITECTURE.md
+|   |   _config.yml
+|   |   
+|   \---_layouts
+|           default.html
+|           
++---mcp_open_client
+|   |   cli.py
+|   |   client.py
+|   |   exceptions.py
+|   |   __init__.py
+|   |   
+|   +---api
+|   |   |   main.py
+|   |   |   __init__.py
+|   |   |   
+|   |   +---endpoints
+|   |   |   |   chat.py
+|   |   |   |   providers.py
+|   |   |   |   registry.py
+|   |   |   |   servers.py
+|   |   |   |   sse.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   +---conversations
+|   |   |   |   |   chat_endpoints.py
+|   |   |   |   |   context_endpoints.py
+|   |   |   |   |   conversations_endpoints.py
+|   |   |   |   |   dependencies.py
+|   |   |   |   |   editors_endpoints.py
+|   |   |   |   |   messages_endpoints.py
+|   |   |   |   |   tools_endpoints.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |   
+|   |   |   |   \---__pycache__
+|   |   |   |           chat_endpoints.cpython-311.pyc
+|   |   |   |           context_endpoints.cpython-311.pyc
+|   |   |   |           conversations_endpoints.cpython-311.pyc
+|   |   |   |           dependencies.cpython-311.pyc
+|   |   |   |           editors_endpoints.cpython-311.pyc
+|   |   |   |           messages_endpoints.cpython-311.pyc
+|   |   |   |           tools_endpoints.cpython-311.pyc
+|   |   |   |           __init__.cpython-311.pyc
+|   |   |   |           
+|   |   |   \---__pycache__
+|   |   |           chat.cpython-311.pyc
+|   |   |           conversations.cpython-311.pyc
+|   |   |           providers.cpython-311.pyc
+|   |   |           registry.cpython-311.pyc
+|   |   |           servers.cpython-311.pyc
+|   |   |           sse.cpython-311.pyc
+|   |   |           __init__.cpython-311.pyc
+|   |   |           
+|   |   +---models
+|   |   |   |   chat.py
+|   |   |   |   conversation.py
+|   |   |   |   provider.py
+|   |   |   |   registry.py
+|   |   |   |   server.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           chat.cpython-311.pyc
+|   |   |           conversation.cpython-311.pyc
+|   |   |           provider.cpython-311.pyc
+|   |   |           registry.cpython-311.pyc
+|   |   |           server.cpython-311.pyc
+|   |   |           __init__.cpython-311.pyc
+|   |   |           
+|   |   \---__pycache__
+|   |           cli.cpython-311.pyc
+|   |           main.cpython-311.pyc
+|   |           __init__.cpython-311.pyc
+|   |           
+|   +---config
+|   |   |   README.md
+|   |   |   setup.py
+|   |   |   __init__.py
+|   |   |   
+|   |   +---defaults
+|   |   |       ai_providers.json
+|   |   |       mcp_servers.json
+|   |   |       
+|   |   \---__pycache__
+|   |           setup.cpython-311.pyc
+|   |           __init__.cpython-311.pyc
+|   |           
+|   +---core
+|   |   |   chat_service.py
+|   |   |   chat_service.py.bak
+|   |   |   lifecycle_manager.py
+|   |   |   manager.py
+|   |   |   process.py
+|   |   |   provider_manager.py.bak
+|   |   |   provider_validator.py
+|   |   |   registry_client.py
+|   |   |   tool_operations.py
+|   |   |   tool_service.py
+|   |   |   transport_factory.py
+|   |   |   __init__.py
+|   |   |   
+|   |   +---conversations
+|   |   |   |   chat_ops.py
+|   |   |   |   context_ops.py
+|   |   |   |   conversation_manager.py
+|   |   |   |   conversation_ops.py
+|   |   |   |   editor_ops.py
+|   |   |   |   message_ops.py
+|   |   |   |   sse_service.py
+|   |   |   |   storage.py
+|   |   |   |   token_counter.py
+|   |   |   |   tool_ops.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           chat_ops.cpython-311.pyc
+|   |   |           context_ops.cpython-311.pyc
+|   |   |           conversation_manager.cpython-311.pyc
+|   |   |           conversation_ops.cpython-311.pyc
+|   |   |           editor_ops.cpython-311.pyc
+|   |   |           message_ops.cpython-311.pyc
+|   |   |           sse_service.cpython-311.pyc
+|   |   |           storage.cpython-311.pyc
+|   |   |           token_counter.cpython-311.pyc
+|   |   |           tool_ops.cpython-311.pyc
+|   |   |           __init__.cpython-311.pyc
+|   |   |           
+|   |   +---providers
+|   |   |   |   manager.py
+|   |   |   |   model_operations.py
+|   |   |   |   provider_operations.py
+|   |   |   |   storage.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           manager.cpython-311.pyc
+|   |   |           model_operations.cpython-311.pyc
+|   |   |           provider_operations.cpython-311.pyc
+|   |   |           storage.cpython-311.pyc
+|   |   |           __init__.cpython-311.pyc
+|   |   |           
+|   |   \---__pycache__
+|   |           chat_service.cpython-311.pyc
+|   |           conversation_manager.cpython-311.pyc
+|   |           lifecycle_manager.cpython-311.pyc
+|   |           manager.cpython-311.pyc
+|   |           process.cpython-311.pyc
+|   |           provider_manager.cpython-311.pyc
+|   |           provider_validator.cpython-311.pyc
+|   |           registry_client.cpython-311.pyc
+|   |           tool_operations.cpython-311.pyc
+|   |           transport_factory.cpython-311.pyc
+|   |           __init__.cpython-311.pyc
+|   |           
+|   \---__pycache__
+|           cli.cpython-311.pyc
+|           client.cpython-311.pyc
+|           exceptions.cpython-311.pyc
+|           mcp_server.cpython-311.pyc
+|           __init__.cpython-311.pyc
+|           
++---mcp_open_client.egg-info
+|       dependency_links.txt
+|       entry_points.txt
+|       PKG-INFO
+|       requires.txt
+|       SOURCES.txt
+|       top_level.txt
+|       
++---tests
+|       test_client.py
+|       __init__.py
+|       
++---ui
+|   |   favicon.svg
+|   |   index.html
+|   |   
+|   +---components
+|   |   |   chat-container.js
+|   |   |   chat-input.js
+|   |   |   chat-layout.js
+|   |   |   chat-message.js
+|   |   |   chat-messages-list.js
+|   |   |   configuration.js
+|   |   |   conversation-settings-modal.js
+|   |   |   conversation-tools-modal.js
+|   |   |   conversations-list.js
+|   |   |   header.js
+|   |   |   left_sidebar.js
+|   |   |   main_content.js
+|   |   |   main_layout.js
+|   |   |   markdown-renderer.js
+|   |   |   mcp_servers.js
+|   |   |   right_sidebar.js
+|   |   |   tool-calls-inline.js
+|   |   |   
+|   |   \---conversation-info
+|   |           context-items.js
+|   |           metadata-panel.js
+|   |           open-editors.js
+|   |           token-counter.js
+|   |           tools-list.js
+|   |           
+|   +---contexts
+|   |       ConversationsContext.js
+|   |       DevModeContext.js
+|   |       ProvidersContext.js
+|   |       ServersContext.js
+|   |       
+|   +---css
+|   |       dev-mode.css
+|   |       
+|   +---hooks
+|   |       useConversations.js
+|   |       useProviders.js
+|   |       useServers.js
+|   |       useSSEConnection.js
+|   |       
+|   +---images
+|   |       hackerman.gif
+|   |       
+|   \---services
+|           api.js
+|           conversationsService.js
+|           providersService.js
+|           serversService.js
+|           storageService.js
+|           
+\---uiimages

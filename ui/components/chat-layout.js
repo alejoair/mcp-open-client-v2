@@ -11,6 +11,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
     const [activeConversationData, setActiveConversationData] = React.useState(null);
     const [isRestored, setIsRestored] = React.useState(false);
     const [toolsRefreshKey, setToolsRefreshKey] = React.useState(0);
+    const [contextRefreshKey, setContextRefreshKey] = React.useState(0);
 
     const newTabIndex = React.useRef(0);
 
@@ -47,8 +48,12 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                             ...data,
                             onOpenSettings: handleOpenSettings,
                             onOpenTools: handleOpenTools,
-                            toolsRefreshKey: toolsRefreshKey
+                            toolsRefreshKey: toolsRefreshKey,
+                            contextRefreshKey: contextRefreshKey
                         });
+                    },
+                    onContextRefresh: function() {
+                        setContextRefreshKey(function(prev) { return prev + 1; });
                     }
                 }),
                 conversation: conversation,
@@ -70,9 +75,54 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         }
     }, [openConversation, onOpenConversationChange]);
 
-    const onChange = function(key) {
+    const onChange = React.useCallback(async function(key) {
         setActiveKey(key);
-    };
+
+        // Find the tab data for the new active conversation
+        const activeTab = items.find(function(item) { return item.key === key; });
+        if (activeTab) {
+            // Load fresh conversation data and stats from API
+            try {
+                const [conversationResponse, statsResponse] = await Promise.all([
+                    api.get('/conversations/' + key),
+                    api.get('/conversations/' + key + '/stats')
+                ]);
+
+                const freshConversation = conversationResponse.conversation;
+
+                // Build tokenInfo from stats response
+                const tokenInfo = {
+                    tokenCount: statsResponse.token_count,
+                    messagesInContext: statsResponse.messages_in_context
+                };
+
+                handleConversationUpdate({
+                    conversation: freshConversation,
+                    tokenInfo: tokenInfo,
+                    messageCount: statsResponse.message_count,
+                    onOpenSettings: activeTab.onOpenSettings,
+                    onOpenTools: activeTab.onOpenTools,
+                    toolsRefreshKey: toolsRefreshKey,
+                    contextRefreshKey: contextRefreshKey
+                });
+            } catch (err) {
+                console.error('Failed to load conversation data:', err);
+                // Fallback to tab data without stats
+                handleConversationUpdate({
+                    conversation: activeTab.conversation,
+                    tokenInfo: null,
+                    messageCount: null,
+                    onOpenSettings: activeTab.onOpenSettings,
+                    onOpenTools: activeTab.onOpenTools,
+                    toolsRefreshKey: toolsRefreshKey,
+                    contextRefreshKey: contextRefreshKey
+                });
+            }
+        } else {
+            // No active tab, clear all data
+            setActiveConversationData(null);
+        }
+    }, [items, toolsRefreshKey, contextRefreshKey, handleConversationUpdate]);
 
     // Notify parent when active conversation changes
     React.useEffect(function() {
@@ -96,6 +146,64 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
             });
         }
     }, [toolsRefreshKey]);
+
+    // Auto-start MCP servers when a conversation is opened
+    React.useEffect(function() {
+        if (!activeKey) return;
+
+        let cancelled = false;
+
+        async function startConversationServers() {
+            try {
+                // Get the conversation's enabled tools
+                const response = await api.get('/conversations/' + activeKey + '/tools');
+                if (cancelled) return;
+
+                const enabledTools = response.enabled_tools || [];
+                if (enabledTools.length === 0) return;
+
+                // Extract unique server IDs
+                const serverIds = [...new Set(enabledTools.map(function(tool) {
+                    return tool.server_id;
+                }))];
+
+                // Get current server status
+                const serversResponse = await api.get('/servers/');
+                if (cancelled) return;
+
+                const servers = serversResponse.servers || [];
+
+                // Start servers that are not running
+                const serversToStart = servers.filter(function(server) {
+                    return serverIds.includes(server.id) && server.status !== 'running';
+                });
+
+                if (serversToStart.length > 0) {
+                    console.log('[AutoStart] Starting ' + serversToStart.length + ' MCP servers for conversation');
+
+                    // Start all servers in parallel
+                    await Promise.all(serversToStart.map(async function(server) {
+                        try {
+                            await api.post('/servers/' + server.id + '/start');
+                            console.log('[AutoStart] Started server: ' + server.config.name);
+                        } catch (err) {
+                            console.error('[AutoStart] Failed to start server ' + server.config.name + ':', err);
+                        }
+                    }));
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    console.error('[AutoStart] Failed to start conversation servers:', err);
+                }
+            }
+        }
+
+        startConversationServers();
+
+        return function() {
+            cancelled = true;
+        };
+    }, [activeKey]);
 
     // Restore tabs from localStorage on mount
     React.useEffect(function() {
@@ -159,8 +267,12 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
                             ...data,
                             onOpenSettings: handleOpenSettings,
                             onOpenTools: handleOpenTools,
-                            toolsRefreshKey: toolsRefreshKey
+                            toolsRefreshKey: toolsRefreshKey,
+                            contextRefreshKey: contextRefreshKey
                         });
+                    },
+                    onContextRefresh: function() {
+                        setContextRefreshKey(function(prev) { return prev + 1; });
                     }
                 }),
                 conversation: conversation,
@@ -182,6 +294,26 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         return React.createElement('span', null, conversation.title);
     };
 
+    // Close tab without deleting conversation
+    const closeTab = function(targetKey) {
+        const targetIndex = items.findIndex(function(pane) {
+            return pane.key === targetKey;
+        });
+        const newPanes = items.filter(function(pane) {
+            return pane.key !== targetKey;
+        });
+
+        if (newPanes.length && targetKey === activeKey) {
+            const newActiveKey = newPanes[targetIndex === newPanes.length ? targetIndex - 1 : targetIndex].key;
+            setActiveKey(newActiveKey);
+        } else if (newPanes.length === 0) {
+            setActiveKey(null);
+        }
+
+        setItems(newPanes);
+    };
+
+    // Delete conversation and remove tab
     const remove = async function(targetKey) {
         try {
             await deleteConversation(targetKey);
@@ -211,7 +343,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
         if (action === 'add') {
             add();
         } else {
-            remove(targetKey);
+            closeTab(targetKey);
         }
     };
 
@@ -269,7 +401,7 @@ function ChatLayout({ onOpenConversationChange, onActiveConversationChange }) {
 
     const handleMenuClick = function(info, tabKey) {
         if (info.key === 'close') {
-            remove(tabKey);
+            closeTab(tabKey);
         } else if (info.key === 'close-others') {
             const newPanes = items.filter(function(pane) {
                 return pane.key === tabKey;
