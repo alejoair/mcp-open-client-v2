@@ -27,7 +27,7 @@ router = APIRouter(prefix="/servers", tags=["MCP Servers"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=ServerCreateResponse,
     status_code=status.HTTP_201_CREATED,
     operation_id="mcp_create_server",
@@ -57,7 +57,7 @@ async def create_server(request: ServerCreateRequest):
         )
 
 
-@router.get("/", response_model=ServerListResponse, operation_id="mcp_list_servers")
+@router.get("", response_model=ServerListResponse, operation_id="mcp_list_servers")
 async def list_servers():
     """
     List all configured MCP servers.

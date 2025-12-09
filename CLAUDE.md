@@ -361,3 +361,5 @@ The system auto-detects and uses appropriate FastMCP transports:
   Managers (MCPServerManager, ConversationManager, etc.)
       ↓
   JSON Storage
+- lee los archivos enteros siempre
+- lee loa aechivos enteros SIEMPRE

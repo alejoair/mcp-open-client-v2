@@ -37,7 +37,7 @@ provider_manager = AIProviderManager()
 
 
 @router.post(
-    "/",
+    "",
     response_model=ProviderCreateResponse,
     status_code=201,
     operation_id="provider_create",
@@ -54,7 +54,7 @@ async def create_provider(request: ProviderCreateRequest):
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 
-@router.get("/", response_model=ProviderListResponse, operation_id="provider_list_all")
+@router.get("", response_model=ProviderListResponse, operation_id="provider_list_all")
 async def list_providers():
     """
     List all configured AI providers.

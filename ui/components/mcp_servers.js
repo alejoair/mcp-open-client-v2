@@ -283,6 +283,8 @@ function MCPServers() {
                 onCancel={handleCancelCreate}
                 confirmLoading={creating}
                 width={600}
+                zIndex={2000}
+                maskStyle={{ zIndex: 1999 }}
             >
                 <Form
                     form={form}

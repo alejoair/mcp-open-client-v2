@@ -860,3 +860,116 @@ body.dev-mode .typing::after {
 @keyframes blink {
     50% { opacity: 0; }
 }
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE
+   ============================================ */
+
+/* Mobile breakpoint - tablets and phones */
+@media (max-width: 768px) {
+    /* Reduce font sizes for mobile */
+    body.dev-mode h1 { font-size: 20px !important; }
+    body.dev-mode h2 { font-size: 18px !important; }
+    body.dev-mode h3 { font-size: 16px !important; }
+    body.dev-mode h4, body.dev-mode h5, body.dev-mode h6 { font-size: 14px !important; }
+    body.dev-mode p, body.dev-mode span, body.dev-mode div { font-size: 13px !important; }
+
+    /* Adjust button sizes */
+    body.dev-mode .ant-btn {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    /* Adjust input sizes */
+    body.dev-mode .ant-input,
+    body.dev-mode .ant-input-affix-wrapper,
+    body.dev-mode textarea {
+        font-size: 13px !important;
+        padding: 8px !important;
+    }
+
+    /* Reduce card padding */
+    body.dev-mode .ant-card-body {
+        padding: 12px !important;
+    }
+
+    /* Adjust collapse header */
+    body.dev-mode .ant-collapse-header {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+
+    /* Reduce modal sizes */
+    body.dev-mode .ant-modal {
+        max-width: 95vw !important;
+        margin: 10px !important;
+    }
+
+    /* Adjust sidebar trigger buttons */
+    body.dev-mode .ant-layout-sider-trigger {
+        height: 40px !important;
+    }
+
+    /* Make chat messages more compact */
+    body.dev-mode .ant-list-item {
+        padding: 8px !important;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    /* Further reduce font sizes */
+    body.dev-mode { font-size: 12px !important; }
+    body.dev-mode h1 { font-size: 18px !important; }
+    body.dev-mode h2 { font-size: 16px !important; }
+    body.dev-mode h3 { font-size: 14px !important; }
+
+    /* Smaller buttons */
+    body.dev-mode .ant-btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+
+    /* Reduce all padding */
+    body.dev-mode .ant-card-body,
+    body.dev-mode .ant-collapse-content-box,
+    body.dev-mode .ant-modal-body {
+        padding: 8px !important;
+    }
+}
+
+/* Chat-specific mobile optimizations */
+@media (max-width: 768px) {
+    /* Chat input area */
+    body.dev-mode div[style*="padding: 16px"][style*="background: #2a2a2a"] {
+        padding: 12px !important;
+    }
+
+    /* Chat message list */
+    body.dev-mode .ant-list-item {
+        padding: 12px 8px !important;
+    }
+
+    /* Chat textarea */
+    body.dev-mode textarea {
+        min-height: 40px !important;
+    }
+
+    /* Send button */
+    body.dev-mode button[style*="minHeight: '32px'"] {
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Even more compact on small phones */
+    body.dev-mode div[style*="padding: 16px"][style*="background: #2a2a2a"] {
+        padding: 8px !important;
+    }
+
+    /* Reduce placeholder text */
+    body.dev-mode textarea::placeholder {
+        font-size: 12px !important;
+    }
+}

@@ -373,6 +373,99 @@
         body.dev-mode .ant-modal-body .ant-switch-checked {
             background: #50fa7b !important;
         }
+
+        /* ============================================
+           RESPONSIVE DESIGN - MOBILE
+           ============================================ */
+
+        /* Tablets and smaller devices */
+        @media (max-width: 768px) {
+            /* Mobile-optimized scrollbar */
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+
+            /* Reduce sidebar widths */
+            .ant-layout-sider {
+                max-width: 280px !important;
+            }
+
+            /* Adjust font sizes */
+            body { font-size: 14px; }
+            h1 { font-size: 22px !important; }
+            h2 { font-size: 20px !important; }
+            h3 { font-size: 18px !important; }
+
+            /* Compact buttons */
+            .ant-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            /* Compact inputs */
+            .ant-input,
+            .ant-input-affix-wrapper {
+                padding: 8px 11px;
+                font-size: 14px;
+            }
+
+            /* Reduce card padding */
+            .ant-card-body {
+                padding: 16px;
+            }
+
+            /* Adjust modals for mobile */
+            .ant-modal {
+                max-width: 95vw !important;
+                margin: 10px auto !important;
+            }
+
+            .ant-modal-body {
+                padding: 16px;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+            /* Further reduce font sizes */
+            body { font-size: 13px; }
+            h1 { font-size: 20px !important; }
+            h2 { font-size: 18px !important; }
+            h3 { font-size: 16px !important; }
+
+            /* Smaller buttons */
+            .ant-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            /* Compact everything */
+            .ant-card-body,
+            .ant-modal-body {
+                padding: 12px;
+            }
+
+            /* Hide decorative elements on small screens */
+            .ant-card:hover {
+                transform: none;
+            }
+        }
+
+        /* Touch-friendly adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets */
+            .ant-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* Remove hover effects on touch devices */
+            .ant-card:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                transform: none;
+            }
+        }
     </style>
 
     <!-- Dev Mode Theme -->

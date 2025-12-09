@@ -284,7 +284,8 @@ function ConversationToolsModal({ visible, onClose, conversationId }) {
         open: visible,
         onCancel: onClose,
         footer: null,
-        width: 800
+        width: 800,
+        zIndex: 2000
     },
         startingServers ? React.createElement('div', { style: { padding: '20px' } },
             renderServerStatus()

@@ -297,6 +297,7 @@ function Configuration() {
                     newProviderForm.resetFields();
                 }}
                 footer={null}
+                zIndex={2000}
             >
                 <Alert
                     message="OpenAI-Compatible APIs Only"
